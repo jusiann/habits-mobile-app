@@ -9,7 +9,7 @@ export const useAuthStore = create((set,get) => ({
     register: async (email, username, fullname, password) => {
         set({ isLoading: true });
         try {
-            const response = await fetch(`${process.env.BASE_URL}/api/auth/sign-up`, {
+            const response = await fetch(`https://habits-mobile-app.onrender.com/api/auth/sign-up`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
