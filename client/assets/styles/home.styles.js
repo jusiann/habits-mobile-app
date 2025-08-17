@@ -17,22 +17,24 @@ const styles = StyleSheet.create({
     paddingBottom: 80, 
   },
   header: {
-    marginBottom: 20,
-    alignItems: "center",
+    marginBottom: 30,
+    alignItems: "flex-start",
+    paddingHorizontal: 8,
+    paddingVertical: 20,
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 26,
     fontFamily: "JetBrainsMono-Medium",
     letterSpacing: 0.5,
     color: COLORS.primary,
     marginBottom: 8,
   },
   headerSubtitle: {
-    fontSize: 14,
+    fontSize: 16,
     color: COLORS.textSecondary,
     textAlign: "center",
   },
-  bookCard: {
+  habitCard: {
     backgroundColor: COLORS.cardBackground,
     borderRadius: 16,
     marginBottom: 20,
@@ -45,7 +47,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.border,
   },
-  bookHeader: {
+  habitHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -56,17 +58,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    marginRight: 10,
+    width: 45,
+    height: 45,
+    borderRadius: 22.5,
+    marginRight: 12,
   },
   username: {
     fontSize: 15,
     fontWeight: "600",
     color: COLORS.textPrimary,
   },
-  bookImageContainer: {
+  habitImageContainer: {
     width: "100%",
     height: 200,
     borderRadius: 12,
@@ -74,17 +76,17 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     backgroundColor: COLORS.border,
   },
-  bookImage: {
+  habitImage: {
     width: "100%",
     height: "100%",
   },
-  bookDetails: {
+  habitDetails: {
     padding: 4,
   },
-  bookTitle: {
+  habitTitle: {
     fontSize: 18,
     fontWeight: "700",
-    color: COLORS.textPrimary,
+    color: COLORS.primary,
     marginBottom: 6,
   },
   ratingContainer: {
@@ -104,8 +106,8 @@ const styles = StyleSheet.create({
   emptyContainer: {
     alignItems: "center",
     justifyContent: "center",
-    padding: 40,
-    marginTop: 40,
+    flex: 1,
+    paddingVertical: 40,
   },
   emptyText: {
     fontSize: 18,
@@ -121,6 +123,25 @@ const styles = StyleSheet.create({
   },
   footerLoader: {
     marginVertical: 20,
+  },
+  addButton: {
+    backgroundColor: COLORS.primary,
+    borderRadius: 25,
+    width: 60,
+    height: 25,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: COLORS.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+    marginBottom: 8,
+  },
+  addButtonText: {
+    color: COLORS.white,
+    fontSize: 18,
+    fontWeight: "bold",
   },
 });
 

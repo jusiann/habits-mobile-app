@@ -4,21 +4,20 @@ import { Link } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import styles from "../../assets/styles/signin.styles";
 import COLORS from "@/constants/colors";
+import { useAuthStore } from "@/store/auth.store";
 
 export default function Login() {
   const [email, setEmail] = React.useState("");
   const [username, setUsername] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [showPassword, setShowPassword] = React.useState(false);
-  const [isLoading, setIsLoading] = React.useState(false);
+  const {isLoading, login} = useAuthStore();
 
   const signinAction = async () => {
-    try {
-      // TODO: Implement login logic
-      console.log("Login attempt:", { email, username, password });
-    } catch (error) {
-      console.error("Login error:", error);
-    }
+    const result = await login(username, email, password);
+    if (!result.success)
+      throw new Error("Login failed");
+    
   };
   return (
     <KeyboardAvoidingView 
