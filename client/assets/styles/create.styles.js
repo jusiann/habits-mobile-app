@@ -135,6 +135,159 @@ const styles = StyleSheet.create({
   buttonIcon: {
     marginRight: 8,
   },
+  
+  // New styles for create page
+  typeSelector: {
+    flexDirection: 'row',
+    backgroundColor: COLORS.inputBackground,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    padding: 4,
+  },
+  typeButton: {
+    flex: 1,
+    paddingVertical: 12,
+    alignItems: 'center',
+    borderRadius: 8,
+  },
+  selectedTypeButton: {
+    backgroundColor: COLORS.primary,
+  },
+  typeButtonText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: COLORS.textPrimary,
+  },
+  selectedTypeButtonText: {
+    color: COLORS.white,
+  },
+  habitCard: {
+    backgroundColor: COLORS.inputBackground,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    padding: 16,
+    marginRight: 12,
+    alignItems: 'center',
+    minWidth: 80,
+  },
+  selectedHabitCard: {
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
+  },
+  habitCardText: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: COLORS.textPrimary,
+    marginTop: 8,
+    textAlign: 'center',
+  },
+  selectedHabitCardText: {
+    color: COLORS.white,
+  },
+  unitButton: {
+    backgroundColor: COLORS.inputBackground,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    marginRight: 8,
+  },
+  selectedUnitButton: {
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
+  },
+  unitButtonText: {
+    fontSize: 14,
+    color: COLORS.textPrimary,
+  },
+  selectedUnitButtonText: {
+    color: COLORS.white,
+  },
+  iconSelector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.inputBackground,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    padding: 16,
+  },
+  iconSelectorText: {
+    marginLeft: 12,
+    fontSize: 14,
+    color: COLORS.textSecondary,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 24,
+  },
+  cancelButton: {
+    flex: 1,
+    backgroundColor: COLORS.inputBackground,
+    borderRadius: 12,
+    height: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  cancelButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.textPrimary,
+  },
+  disabledButton: {
+    opacity: 0.6,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: COLORS.cardBackground,
+    borderRadius: 16,
+    padding: 20,
+    width: '90%',
+    maxHeight: '70%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: COLORS.textPrimary,
+  },
+  iconGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  iconOption: {
+    width: '22%',
+    aspectRatio: 1,
+    backgroundColor: COLORS.inputBackground,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  selectedIconOption: {
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
+  },
 });
 
 export default styles;
