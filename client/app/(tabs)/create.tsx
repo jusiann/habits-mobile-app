@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons'
 import COLORS from '../../constants/colors'
 import styles from '../../assets/styles/create.styles'
 import { useAuthStore } from '../../store/auth.store'
-import { useHabitStore } from '../../store/habit.store'
+import { useHabitStore } from '@/store/habit.store'
 
 const CUSTOM_ICONS = [
   "heart-outline", "star-outline", "trophy-outline", "medal-outline",
@@ -16,10 +16,9 @@ const CUSTOM_ICONS = [
 
 export default function Create() {
   const router = useRouter()
-  const { token } = useAuthStore()
-  const { presets, fetchPresets, createHabit, isLoading: storeLoading, error: storeError } = useHabitStore()
-  
-  const [habitType, setHabitType] = useState('default') // 'default' or 'other'
+  const {token} = useAuthStore()
+  const {presets, fetchPresets, createHabit, isLoading: storeLoading, error: storeError} = useHabitStore()
+  const [habitType, setHabitType] = useState('default')
   const [selectedHabit, setSelectedHabit] = useState<any>(null)
   const [customName, setCustomName] = useState('')
   const [customIcon, setCustomIcon] = useState('heart-outline')
@@ -30,10 +29,9 @@ export default function Create() {
   const [showIconModal, setShowIconModal] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
-  // Presets'i yükle
   useEffect(() => {
     if (token && presets.length === 0) {
-      fetchPresets(token)
+      fetchPresets()
     }
   }, [token, presets.length, fetchPresets])
 
@@ -45,16 +43,19 @@ export default function Create() {
     }
   }, [selectedHabit, habitType])
 
-  const handleCreateHabit = async () => {
+  const createHabitAction = async () => {
     try {
       setIsLoading(true)
-      
       let habitData = {}
       
       if (habitType === 'default') {
-        if (!selectedHabit || !targetAmount || !incrementAmount || !selectedUnit) {
-          Alert.alert('Error', 'Please fill all required fields')
-          return
+        if (!selectedHabit) {
+          Alert.alert('Missing Information', 'Please select a habit preset.')
+          return;
+        }
+        if (!targetAmount || !incrementAmount || !selectedUnit) {
+          Alert.alert('Missing Information', 'For preset habits: name, type, category, unit, targetAmount and incrementAmount are required.')
+          return;
         }
         
         habitData = {
@@ -66,8 +67,8 @@ export default function Create() {
           incrementAmount: parseInt(incrementAmount)
         }
       } else {
-        if (!customName || !customUnit || !targetAmount || !incrementAmount) {
-          Alert.alert('Error', 'Please fill all required fields')
+        if (!customName || !customIcon || !customUnit || !targetAmount || !incrementAmount) {
+          Alert.alert('Missing Information', 'For custom habits: icon, unit, targetAmount and incrementAmount are required.')
           return
         }
         
@@ -83,17 +84,35 @@ export default function Create() {
         }
       }
 
-      const result = await createHabit(habitData, token)
+      // Validation for numeric values
+      if (isNaN(parseInt(targetAmount)) || parseInt(targetAmount) <= 0) {
+        Alert.alert('Invalid Input', 'Target amount must be a positive number.')
+        return;
+      }
+
+      if (isNaN(parseInt(incrementAmount)) || parseInt(incrementAmount) <= 0) {
+        Alert.alert('Invalid Input', 'Increment amount must be a positive number.')
+        return;
+      }
+
+      const result = await createHabit(habitData)
+
+      console.log('Create habit result:', result);
 
       if (result.success) {
         Alert.alert('Success', 'Habit created successfully!', [
-          { text: 'OK', onPress: () => router.push('/(tabs)') }
-        ])
+          { 
+            text: 'OK', 
+            onPress: () => router.push('/(tabs)') 
+          }
+        ]);
       } else {
-        Alert.alert('Error', result.message || 'Failed to create habit')
+        // Backend'den gelen hata mesajını doğrudan kullan
+        Alert.alert('Habit Creation Failed', result.message || 'Failed to create habit')
       }
-    } catch {
-      Alert.alert('Error', 'An unexpected error occurred. Please try again.')
+    } catch (error: any) {
+      console.error('HandleCreateHabit error:', error);
+      Alert.alert('Connection Error', 'Failed to connect to server. Please check your internet connection and try again.')
     } finally {
       setIsLoading(false)
     }
@@ -109,7 +128,7 @@ export default function Create() {
           <Text style={[styles.label, { color: 'red' }]}>Failed to load presets: {storeError}</Text>
           <TouchableOpacity 
             style={styles.button}
-            onPress={() => token && fetchPresets(token)}
+            onPress={() => token && fetchPresets()}
           >
             <Text style={styles.buttonText}>Retry</Text>
           </TouchableOpacity>
@@ -198,7 +217,7 @@ export default function Create() {
         </>
       )}
     </View>
-  )
+  );
 
   const renderCustomHabit = () => (
     <View>
@@ -267,7 +286,7 @@ export default function Create() {
         </View>
       </View>
     </View>
-  )
+  );
 
   return (
     <ScrollView style={styles.scrollViewStyle} contentContainerStyle={styles.container}>
@@ -319,15 +338,15 @@ export default function Create() {
         {/* Action Buttons */}
         <View style={styles.buttonContainer}>
           <TouchableOpacity
-            style={styles.cancelButton}
+            style={[styles.button, { flex: 1, marginRight: 8, marginTop: 0 }]}
             onPress={() => router.back()}
           >
-            <Text style={styles.cancelButtonText}>Cancel</Text>
+            <Text style={styles.buttonText}>Cancel</Text>
           </TouchableOpacity>
           
           <TouchableOpacity
-            style={[styles.button, { flex: 1, marginLeft: 8, marginTop: 0 }, isLoading && styles.disabledButton]}
-            onPress={handleCreateHabit}
+            style={[styles.button, { flex: 1, marginTop: 0 }, isLoading && styles.disabledButton]}
+            onPress={createHabitAction}
             disabled={isLoading}
           >
             <Text style={styles.buttonText}>

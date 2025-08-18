@@ -14,12 +14,76 @@ export default function Signup() {
   const [showPassword, setShowPassword] = React.useState(false);
   const [confirmPassword, setConfirmPassword] = React.useState("");
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
-  const { user, isLoading, register } = useAuthStore();
+  const { isLoading, register } = useAuthStore();
 
   const signupAction = async () => {
-    const result = await register(email, username, fullName, password);
-    if (!result.success)
-      Alert.alert("Error", result.message);
+    // Frontend validation
+    if (!username || !email || !fullName || !password) {
+      Alert.alert(
+        "Missing Information",
+        "Username, fullname, email and password are required.",
+        [{ text: "OK" }]
+      );
+      return;
+    }
+
+    if (!confirmPassword) {
+      Alert.alert(
+        "Missing Information",
+        "Please confirm your password.",
+        [{ text: "OK" }]
+      );
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      Alert.alert(
+        "Password Mismatch",
+        "Passwords do not match. Please try again.",
+        [{ text: "OK" }]
+      );
+      return;
+    }
+
+    // Email format validation
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+    if (!emailRegex.test(email)) {
+      Alert.alert(
+        "Invalid Email",
+        "Please enter a valid email address.",
+        [{ text: "OK" }]
+      );
+      return;
+    }
+
+    try {
+      const result = await register(email, username, fullName, password);
+      
+      if (!result.success) {
+        // Backend'den gelen hata mesajını doğrudan kullan
+        Alert.alert(
+          "Sign Up Failed",
+          result.message || "Registration failed",
+          [{ text: "OK" }]
+        );
+        return;
+      }
+
+      // Başarılı kayıt
+      Alert.alert(
+        "Success",
+        "Account created successfully!",
+        [{ text: "OK" }]
+      );
+      
+    } catch (error: any) {
+      console.error("Registration error:", error);
+      Alert.alert(
+        "Connection Error",
+        "Failed to connect to server. Please check your internet connection and try again.",
+        [{ text: "OK" }]
+      );
+    }
   };
 
   return (

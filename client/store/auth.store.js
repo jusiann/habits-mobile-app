@@ -5,7 +5,6 @@ export const useAuthStore = create((set,get) => ({
     user: null,
     token: null,
     isLoading: false,
-    isInitialized: false,
 
     register: async (email, username, fullname, password) => {
         set({ isLoading: true });
@@ -78,14 +77,22 @@ export const useAuthStore = create((set,get) => ({
     },
 
     checkAuth: async () => {
-        try{
-            set({ isLoading: true });
+        try {
             const token = await AsyncStorage.getItem("token");
             const userJson = await AsyncStorage.getItem("user");
             const user = userJson ? JSON.parse(userJson) : null;
-            set({ user, token, isLoading: false, isInitialized: true });
+            
+            // If token exists, set it directly (no server validation for now)
+            if (token && user) {
+                set({ user, token });
+                return { success: true };
+            } else {
+                // No token found
+                set({ user: null, token: null });
+                return { success: false, message: "No token found" };
+            }
         } catch (error) {
-            set({ isLoading: false, isInitialized: true });
+            set({ user: null, token: null });
             return {
                 success: false,
                 message: error.message || "An error occurred during authentication",
@@ -124,6 +131,18 @@ export const useAuthStore = create((set,get) => ({
                 message: error.message || "Logout failed"
             };
         }
+    },
+
+    // Helper method to check if user is authenticated
+    isAuthenticated: () => {
+        const { token } = get();
+        return !!token;
+    },
+
+    // Helper method to get authorization header
+    getAuthHeader: () => {
+        const { token } = get();
+        return token ? { "Authorization": `Bearer ${token}` } : {};
     },
 
 }));

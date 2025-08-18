@@ -1,16 +1,35 @@
-import { View, Text, TouchableOpacity } from 'react-native'
+import { View, Text, TouchableOpacity, Alert } from 'react-native'
 import React from 'react'
 import { useAuthStore } from '@/store/auth.store';
+import { useHabitStore } from '@/store/habit.store';
 import { useRouter } from 'expo-router';
 
 export default function Profile() {
-  const {logout} = useAuthStore();
+  const { logout } = useAuthStore();
+  const { clearStore } = useHabitStore();
   const router = useRouter();
 
   const handleLogout = async () => {
-    await logout();
-    router.dismissAll(); 
-    router.replace('/');
+    try {
+      // Clear habit store first
+      clearStore();
+      
+      const result = await logout();
+      if (result.success) {
+        // Force navigation to root with multiple methods
+        router.dismissAll();
+        router.navigate('/');
+        // Also use replace as backup
+        setTimeout(() => {
+          router.replace('/');
+        }, 50);
+      } else {
+        Alert.alert('Error', result.message || 'Logout failed');
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+      Alert.alert('Error', 'An unexpected error occurred during logout');
+    }
   };
 
   return (

@@ -13,14 +13,15 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
   },
   listContainer: {
-    padding: 16,
-    paddingBottom: 80, 
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingTop: 0,
   },
   header: {
-    marginBottom: 30,
+    marginBottom: 20,
     alignItems: "flex-start",
-    paddingHorizontal: 8,
-    paddingVertical: 20,
+    paddingHorizontal: 20,
+    paddingVertical: 24,
   },
   headerTitle: {
     fontSize: 26,
@@ -51,7 +52,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 12,
+    marginBottom: 16,
+    paddingHorizontal: 20,
+    paddingVertical: 8,
   },
   userInfo: {
     flexDirection: "row",
@@ -84,10 +87,11 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   habitTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "700",
     color: COLORS.primary,
     marginBottom: 6,
+    letterSpacing: 1,
   },
   ratingContainer: {
     flexDirection: "row",
@@ -142,6 +146,43 @@ const styles = StyleSheet.create({
     color: COLORS.white,
     fontSize: 18,
     fontWeight: "bold",
+  },
+  // Habit item styles
+  habitItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 8,
+    marginBottom: 12,
+  },
+  habitInfo: {
+    flex: 1,
+  },
+  habitName: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: COLORS.textPrimary,
+  },
+  habitActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  // Progress bar styles
+  progressContainer: {
+    marginTop: 8,
+    paddingHorizontal: 8,
+  },
+  progressBar: {
+    height: 6,
+    backgroundColor: COLORS.border,
+    borderRadius: 3,
+    overflow: "hidden",
+  },
+  progressFill: {
+    height: "100%",
+    backgroundColor: COLORS.primary,
+    borderRadius: 3,
   },
 });
 

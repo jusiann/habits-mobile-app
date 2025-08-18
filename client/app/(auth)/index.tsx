@@ -1,5 +1,5 @@
 import React from "react";
-import { ActivityIndicator, Image, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, Image, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { Link } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import styles from "../../assets/styles/signin.styles";
@@ -13,11 +13,67 @@ export default function Login() {
   const [showPassword, setShowPassword] = React.useState(false);
   const {isLoading, login} = useAuthStore();
 
+  // Email format validation
+  const isValidEmail = (email: string) => {
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+    return emailRegex.test(email);
+  };
+
+  // Input handler with validation
+  const handleEmailUsernameChange = (text: string) => {
+    if (text.includes("@")) {
+      setEmail(text);
+      setUsername("");
+    } else {
+      setUsername(text);
+      setEmail("");
+    }
+  };
+
   const signinAction = async () => {
-    const result = await login(username, email, password);
-    if (!result.success)
-      throw new Error("Login failed");
-    
+    // Form validation
+    if (!email && !username) {
+      Alert.alert(
+        "Missing Information",
+        "Please enter your email or username.",
+        [{ text: "OK" }]
+      );
+      return;
+    }
+
+    if (!password) {
+      Alert.alert(
+        "Missing Information", 
+        "Please enter your password.",
+        [{ text: "OK" }]
+      );
+      return;
+    }
+
+    try {
+      const result = await login(username, email, password);
+      
+      if (!result.success) {
+        // Backend'den gelen hata mesajını doğrudan kullan
+        Alert.alert(
+          "Sign In Failed",
+          result.message || "Login failed",
+          [{ text: "OK" }]
+        );
+        return;
+      }
+
+      // Başarılı giriş - alert göstermeden direkt yönlendir
+      // Router otomatik olarak yönlendirecek
+      
+    } catch (error: any) {
+      console.error("Login error:", error);
+      Alert.alert(
+        "Connection Error",
+        "Failed to connect to server. Please check your internet connection and try again.",
+        [{ text: "OK" }]
+      );
+    }
   };
   return (
     <KeyboardAvoidingView 
@@ -51,13 +107,7 @@ export default function Login() {
                   placeholder="Enter your email or username"
                   placeholderTextColor={COLORS.placeholderText}
                   value={email || username}
-                  onChangeText={(text) => {
-                    if (text.includes("@")) {
-                      setEmail(text);
-                    } else {
-                      setUsername(text);
-                    }
-                  }}
+                  onChangeText={handleEmailUsernameChange}
                   keyboardType="default"
                   autoCapitalize="none"
                 />
