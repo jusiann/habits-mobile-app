@@ -54,7 +54,6 @@ export default function Login() {
       const result = await login(username, email, password);
       
       if (!result.success) {
-        // Backend'den gelen hata mesajını doğrudan kullan
         Alert.alert(
           "Sign In Failed",
           result.message || "Login failed",

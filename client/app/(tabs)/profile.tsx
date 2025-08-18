@@ -16,13 +16,8 @@ export default function Profile() {
       
       const result = await logout();
       if (result.success) {
-        // Force navigation to root with multiple methods
         router.dismissAll();
-        router.navigate('/');
-        // Also use replace as backup
-        setTimeout(() => {
-          router.replace('/');
-        }, 50);
+        router.push('/');
       } else {
         Alert.alert('Error', result.message || 'Logout failed');
       }
