@@ -13,14 +13,11 @@ export default function Index() {
 
   useEffect(() => {
     checkAuth();
-  }, []);
+  }, [checkAuth]);
 
   useEffect(() => {
     if (user && token) {
-      // Delay navigation to avoid stack issues
-      setTimeout(() => {
-        router.push("/(tabs)");
-      }, 100);
+      router.push("/(tabs)");
     }
   }, [user, token, router]);
 
@@ -37,11 +34,16 @@ export default function Index() {
           />
         </View>
         
-        <View style={styles.header}>
-          <Text style={styles.titleFirst}>Welcome to</Text>
-          <Text style={styles.titleSecond}>Habits App</Text>
+         <View style={styles.header}>
+          <Text style={styles.titleFirst}>{user && token ? "Welcome back!" : "Welcome to"}</Text>
+          <Text style={styles.titleSecond}>{user && token ? "" : "Habits App"}</Text>
           
-          <Text style={styles.subtitleSpaced}>Track your daily habits and build better routines</Text>
+          <Text style={styles.subtitleSpaced}>
+            {user && token 
+              ? "Ready to continue your habit journey? Let's keep building those amazing routines!" 
+              : "Track your daily habits and build better routines"
+            }
+          </Text>
         </View>
 
         {/* Button Section */}

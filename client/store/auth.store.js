@@ -5,6 +5,7 @@ export const useAuthStore = create((set,get) => ({
     user: null,
     token: null,
     isLoading: false,
+    isInitialized: false,
 
     register: async (email, username, fullname, password) => {
         set({ isLoading: true });
@@ -78,12 +79,13 @@ export const useAuthStore = create((set,get) => ({
 
     checkAuth: async () => {
         try{
+            set({ isLoading: true });
             const token = await AsyncStorage.getItem("token");
             const userJson = await AsyncStorage.getItem("user");
             const user = userJson ? JSON.parse(userJson) : null;
-            set({ user, token });
+            set({ user, token, isLoading: false, isInitialized: true });
         } catch (error) {
-            set({ isLoading: false });
+            set({ isLoading: false, isInitialized: true });
             return {
                 success: false,
                 message: error.message || "An error occurred during authentication",

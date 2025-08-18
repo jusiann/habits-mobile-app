@@ -10,7 +10,7 @@ export default function Profile() {
   const handleLogout = async () => {
     await logout();
     router.dismissAll(); 
-    setTimeout(() => router.replace('/'), 100);
+    router.replace('/');
   };
 
   return (
