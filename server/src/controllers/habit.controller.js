@@ -5,16 +5,16 @@ import HabitLog from '../models/habit.log.js';
 const HABIT_PRESETS = {
     health: [
         {
-            name: "Water Drinking",
-            icon: "💧",
+            name: "Water",
+            icon: "water-outline",
             unit: "glasses",
             targetAmount: 8,
             incrementAmount: 1,
             availableUnits: ["glasses", "liters", "cups"]
         },
         {
-            name: "Healthy Eating",
-            icon: "🥗",
+            name: "Food",
+            icon: "restaurant-outline",
             unit: "meals",
             targetAmount: 3,
             incrementAmount: 1,
@@ -22,7 +22,7 @@ const HABIT_PRESETS = {
         },
         {
             name: "Walking",
-            icon: "🚶",
+            icon: "walk-outline",
             unit: "steps",
             targetAmount: 10000,
             incrementAmount: 1000,
@@ -30,7 +30,7 @@ const HABIT_PRESETS = {
         },
         {
             name: "Exercise",
-            icon: "💪",
+            icon: "barbell-outline",
             unit: "minutes",
             targetAmount: 30,
             incrementAmount: 15,
@@ -38,7 +38,7 @@ const HABIT_PRESETS = {
         },
         {
             name: "Reading",
-            icon: "📚",
+            icon: "book-outline",
             unit: "pages",
             targetAmount: 20,
             incrementAmount: 5,
@@ -46,7 +46,7 @@ const HABIT_PRESETS = {
         },
         {
             name: "Sleep",
-            icon: "😴",
+            icon: "moon-outline",
             unit: "hours",
             targetAmount: 8,
             incrementAmount: 1,

@@ -22,8 +22,11 @@ export const useHabitStore = create((set, get) => ({
       const data = await response.json();
 
       if (response.ok) {
+        // Use presets as they come from backend
+        const cleanPresets = data.data.presets.health || [];
+        
         set({ 
-          presets: data.data.presets.health || [], 
+          presets: cleanPresets, 
           isLoading: false 
         });
         return { success: true };
@@ -53,8 +56,11 @@ export const useHabitStore = create((set, get) => ({
       const data = await response.json();
 
       if (response.ok) {
+        // Use habits as they come from backend
+        const cleanHabits = data.data.habits || [];
+        
         set({ 
-          habits: data.data.habits || [], 
+          habits: cleanHabits, 
           isLoading: false 
         });
         return { success: true, data: data.data };

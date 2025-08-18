@@ -128,7 +128,7 @@ export default function Create() {
               onPress={() => setSelectedHabit(habit)}
             >
               <Ionicons 
-                name={habit.icon as any} 
+                name={(habit.icon || "heart-outline") as any} 
                 size={32} 
                 color={selectedHabit?.name === habit.name ? COLORS.white : COLORS.primary} 
               />
@@ -326,7 +326,7 @@ export default function Create() {
           </TouchableOpacity>
           
           <TouchableOpacity
-            style={[styles.button, { flex: 1, marginLeft: 8 }, isLoading && styles.disabledButton]}
+            style={[styles.button, { flex: 1, marginLeft: 8, marginTop: 0 }, isLoading && styles.disabledButton]}
             onPress={handleCreateHabit}
             disabled={isLoading}
           >

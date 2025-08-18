@@ -120,7 +120,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 16,
     shadowColor: COLORS.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -134,6 +133,21 @@ const styles = StyleSheet.create({
   },
   buttonIcon: {
     marginRight: 8,
+  },
+  
+  // Common button style for create page buttons
+  createButton: {
+    borderRadius: 12,
+    height: 50,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    flex: 1,
+    shadowColor: COLORS.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   
   // New styles for create page
@@ -232,14 +246,23 @@ const styles = StyleSheet.create({
     height: 50,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 8,
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: COLORS.border,
+    marginRight: 8,
   },
   cancelButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
     color: COLORS.textPrimary,
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  primaryButton: {
+    backgroundColor: COLORS.primary,
+    marginLeft: 8,
+  },
+  primaryButtonText: {
+    color: COLORS.white,
+    fontSize: 16,
+    fontWeight: "600",
   },
   disabledButton: {
     opacity: 0.6,
