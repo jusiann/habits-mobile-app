@@ -153,9 +153,27 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 8,
+    paddingVertical: 8,
     marginBottom: 12,
   },
   habitInfo: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  habitIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: COLORS.primary,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+  },
+  habitIcon: {
+    fontSize: 18,
+  },
+  habitTextContainer: {
     flex: 1,
   },
   habitName: {
@@ -168,10 +186,44 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 8,
   },
+  actionButton: {
+    backgroundColor: COLORS.primary,
+    borderRadius: 20,
+    width: 36,
+    height: 36,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: COLORS.black,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.15,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  actionButtonText: {
+    color: COLORS.white,
+    fontSize: 16,
+    fontWeight: "bold",
+  },
   // Progress bar styles
   progressContainer: {
     marginTop: 8,
     paddingHorizontal: 8,
+  },
+  progressHeaderContainer: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    alignItems: "center",
+    marginBottom: 6,
+  },
+  progressText: {
+    fontSize: 12,
+    fontWeight: "500",
+    color: COLORS.textSecondary,
+  },
+  progressTextCompleted: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: COLORS.success,
   },
   progressBar: {
     height: 6,
@@ -183,6 +235,16 @@ const styles = StyleSheet.create({
     height: "100%",
     backgroundColor: COLORS.primary,
     borderRadius: 3,
+  },
+  progressFillCompleted: {
+    height: "100%",
+    backgroundColor: COLORS.success,
+    borderRadius: 3,
+  },
+  habitCardCompleted: {
+    backgroundColor: COLORS.successLight,
+    borderColor: COLORS.success,
+    borderWidth: 1,
   },
 });
 

@@ -11,22 +11,26 @@
 //   border: "#c8e6c9",
 //   white: "#ffffff",
 //   black: "#000000",
+//   success: "#2E7D32",
+//   successLight: "#E8F5E9",
 // };
 
 // LIGHTNING
-// const COLORS = {
-//   primary: "#8E44AD",        
-//   textPrimary: "#5D2E6B",    
-//   textSecondary: "#A569BD",  
-//   textDark: "#4A1B5C",       
-//   placeholderText: "#767676",
-//   background: "#F4F1F8",
-//   cardBackground: "#FDFCFE", 
-//   inputBackground: "#F9F7FC", 
-//   border: "#D5BDEC",         
-//   white: "#ffffff",
-//   black: "#000000",
-// };
+const COLORS = {
+  primary: "#8E44AD",        
+  textPrimary: "#5D2E6B",    
+  textSecondary: "#A569BD",  
+  textDark: "#4A1B5C",       
+  placeholderText: "#767676",
+  background: "#F4F1F8",
+  cardBackground: "#FDFCFE", 
+  inputBackground: "#F9F7FC", 
+  border: "#D5BDEC",         
+  white: "#ffffff",
+  black: "#000000",
+  success: "#27AE60",
+  successLight: "#E8F8F5",
+};
 
 // RETRO
 
@@ -42,6 +46,8 @@
 //   border: "#e2d6c1",
 //   white: "#ffffff",
 //   black: "#000000",
+//   success: "#6B8E23",
+//   successLight: "#F5F8E8",
 // };
 
 // OCEAN
@@ -58,6 +64,8 @@ const COLORS = {
   border: "#bbdefb",
   white: "#ffffff",
   black: "#000000",
+  success: "#0288D1",
+  successLight: "#E1F5FE",
 };
 */
 
@@ -74,22 +82,26 @@ const COLORS = {
 //   border: "#f8bbd0",
 //   white: "#ffffff",
 //   black: "#000000",
+//   success: "#AD1457",
+//   successLight: "#FCE4EC",
 // };
 
 // ORANGE
-const COLORS = {
-  primary: "#FF8A65",        // Açık turuncu ana renk
-  textPrimary: "#BF4226",    // Koyu turuncu metin
-  textSecondary: "#FF7043",  // Orta ton turuncu
-  textDark: "#8D2F1A",       // En koyu turuncu
-  placeholderText: "#767676",
-  background: "#FFF3E0",     // Çok açık turuncu arka plan
-  cardBackground: "#FFFBF7", // Beyaza yakın turuncu
-  inputBackground: "#FFF8F1", // Input için açık turuncu
-  border: "#FFCC9C",         // Açık turuncu border
-  white: "#ffffff",
-  black: "#000000",
-};
+// const COLORS = {
+//   primary: "#FF8A65",        // Açık turuncu ana renk
+//   textPrimary: "#BF4226",    // Koyu turuncu metin
+//   textSecondary: "#FF7043",  // Orta ton turuncu
+//   textDark: "#8D2F1A",       // En koyu turuncu
+//   placeholderText: "#767676",
+//   background: "#FFF3E0",     // Çok açık turuncu arka plan
+//   cardBackground: "#FFFBF7", // Beyaza yakın turuncu
+//   inputBackground: "#FFF8F1", // Input için açık turuncu
+//   border: "#FFCC9C",         // Açık turuncu border
+//   white: "#ffffff",
+//   black: "#000000",
+//   success: "#FF6F00",
+//   successLight: "#FFF8E1",
+// };
 
 
 export default COLORS;

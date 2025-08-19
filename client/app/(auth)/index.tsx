@@ -13,11 +13,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = React.useState(false);
   const {isLoading, login} = useAuthStore();
 
-  // Email format validation
-  const isValidEmail = (email: string) => {
-    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
-    return emailRegex.test(email);
-  };
+  // (optional) email validation can be reintroduced if needed
 
   // Input handler with validation
   const handleEmailUsernameChange = (text: string) => {
@@ -158,7 +154,7 @@ export default function Login() {
             {/* SIGN UP LINK */}
             <View style={styles.footer}>
               <Text style={styles.footerText}>Don&apos;t have an account ?</Text>
-              <Link href="/signup" asChild>
+              <Link href="/(auth)/signup" asChild>
                 <TouchableOpacity>
                   <Text style={styles.link}>Sign Up</Text>
                 </TouchableOpacity>

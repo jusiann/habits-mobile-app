@@ -2,6 +2,7 @@ import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
 import React, { useEffect } from 'react';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import homeStyles from '@/assets/styles/home.styles';
 import { useAuthStore } from '@/store/auth.store';
 import { useHabitStore } from '@/store/habit.store';
@@ -29,12 +30,6 @@ export default function Home() {
       fetchHabits();
     }
   }, [token, fetchHabits]);
-
-  const handleIncrement = async (habitId: string) => {
-    if (token) {
-      await incrementHabit(habitId);
-    }
-  };
 
   return (
     <View style={homeStyles.container}>
@@ -77,40 +72,67 @@ export default function Home() {
             </View>
           </View>
         ) : (
-          habits.map((habit: any) => (
-            <View key={habit.id} style={homeStyles.habitCard}>
-              <View style={homeStyles.habitItem}>
-                <View style={homeStyles.habitInfo}>
-                  <Text style={homeStyles.habitName}>{habit.name}</Text>
+          habits.map((habit: any) => {
+            const progress = habit.todayProgress?.progress || 0;
+            const target = habit.targetAmount || 1;
+            const current = Math.round(progress * target);
+            const isCompleted = progress >= 1;
+            
+            return (
+              <View 
+                key={habit.id} 
+                style={[
+                  homeStyles.habitCard,
+                  isCompleted && homeStyles.habitCardCompleted
+                ]}
+              >
+                <View style={homeStyles.habitItem}>
+                  <View style={homeStyles.habitInfo}>
+                    <View style={homeStyles.habitIconContainer}>
+                      <Ionicons 
+                        name={habit?.icon || 'checkmark-circle'} 
+                        size={18} 
+                        color="white" 
+                        style={homeStyles.habitIcon}
+                      />
+                    </View>
+                    <View style={homeStyles.habitTextContainer}>
+                      <Text style={homeStyles.habitName}>{habit.name}</Text>
+                    </View>
+                  </View>
+                  <View style={homeStyles.habitActions}>
+                    <TouchableOpacity 
+                      style={homeStyles.actionButton}
+                      onPress={() => token && incrementHabit(habit.id)}
+                    >
+                      <Text style={homeStyles.actionButtonText}>+</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity style={homeStyles.actionButton}>
+                      <Text style={homeStyles.actionButtonText}>⋯</Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
-                <View style={homeStyles.habitActions}>
 
-                  <TouchableOpacity 
-                    style={homeStyles.addButton}
-                    onPress={() => handleIncrement(habit.id)}
-                  >
-                    <Text style={homeStyles.addButtonText}>+</Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity style={homeStyles.addButton}>
-                    <Text style={homeStyles.addButtonText}>•••</Text>
-                  </TouchableOpacity>
+                {/* Progress Bar */}
+                <View style={homeStyles.progressContainer}>
+                  <View style={homeStyles.progressHeaderContainer}>
+                    <Text style={isCompleted ? homeStyles.progressTextCompleted : homeStyles.progressText}>
+                      {current}/{target}
+                    </Text>
+                  </View>
+                  <View style={homeStyles.progressBar}>
+                    <View 
+                      style={[
+                        isCompleted ? homeStyles.progressFillCompleted : homeStyles.progressFill, 
+                        { width: `${Math.min(progress * 100, 100)}%` }
+                      ]} 
+                    />
+                  </View>
                 </View>
               </View>
-
-              {/* Progress Bar */}
-              <View style={homeStyles.progressContainer}>
-                <View style={homeStyles.progressBar}>
-                  <View 
-                    style={[
-                      homeStyles.progressFill, 
-                      { width: `${(habit.todayProgress?.progress || 0) * 100}%` }
-                    ]} 
-                  />
-                </View>
-              </View>
-            </View>
-          ))
+            );
+          })
         )}
       </ScrollView>
     </View>

@@ -1,19 +1,10 @@
 import { Text, TouchableOpacity, View } from "react-native";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import { useAuthStore } from "../store/auth.store";
-import { useEffect } from "react";
 import styles from "../assets/styles/main.styles";
 
 export default function Index() {
-  const { token, isAuthenticated } = useAuthStore();
   const router = useRouter();
-  
-  useEffect(() => {
-    if (isAuthenticated()) {
-      router.replace("/(tabs)");
-    }
-  }, [token, router, isAuthenticated]);
 
   return (
     <View style={styles.container}>

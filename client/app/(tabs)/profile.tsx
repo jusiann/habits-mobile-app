@@ -11,7 +11,6 @@ export default function Profile() {
 
   const handleLogout = async () => {
     try {
-      // Clear habit store first
       clearStore();
       
       const result = await logout();

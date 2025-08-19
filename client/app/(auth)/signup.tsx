@@ -4,7 +4,7 @@ import styles from '../../assets/styles/signup.styles';
 import COLORS from "../../constants/colors";
 import { Ionicons } from '@expo/vector-icons';
 import { Link } from "expo-router";
-import { useAuthStore } from '../../store/auth.store';
+import { useAuthStore } from '@/store/auth.store';
 
 export default function Signup() {
   const [username, setUsername] = React.useState("");
