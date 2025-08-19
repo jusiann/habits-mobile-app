@@ -160,7 +160,7 @@ export default function Detail() {
     <View>
       {/* Habit bilgisi - değiştirilemez */}
       <View style={styles.formGroup}>
-        <View style={[styles.habitCard, styles.selectedHabitCard, { marginVertical: 10, alignSelf: 'center' }]}>
+        <View style={[styles.habitCard, styles.selectedHabitCard, { marginVertical: 10, alignSelf: 'stretch' }]}>
           <Ionicons 
             name={habit.icon as any} 
             size={32} 
@@ -170,6 +170,17 @@ export default function Detail() {
             {habit.name}
           </Text>
         </View>
+        
+        {/* Uyarı mesajını kartın altına taşı */}
+        {(selectedUnit !== originalUnit || 
+          targetAmount !== habit.targetAmount.toString() || 
+          incrementAmount !== habit.incrementAmount.toString()) && (
+          <View style={{ marginTop: 10 }}>
+            <Text style={[styles.label, { color: 'orange', fontSize: 12, textAlign: 'center' }]}>
+              ⚠️ These changes will reset your progress for today
+            </Text>
+          </View>
+        )}
       </View>
 
       {/* Unit seçimi - sadece mevcut unitler */}
@@ -225,17 +236,6 @@ export default function Detail() {
           />
         </View>
       </View>
-
-      {/* Genel uyarı mesajı */}
-      {(selectedUnit !== originalUnit || 
-        targetAmount !== habit.targetAmount.toString() || 
-        incrementAmount !== habit.incrementAmount.toString()) && (
-        <View style={[styles.formGroup, { marginTop: 10 }]}>
-          <Text style={[styles.label, { color: 'orange', fontSize: 12, textAlign: 'center' }]}>
-            ⚠️ These changes will reset your progress for today
-          </Text>
-        </View>
-      )}
     </View>
   );
 

@@ -6,6 +6,24 @@ export const useHabitStore = create((set, get) => ({
   presets: [],
   isLoading: false,
   error: null,
+  lastFetchDate: null, // Son fetch tarihi
+
+  // Günlük sıfırlama kontrolü
+  checkAndResetDaily: () => {
+    const now = new Date();
+    const today = now.toDateString(); // "Mon Aug 20 2025" formatında
+    const lastFetch = get().lastFetchDate;
+    
+    // Eğer son fetch farklı bir günde yapıldıysa habits'i temizle
+    if (lastFetch && lastFetch !== today) {
+      console.log('New day detected, clearing habits cache');
+      set({ habits: [], lastFetchDate: today });
+      return true; // Yeni gün
+    } else if (!lastFetch) {
+      set({ lastFetchDate: today });
+    }
+    return false; // Aynı gün
+  },
 
   fetchPresets: async () => {
     try {
@@ -43,6 +61,9 @@ export const useHabitStore = create((set, get) => ({
 
   fetchHabits: async () => {
     try {
+      // Günlük sıfırlama kontrolü yap
+      const isNewDay = get().checkAndResetDaily();
+      
       set({ isLoading: true, error: null });
       
       const authHeaders = useAuthStore.getState().getAuthHeader();
@@ -63,6 +84,11 @@ export const useHabitStore = create((set, get) => ({
           habits: cleanHabits, 
           isLoading: false 
         });
+        
+        if (isNewDay) {
+          console.log('Habits refreshed for new day');
+        }
+        
         return { success: true, data: data.data };
       } else {
         set({ error: data.message, isLoading: false });
@@ -173,7 +199,8 @@ export const useHabitStore = create((set, get) => ({
       habits: [],
       presets: [],
       isLoading: false,
-      error: null
+      error: null,
+      lastFetchDate: null
     });
   }
 }));

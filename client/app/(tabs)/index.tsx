@@ -28,7 +28,7 @@ export default function Home() {
 
   useEffect(() => {
     if (token) {
-      fetchHabits();
+      fetchHabits(); // Store'da zaten günlük kontrol yapılıyor
     }
   }, [token, fetchHabits]);
 
