@@ -44,6 +44,7 @@ const styles = StyleSheet.create({
   },
   formGroup: {
     marginBottom: 20,
+    marginHorizontal: 0, // Kenar boşluklarını sıfırla
   },
   label: {
     fontSize: 14,
@@ -59,6 +60,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.border,
     paddingHorizontal: 12,
+    marginHorizontal: 0, // Input'ların kenar boşluklarını sıfırla
   },
   inputIcon: {
     marginRight: 10,
@@ -158,6 +160,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.border,
     padding: 4,
+    marginHorizontal: 0, // Type selector'ün da kenar boşluklarını sıfırla
   },
   typeButton: {
     flex: 1,
@@ -182,7 +185,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.border,
     padding: 16,
-    marginRight: 12,
+    marginRight: 8, // Biraz daha az margin
     alignItems: 'center',
     minWidth: 80,
   },
@@ -200,14 +203,27 @@ const styles = StyleSheet.create({
   selectedHabitCardText: {
     color: COLORS.white,
   },
+  unitContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginVertical: 10,
+    marginHorizontal: -2,
+  },
   unitButton: {
     backgroundColor: COLORS.inputBackground,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: COLORS.border,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    marginRight: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginBottom: 8,
+    flex: 1,
+    marginHorizontal: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: '30%',
   },
   selectedUnitButton: {
     backgroundColor: COLORS.primary,
@@ -216,9 +232,11 @@ const styles = StyleSheet.create({
   unitButtonText: {
     fontSize: 14,
     color: COLORS.textPrimary,
+    textAlign: 'center',
   },
   selectedUnitButtonText: {
     color: COLORS.white,
+    textAlign: 'center',
   },
   iconSelector: {
     flexDirection: 'row',
@@ -228,6 +246,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.border,
     padding: 16,
+    marginHorizontal: 0, // Icon selector'ün da kenar boşluklarını sıfırla
   },
   iconSelectorText: {
     marginLeft: 12,

@@ -282,16 +282,27 @@ export const updateHabit = async (req, res) => {
             throw new ApiError("Habit not found.", 404);
 
         const updateData = {};
+        let shouldResetProgress = false;
         
         if (targetAmount !== undefined) {
             if (targetAmount <= 0)
                 throw new ApiError("Target amount must be greater than 0.", 400);
+            
+            // Target amount değişti mi kontrol et
+            if (habit.targetAmount !== targetAmount) {
+                shouldResetProgress = true;
+            }
             updateData.targetAmount = targetAmount;
         }
         
         if (incrementAmount !== undefined) {
             if (incrementAmount <= 0)
                 throw new ApiError("Increment amount must be greater than 0.", 400);
+            
+            // Increment amount değişti mi kontrol et  
+            if (habit.incrementAmount !== incrementAmount) {
+                shouldResetProgress = true;
+            }
             updateData.incrementAmount = incrementAmount;
         }
         
@@ -300,6 +311,11 @@ export const updateHabit = async (req, res) => {
                 if (!habit.availableUnits.includes(unit)) {
                     throw new ApiError(`Invalid unit '${unit}' for this preset habit. Available units: ${habit.availableUnits.join(', ')}`, 400);
                 }
+            }
+            
+            // Unit değişti mi kontrol et
+            if (habit.unit !== unit) {
+                shouldResetProgress = true;
             }
             updateData.unit = unit;
         }
@@ -329,6 +345,22 @@ export const updateHabit = async (req, res) => {
                 throw new ApiError("A habit with this name already exists.", 400);
             
             updateData.name = name;
+        }
+
+        // Eğer unit, targetAmount veya incrementAmount değiştiyse progress'i sıfırla
+        if (shouldResetProgress) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
+            
+            await HabitLog.deleteMany({
+                habitId: habitId,
+                userId: userId,
+                date: {
+                    $gte: today,
+                    $lt: tomorrow
+                }
+            });
         }
 
         const updatedHabit = await Habit.findByIdAndUpdate(
