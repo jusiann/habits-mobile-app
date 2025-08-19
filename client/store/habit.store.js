@@ -136,6 +136,43 @@ export const useHabitStore = create((set, get) => ({
     }
   },
 
+  updateHabit: async (habitId, updateData) => {
+    try {
+      set({ isLoading: true, error: null });
+      
+      const authHeaders = useAuthStore.getState().getAuthHeader();
+      
+      console.log('Updating habit with data:', updateData);
+      
+      const response = await fetch(`https://habits-mobile-app.onrender.com/api/habits/${habitId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...authHeaders
+        },
+        body: JSON.stringify(updateData)
+      });
+
+      console.log('Response status:', response.status);
+      
+      const data = await response.json();
+      console.log('Response data:', data);
+
+      if (response.ok) {
+        await get().fetchHabits();
+        set({ isLoading: false });
+        return { success: true, data: data.data };
+      } else {
+        set({ error: data.message, isLoading: false });
+        return { success: false, message: data.message };
+      }
+    } catch (error) {
+      console.error('UpdateHabit error:', error);
+      set({ error: 'Network error', isLoading: false });
+      return { success: false, message: `Network error: ${error.message}` };
+    }
+  },
+
   clearStore: () => {
     set({
       habits: [],

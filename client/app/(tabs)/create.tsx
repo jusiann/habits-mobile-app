@@ -6,13 +6,7 @@ import COLORS from '../../constants/colors'
 import styles from '../../assets/styles/create.styles'
 import { useAuthStore } from '../../store/auth.store'
 import { useHabitStore } from '@/store/habit.store'
-
-const CUSTOM_ICONS = [
-  "heart-outline", "star-outline", "trophy-outline", "medal-outline",
-  "flash-outline", "leaf-outline", "flame-outline", "bulb-outline",
-  "musical-notes-outline", "camera-outline", "brush-outline", "game-controller-outline",
-  "laptop-outline", "library-outline", "car-outline", "airplane-outline"
-];
+import { CUSTOM_ICONS } from '../../constants/customIcons'
 
 export default function Create() {
   const router = useRouter()
@@ -166,7 +160,7 @@ export default function Create() {
         <>
           <View style={styles.formGroup}>
             <Text style={styles.label}>Unit</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <View style={styles.unitContainer}>
               {selectedHabit.availableUnits.map((unit: string) => (
                 <TouchableOpacity
                   key={unit}
@@ -184,7 +178,7 @@ export default function Create() {
                   </Text>
                 </TouchableOpacity>
               ))}
-            </ScrollView>
+            </View>
           </View>
           
           <View style={styles.formGroup}>

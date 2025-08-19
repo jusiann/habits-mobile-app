@@ -113,7 +113,7 @@ export default function Home() {
                       onPressOut={() => setPressedButton(null)}
                       onPress={() => {
                         // Detail sayfasına yönlendir
-                        console.log('Detail pressed for habit:', habit.id);
+                        router.push(`/(tabs)/detail?habitId=${habit.id}`);
                       }}
                       activeOpacity={0.7}
                     >
