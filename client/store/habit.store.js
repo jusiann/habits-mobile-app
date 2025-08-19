@@ -141,11 +141,9 @@ export const useHabitStore = create((set, get) => ({
       set({ isLoading: true, error: null });
       
       const authHeaders = useAuthStore.getState().getAuthHeader();
-      
-      console.log('Updating habit with data:', updateData);
-      
+
       const response = await fetch(`https://habits-mobile-app.onrender.com/api/habits/${habitId}`, {
-        method: 'PUT',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           ...authHeaders
@@ -153,10 +151,7 @@ export const useHabitStore = create((set, get) => ({
         body: JSON.stringify(updateData)
       });
 
-      console.log('Response status:', response.status);
-      
       const data = await response.json();
-      console.log('Response data:', data);
 
       if (response.ok) {
         await get().fetchHabits();

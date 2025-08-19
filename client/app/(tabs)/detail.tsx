@@ -72,12 +72,6 @@ export default function Detail() {
       setIsLoading(true)
       let updateData = {}
       
-      // Herhangi bir değişiklik var mı kontrol et (progress sıfırlama için)
-      const unitChanged = (habit.type === 'default' ? selectedUnit : customUnit) !== originalUnit
-      const targetChanged = targetAmount !== habit.targetAmount.toString()
-      const incrementChanged = incrementAmount !== habit.incrementAmount.toString()
-      const progressWillReset = unitChanged || targetChanged || incrementChanged
-      
       if (habit.type === 'default') {
         updateData = {
           unit: selectedUnit,
@@ -119,12 +113,7 @@ export default function Detail() {
       const result = await updateHabit(habit.id, updateData)
 
       if (result.success) {
-        let message = 'Habit updated successfully!'
-        if (progressWillReset) {
-          message += ' Your progress has been reset due to the changes.'
-        }
-        
-        Alert.alert('Success', message, [
+        Alert.alert('Success', 'Habit updated successfully!', [
           { 
             text: 'OK', 
             onPress: () => router.back()
