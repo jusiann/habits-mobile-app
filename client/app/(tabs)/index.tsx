@@ -1,5 +1,5 @@
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -10,6 +10,7 @@ import { useHabitStore } from '@/store/habit.store';
 export default function Home() {
   const { user, token } = useAuthStore();
   const { habits, fetchHabits, incrementHabit, isLoading } = useHabitStore();
+  const [pressedButton, setPressedButton] = useState<string | null>(null);
 
   const getGreeting = () => {
     const currentHour = new Date().getHours();
@@ -54,7 +55,11 @@ export default function Home() {
           style={homeStyles.addButton}
           onPress={() => router.push('/(tabs)/create')}
         >
-          <Text style={homeStyles.addButtonText}>+</Text>
+          <Ionicons 
+            name="menu" 
+            size={20} 
+            color="white" 
+          />
         </TouchableOpacity>
       </View>
 
@@ -91,7 +96,7 @@ export default function Home() {
                     <View style={homeStyles.habitIconContainer}>
                       <Ionicons 
                         name={habit?.icon || 'checkmark-circle'} 
-                        size={18} 
+                        size={16} 
                         color="white" 
                         style={homeStyles.habitIcon}
                       />
@@ -99,6 +104,21 @@ export default function Home() {
                     <View style={homeStyles.habitTextContainer}>
                       <Text style={homeStyles.habitName}>{habit.name}</Text>
                     </View>
+                    <TouchableOpacity 
+                      style={[
+                        homeStyles.habitDetailButton,
+                        pressedButton === `detail-${habit.id}` && { backgroundColor: 'rgba(255, 255, 255, 0.3)' }
+                      ]}
+                      onPressIn={() => setPressedButton(`detail-${habit.id}`)}
+                      onPressOut={() => setPressedButton(null)}
+                      onPress={() => {
+                        // Detail sayfasına yönlendir
+                        console.log('Detail pressed for habit:', habit.id);
+                      }}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={homeStyles.habitDetailButtonText}>⋯</Text>
+                    </TouchableOpacity>
                   </View>
                   <View style={homeStyles.habitActions}>
                     <TouchableOpacity 
@@ -106,10 +126,6 @@ export default function Home() {
                       onPress={() => token && incrementHabit(habit.id)}
                     >
                       <Text style={homeStyles.actionButtonText}>+</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity style={homeStyles.actionButton}>
-                      <Text style={homeStyles.actionButtonText}>⋯</Text>
                     </TouchableOpacity>
                   </View>
                 </View>
