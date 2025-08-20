@@ -28,7 +28,7 @@ export default function Home() {
 
   useEffect(() => {
     if (token) {
-      fetchHabits();
+      fetchHabits(); // Store'da zaten günlük kontrol yapılıyor
     }
   }, [token, fetchHabits]);
 
@@ -82,6 +82,7 @@ export default function Home() {
             const target = habit.targetAmount || 1;
             const current = Math.round(progress * target);
             const isCompleted = progress >= 1;
+            const unit = (habit.unit || '').toUpperCase(); // Unit'i uppercase yap
             
             return (
               <View 
@@ -133,6 +134,9 @@ export default function Home() {
                 {/* Progress Bar */}
                 <View style={homeStyles.progressContainer}>
                   <View style={homeStyles.progressHeaderContainer}>
+                    <Text style={isCompleted ? homeStyles.progressTextCompleted : homeStyles.progressText}>
+                      {unit}
+                    </Text>
                     <Text style={isCompleted ? homeStyles.progressTextCompleted : homeStyles.progressText}>
                       {current}/{target}
                     </Text>

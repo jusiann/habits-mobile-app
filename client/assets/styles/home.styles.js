@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
   },
   progressHeaderContainer: {
     flexDirection: "row",
-    justifyContent: "flex-end",
+    justifyContent: "space-between", // Sol ve sağa yerleştir
     alignItems: "center",
     marginBottom: 6,
   },
