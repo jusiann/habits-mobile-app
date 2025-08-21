@@ -4,7 +4,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 import COLORS from '../../constants/colors'
 import styles from '../../assets/styles/create.styles'
-import { useHabitStore } from '@/store/habit.store'
+import { useHabitStore } from '../../store/habit.store'
 import { CUSTOM_ICONS } from '../../constants/customIcons'
 
 export default function Detail() {
@@ -170,14 +170,15 @@ export default function Detail() {
             {habit.name}
           </Text>
         </View>
-        
-        {/* Uyarı mesajını kartın altına taşı */}
+
+        {/* WARNING FOR CHANGES */}
         {(selectedUnit !== originalUnit || 
           targetAmount !== habit.targetAmount.toString() || 
           incrementAmount !== habit.incrementAmount.toString()) && (
-          <View style={{ marginTop: 10 }}>
-            <Text style={[styles.label, { color: 'orange', fontSize: 12, textAlign: 'center' }]}>
-              ⚠️ These changes will reset your progress for today
+          <View style={{ marginTop: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+            <Ionicons name="warning" size={16} color="orange" style={{ marginTop: -8 }}/> 
+            <Text style={[styles.label, { marginLeft: 5, color: 'orange', fontSize: 12 }]}>
+              These changes will reset your progress for today
             </Text>
           </View>
         )}

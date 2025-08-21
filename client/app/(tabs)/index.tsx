@@ -3,9 +3,9 @@ import React, { useEffect, useState } from 'react';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import homeStyles from '@/assets/styles/home.styles';
-import { useAuthStore } from '@/store/auth.store';
-import { useHabitStore } from '@/store/habit.store';
+import homeStyles from '../../assets/styles/home.styles';
+import { useAuthStore } from '../../store/auth.store';
+import { useHabitStore } from '../../store/habit.store';
 
 export default function Home() {
   const { user, token } = useAuthStore();
@@ -14,27 +14,26 @@ export default function Home() {
 
   const getGreeting = () => {
     const currentHour = new Date().getHours();
-    
-    if (currentHour >= 6 && currentHour < 12) {
+    if (currentHour >= 6 && currentHour < 12)
       return "Good Morning";
-    } else if (currentHour >= 12 && currentHour < 18) {
+    else if (currentHour >= 12 && currentHour < 18)
       return "Good Afternoon";
-    } else if (currentHour >= 18 && currentHour < 22) {
+    else if (currentHour >= 18 && currentHour < 22)
       return "Good Evening";
-    } else {
+    else
       return "Good Night";
-    }
   };
 
   useEffect(() => {
     if (token) {
-      fetchHabits(); // Store'da zaten günlük kontrol yapılıyor
+      fetchHabits();
     }
   }, [token, fetchHabits]);
 
   return (
     <View style={homeStyles.container}>
-      {/* Fixed Header Section */}
+
+      {/* FIXED HEADER SECTION */}
       <View style={homeStyles.header}>
         <View style={homeStyles.userInfo}>
           <Image 
@@ -48,7 +47,7 @@ export default function Home() {
         </View>
       </View>
 
-      {/* Fixed Habits Section Header */}
+      {/* FIXED HABIRT SECTION */}
       <View style={homeStyles.habitHeader}>
         <Text style={homeStyles.habitTitle}>HABITS</Text>
         <TouchableOpacity 
@@ -63,98 +62,106 @@ export default function Home() {
         </TouchableOpacity>
       </View>
 
-      {/* Scrollable Habits List */}
+      {/* SCROLLABLE HABITS LIST */}
       <ScrollView style={homeStyles.listContainer} showsVerticalScrollIndicator={false}>
-        {isLoading ? (
-          <View style={homeStyles.habitCard}>
-            <Text style={homeStyles.emptyText}>Loading Habits...</Text>
-          </View>
-        ) : habits.length === 0 ? (
-          <View style={homeStyles.habitCard}>
-            <View style={homeStyles.emptyContainer}>
-              <Text style={homeStyles.emptyText}>Add a new habit</Text>
-              <Text style={homeStyles.emptySubtext}>Start building better routines by adding your first habit</Text>
+        {
+          isLoading ? (
+            <View style={homeStyles.habitCard}>
+              <Text style={homeStyles.emptyText}>Loading Habits...</Text>
             </View>
-          </View>
-        ) : (
-          habits.map((habit: any) => {
-            const progress = habit.todayProgress?.progress || 0;
-            const target = habit.targetAmount || 1;
-            const current = Math.round(progress * target);
-            const isCompleted = progress >= 1;
-            const unit = (habit.unit || '').toUpperCase(); // Unit'i uppercase yap
+          ) : habits.length === 0 ? (
+            <View style={homeStyles.habitCard}>
+              <View style={homeStyles.emptyContainer}>
+                <Text style={homeStyles.emptyText}>Add a new habit</Text>
+                <Text style={homeStyles.emptySubtext}>Start building better routines by adding your first habit</Text>
+              </View>
+            </View>
+          ) : (
+            habits.map((habit: any) => {
+              const progress = habit.todayProgress?.progress || 0;
+              const target = habit.targetAmount || 1;
+              const current = Math.round(progress * target);
+              const isCompleted = progress >= 1;
+              const unit = (habit.unit || '').toUpperCase();
             
-            return (
-              <View 
-                key={habit.id} 
-                style={[
-                  homeStyles.habitCard,
-                  isCompleted && homeStyles.habitCardCompleted
-                ]}
-              >
-                <View style={homeStyles.habitItem}>
-                  <View style={homeStyles.habitInfo}>
-                    <View style={homeStyles.habitIconContainer}>
-                      <Ionicons 
-                        name={habit?.icon || 'checkmark-circle'} 
-                        size={16} 
-                        color="white" 
-                        style={homeStyles.habitIcon}
+              return (
+                <View 
+                  key={habit.id} 
+                  style={[
+                    homeStyles.habitCard,
+                    isCompleted && homeStyles.habitCardCompleted
+                  ]}
+                >
+                  <View style={homeStyles.habitItem}>
+                    <View style={homeStyles.habitInfo}>
+                      <View style={homeStyles.habitIconContainer}>
+                        <Ionicons 
+                          name={habit?.icon || 'checkmark-circle'} 
+                          size={16} 
+                          color="white" 
+                          style={homeStyles.habitIcon}
+                        />
+                      </View>
+
+                      {/* HABIT NAME */}
+                      <View style={homeStyles.habitTextContainer}>
+                        <Text style={homeStyles.habitName}>{habit.name}</Text>
+                      </View>
+
+                      {/* DETAIL BUTTON */}
+                      <TouchableOpacity 
+                        style={[
+                          homeStyles.habitDetailButton,
+                          pressedButton === `detail-${habit.id}` && { backgroundColor: 'rgba(255, 255, 255, 0.3)' }
+                        ]}
+                        onPressIn={() => setPressedButton(`detail-${habit.id}`)}
+                        onPressOut={() => setPressedButton(null)}
+                        onPress={() => {
+                          router.push(`/(tabs)/detail?habitId=${habit.id}`);
+                        }}
+                        activeOpacity={0.7}
+                      >
+                        <Text style={homeStyles.habitDetailButtonText}>⋯</Text>
+                      </TouchableOpacity>
+                    </View>
+
+                    {/* INCREMENT BUTTON */}
+                    <View style={homeStyles.habitActions}>
+                      <TouchableOpacity 
+                        style={homeStyles.actionButton}
+                        onPress={() => token && incrementHabit(habit.id)}
+                      >
+                        <Text style={homeStyles.actionButtonText}>+</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+
+                  {/* PROGRESS BAR */}
+                  <View style={homeStyles.progressContainer}>
+                    <View style={homeStyles.progressHeaderContainer}>
+                      <Text style={isCompleted ? homeStyles.progressTextCompleted : homeStyles.progressText}>
+                        {unit}
+                      </Text>
+                      <Text style={isCompleted ? homeStyles.progressTextCompleted : homeStyles.progressText}>
+                        {current}/{target}
+                      </Text>
+                    </View>
+                    <View style={homeStyles.progressBar}>
+                      <View 
+                        style={[
+                          isCompleted ? homeStyles.progressFillCompleted : homeStyles.progressFill, 
+                          { width: `${Math.min(progress * 100, 100)}%` }
+                        ]} 
                       />
                     </View>
-                    <View style={homeStyles.habitTextContainer}>
-                      <Text style={homeStyles.habitName}>{habit.name}</Text>
-                    </View>
-                    <TouchableOpacity 
-                      style={[
-                        homeStyles.habitDetailButton,
-                        pressedButton === `detail-${habit.id}` && { backgroundColor: 'rgba(255, 255, 255, 0.3)' }
-                      ]}
-                      onPressIn={() => setPressedButton(`detail-${habit.id}`)}
-                      onPressOut={() => setPressedButton(null)}
-                      onPress={() => {
-                        // Detail sayfasına yönlendir
-                        router.push(`/(tabs)/detail?habitId=${habit.id}`);
-                      }}
-                      activeOpacity={0.7}
-                    >
-                      <Text style={homeStyles.habitDetailButtonText}>⋯</Text>
-                    </TouchableOpacity>
                   </View>
-                  <View style={homeStyles.habitActions}>
-                    <TouchableOpacity 
-                      style={homeStyles.actionButton}
-                      onPress={() => token && incrementHabit(habit.id)}
-                    >
-                      <Text style={homeStyles.actionButtonText}>+</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
 
-                {/* Progress Bar */}
-                <View style={homeStyles.progressContainer}>
-                  <View style={homeStyles.progressHeaderContainer}>
-                    <Text style={isCompleted ? homeStyles.progressTextCompleted : homeStyles.progressText}>
-                      {unit}
-                    </Text>
-                    <Text style={isCompleted ? homeStyles.progressTextCompleted : homeStyles.progressText}>
-                      {current}/{target}
-                    </Text>
-                  </View>
-                  <View style={homeStyles.progressBar}>
-                    <View 
-                      style={[
-                        isCompleted ? homeStyles.progressFillCompleted : homeStyles.progressFill, 
-                        { width: `${Math.min(progress * 100, 100)}%` }
-                      ]} 
-                    />
-                  </View>
                 </View>
-              </View>
-            );
-          })
-        )}
+              );
+            })
+          )}
       </ScrollView>
+
     </View>
   );
 }

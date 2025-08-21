@@ -6,37 +6,34 @@ export const useHabitStore = create((set, get) => ({
   presets: [],
   isLoading: false,
   error: null,
-  lastFetchDate: null, // Son fetch tarihi
+  lastFetchDate: null,
 
-  // Günlük sıfırlama kontrolü
+  // Helper function to make authenticated requests with auto refresh
+  makeRequest: async (url, options = {}) => {
+    return await useAuthStore.getState().makeAuthenticatedRequest(url, options);
+  },
+
   checkAndResetDaily: () => {
     const now = new Date();
-    const today = now.toDateString(); // "Mon Aug 20 2025" formatında
+    const today = now.toDateString();
     const lastFetch = get().lastFetchDate;
     
-    // Eğer son fetch farklı bir günde yapıldıysa habits'i temizle
     if (lastFetch && lastFetch !== today) {
       console.log('New day detected, clearing habits cache');
       set({ habits: [], lastFetchDate: today });
-      return true; // Yeni gün
+      return true; 
     } else if (!lastFetch) {
       set({ lastFetchDate: today });
     }
-    return false; // Aynı gün
+    return false;
   },
 
   fetchPresets: async () => {
     try {
       set({ isLoading: true, error: null });
       
-      const authHeaders = useAuthStore.getState().getAuthHeader();
-      
-      const response = await fetch('https://habits-mobile-app.onrender.com/api/habits/presets', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          ...authHeaders
-        }
+      const response = await get().makeRequest('https://habits-mobile-app.onrender.com/api/habits/presets', {
+        method: 'GET'
       });
 
       const data = await response.json();
@@ -61,19 +58,12 @@ export const useHabitStore = create((set, get) => ({
 
   fetchHabits: async () => {
     try {
-      // Günlük sıfırlama kontrolü yap
-      const isNewDay = get().checkAndResetDaily();
       
+      const isNewDay = get().checkAndResetDaily();
       set({ isLoading: true, error: null });
       
-      const authHeaders = useAuthStore.getState().getAuthHeader();
-      
-      const response = await fetch('https://habits-mobile-app.onrender.com/api/habits/dashboard', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          ...authHeaders
-        }
+      const response = await get().makeRequest('https://habits-mobile-app.onrender.com/api/habits/dashboard', {
+        method: 'GET'
       });
 
       const data = await response.json();
@@ -104,16 +94,10 @@ export const useHabitStore = create((set, get) => ({
     try {
       set({ isLoading: true, error: null });
       
-      const authHeaders = useAuthStore.getState().getAuthHeader();
-      
       console.log('Creating habit with data:', habitData);
       
-      const response = await fetch('https://habits-mobile-app.onrender.com/api/habits/add', {
+      const response = await get().makeRequest('https://habits-mobile-app.onrender.com/api/habits/add', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...authHeaders
-        },
         body: JSON.stringify(habitData)
       });
 
@@ -139,14 +123,8 @@ export const useHabitStore = create((set, get) => ({
 
   incrementHabit: async (habitId) => {
     try {
-      const authHeaders = useAuthStore.getState().getAuthHeader();
-      
-      const response = await fetch(`https://habits-mobile-app.onrender.com/api/habits/${habitId}/increment`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...authHeaders
-        }
+      const response = await get().makeRequest(`https://habits-mobile-app.onrender.com/api/habits/${habitId}/increment`, {
+        method: 'POST'
       });
 
       const data = await response.json();
@@ -165,15 +143,9 @@ export const useHabitStore = create((set, get) => ({
   updateHabit: async (habitId, updateData) => {
     try {
       set({ isLoading: true, error: null });
-      
-      const authHeaders = useAuthStore.getState().getAuthHeader();
 
-      const response = await fetch(`https://habits-mobile-app.onrender.com/api/habits/${habitId}`, {
+      const response = await get().makeRequest(`https://habits-mobile-app.onrender.com/api/habits/${habitId}`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          ...authHeaders
-        },
         body: JSON.stringify(updateData)
       });
 

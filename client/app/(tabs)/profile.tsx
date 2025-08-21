@@ -12,7 +12,6 @@ export default function Profile() {
   const handleLogout = async () => {
     try {
       clearStore();
-      
       const result = await logout();
       if (result.success) {
         router.dismissAll();
