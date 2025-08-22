@@ -1,6 +1,6 @@
 import React from "react";
 import {ActivityIndicator, Alert, Image, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from "react-native";
-import {Link} from "expo-router";
+import {Link, router} from "expo-router";
 import {Ionicons} from "@expo/vector-icons";
 import styles from "../../assets/styles/signin.styles";
 import COLORS from "../../constants/colors";
@@ -140,8 +140,18 @@ export default function Login() {
                 </TouchableOpacity>
               </View>
             </View>
+            
+            {/* FORGOT PASSWORD */}
+            <View style={[styles.footer, { marginTop: 0 }]}>
+              <Text style={styles.footerText}>Forgot your password?</Text>
+              <Link href="/(auth)/forgotpassword" asChild>
+                <TouchableOpacity>
+                  <Text style={styles.link}>Reset Password</Text>
+                </TouchableOpacity>
+              </Link>
+            </View>
             {/* LOGIN BUTTON */}
-            <TouchableOpacity style={styles.button} onPress={signinAction} disabled={isLoading}>
+            <TouchableOpacity style={[styles.button, {marginTop: 60}]} onPress={signinAction} disabled={isLoading}>
               {
                 isLoading ? (
                   <ActivityIndicator color="#fff" />

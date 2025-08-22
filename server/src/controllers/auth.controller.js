@@ -4,6 +4,7 @@ import { createToken } from '../middlewares/auth.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
+import sendEmail from '../utils/send.email.js';
 
 // const validateEmail = (email) => {
 //     const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
@@ -214,12 +215,28 @@ export const forgotPassword = async (req, res) => {
         user.resetCodeExpires = resetCodeExpires;
         await user.save();
 
-        console.log(`Reset code for ${email}: ${resetCode}`);
+        // SEND RESET CODE VIA EMAIL
+        const emailSubject = "Password Reset Code";
+        const emailText = `Your password reset code is: ${resetCode}\n\nThis code will expire in 15 minutes.\n\nIf you didn't request this, please ignore this email.`;
+        const emailHtml = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h2 style="color: #333;">Password Reset Code</h2>
+                <p>Your password reset code is:</p>
+                <div style="background-color: #f5f5f5; padding: 20px; text-align: center; margin: 20px 0;">
+                    <h1 style="color: #007bff; font-size: 32px; margin: 0; letter-spacing: 5px;">${resetCode}</h1>
+                </div>
+                <p style="color: #666;">This code will expire in <strong>15 minutes</strong>.</p>
+                <p style="color: #666;">If you didn't request this password reset, please ignore this email.</p>
+            </div>
+        `;
+
+        await sendEmail(email, emailSubject, emailText, emailHtml);
+
+        console.log(`Reset code sent to ${email}: ${resetCode}`);
 
         res.status(200).json({
             success: true,
-            message: "Reset code sent to your email",
-            resetCode: resetCode
+            message: "Reset code sent to your email"
         });
     } catch (error) {
         res.status(error.statusCode || 500).json({

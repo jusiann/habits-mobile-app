@@ -2,7 +2,6 @@ import {create} from "zustand";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export const useAuthStore = create((set,get) => ({
-    // Auth state
     user: null,
     token: null,
     refreshToken: null,
@@ -10,7 +9,7 @@ export const useAuthStore = create((set,get) => ({
     refreshTimer: null,
     isLoading: false,
 
-    // Register - Create a new user
+    // REGISTER USER
     register: async (email, username, fullname, password) => {
         set({ isLoading: true });
         try {
@@ -33,14 +32,14 @@ export const useAuthStore = create((set,get) => ({
                 const errorMessage = data.error || data.message || "Registration failed";
                 throw new Error(errorMessage);
             }
-            // Save to storage
+            // SAVE TO STORAGE
             await AsyncStorage.setItem("user", JSON.stringify(data.user));
             await AsyncStorage.setItem("token", data.accessToken);
             await AsyncStorage.setItem("refreshToken", data.refreshToken);
-            // Calculate token expiration time (15 minutes from now)
+            // TOKEN EXPIRES IN 15 MINUTES
             const expirationTime = Date.now() + (15 * 60 * 1000);
             await AsyncStorage.setItem("tokenExpirationTime", expirationTime.toString());
-            // Update state
+            // UPDATE STATE
             set({ 
                 user: data.user, 
                 token: data.accessToken, 
@@ -48,7 +47,7 @@ export const useAuthStore = create((set,get) => ({
                 tokenExpirationTime: expirationTime,
                 isLoading: false 
             });
-            // Start auto refresh
+            // START AUTO REFRESH
             get().startAutoRefresh();
             return {
                 success: true,
@@ -64,11 +63,11 @@ export const useAuthStore = create((set,get) => ({
         }
     },
 
-    // Login - Enter session with existing user
+    // LOGIN USER
     login: async (email, username, password) => {
         try {
             set({ isLoading: true });
-            // Sadece email veya username gönder
+            // SEND EMAIL OR USERNAME
             let body = {};
             if (email) {
                 body = { email, password };
@@ -87,16 +86,16 @@ export const useAuthStore = create((set,get) => ({
 
             if (!response.ok) throw new Error(data.message || "Login failed");
 
-            // Save to storage
+            // SAVE TO STORAGE
             await AsyncStorage.setItem("user", JSON.stringify(data.user));
             await AsyncStorage.setItem("token", data.accessToken);
             await AsyncStorage.setItem("refreshToken", data.refreshToken);
             
-            // Calculate token expiration time (15 minutes from now)
+            // TOKEN EXPIRES IN 15 MINUTES
             const expirationTime = Date.now() + (15 * 60 * 1000);
             await AsyncStorage.setItem("tokenExpirationTime", expirationTime.toString());
             
-            // Update state
+            // UPDATE STATE
             set({ 
                 user: data.user, 
                 token: data.accessToken, 
@@ -105,7 +104,7 @@ export const useAuthStore = create((set,get) => ({
                 isLoading: false 
             });
 
-            // Start auto refresh
+            // START AUTO REFRESH
             get().startAutoRefresh();
 
             return {
@@ -120,7 +119,7 @@ export const useAuthStore = create((set,get) => ({
         }
     },
 
-    // Refresh Access Token - Using refresh token
+    // REFRESH TOKEN
     refreshAccessToken: async () => {
         try {
             const { refreshToken } = get();
@@ -142,15 +141,15 @@ export const useAuthStore = create((set,get) => ({
                 throw new Error(data.message || "Token refresh failed");
             }
 
-            // Update tokens in storage
+            // UPDATE TOKENS IN STORAGE
             await AsyncStorage.setItem("token", data.accessToken);
             await AsyncStorage.setItem("refreshToken", data.refreshToken);
             
-            // Calculate new expiration time (15 minutes from now)
+            // TOKEN EXPIRES IN 15 MINUTES
             const expirationTime = Date.now() + (15 * 60 * 1000);
             await AsyncStorage.setItem("tokenExpirationTime", expirationTime.toString());
 
-            // Update state
+            // UPDATE STATE
             set({ 
                 token: data.accessToken, 
                 refreshToken: data.refreshToken,
@@ -170,23 +169,23 @@ export const useAuthStore = create((set,get) => ({
         }
     },
 
-    // Start Auto Refresh Timer (13 minutes before expiry)
+    // START AUTO REFRESH TIMER
     startAutoRefresh: () => {
         const { tokenExpirationTime, refreshTimer } = get();
         
-        // Clear existing timer
+        // CLEAR EXISTING TIMER
         if (refreshTimer)
             clearTimeout(refreshTimer);
         
         if (!tokenExpirationTime) 
             return;
 
-        // Calculate when to refresh (2 minutes before expiration)
+        // REFRESH 2 MINUTES BEFORE EXPIRY
         const currentTime = Date.now();
         const refreshTime = tokenExpirationTime - (2 * 60 * 1000);
         const timeUntilRefresh = refreshTime - currentTime;
 
-        // If token is already expired or will expire very soon, refresh immediately
+        // REFRESH IMMEDIATELY IF EXPIRED
         if (timeUntilRefresh <= 0) {
             get().refreshAccessToken().then((result) => {
                 if (result.success) {
@@ -198,7 +197,7 @@ export const useAuthStore = create((set,get) => ({
             return;
         }
 
-        // Set timer to refresh token
+        // SET REFRESH TIMER
         const timer = setTimeout(async () => {
             const result = await get().refreshAccessToken();
             if (result.success) {
@@ -211,7 +210,7 @@ export const useAuthStore = create((set,get) => ({
         set({ refreshTimer: timer }); 
     },
 
-    // Stop Auto Refresh Timer
+    // STOP AUTO REFRESH TIMER
     stopAutoRefresh: () => {
         const { refreshTimer } = get();
         if (refreshTimer) {
@@ -220,16 +219,16 @@ export const useAuthStore = create((set,get) => ({
         }
     },
 
-    // Logout user and clear all data
+    // LOGOUT USER
     logout: async () => {
         try {
-            // Stop auto refresh
+            // STOP AUTO REFRESH
             get().stopAutoRefresh();
             
             const token = get().token;
             if (token) {
                 try {
-                    // Blacklist token on server
+                    // BLACKLIST TOKEN ON SERVER
                     await fetch(`https://habits-mobile-app.onrender.com/api/auth/logout`, {
                         method: "POST",
                         headers: {
@@ -241,13 +240,13 @@ export const useAuthStore = create((set,get) => ({
                     console.warn("Server logout failed, but continuing with local logout:", serverError);
                 }
             }
-            // Clear local storage
+            // CLEAR LOCAL STORAGE
             await AsyncStorage.removeItem("user");
             await AsyncStorage.removeItem("token");
             await AsyncStorage.removeItem("refreshToken");
             await AsyncStorage.removeItem("tokenExpirationTime");
             
-            // Clear state
+            // CLEAR STATE
             set({ 
                 user: null, 
                 token: null, 
@@ -269,10 +268,10 @@ export const useAuthStore = create((set,get) => ({
         }
     },
     
-    // Check auth status on app start
+    // CHECK AUTH STATUS
     checkAuth: async () => {
         try {
-            // Load from storage
+            // LOAD FROM STORAGE
             const userJson = await AsyncStorage.getItem("user");
             const token = await AsyncStorage.getItem("token");
             const refreshToken = await AsyncStorage.getItem("refreshToken");
@@ -282,7 +281,7 @@ export const useAuthStore = create((set,get) => ({
             const tokenExpirationTime = tokenExpirationTimeStr ? parseInt(tokenExpirationTimeStr) : null;
             
             if (token && refreshToken) {
-                // Restore state
+                // RESTORE STATE
                 set({ 
                     user, 
                     token, 
@@ -290,7 +289,7 @@ export const useAuthStore = create((set,get) => ({
                     tokenExpirationTime
                 });
                 
-                // Check if token needs refresh
+                // CHECK IF TOKEN NEEDS REFRESH
                 const currentTime = Date.now();
                 const twoMinutes = 2 * 60 * 1000;
                 
@@ -310,7 +309,7 @@ export const useAuthStore = create((set,get) => ({
                     };
                 }
             } else {
-                // No tokens found
+                // NO TOKENS FOUND
                 set({ user: null, token: null, refreshToken: null, tokenExpirationTime: null });
                 return { 
                     success: false, 
@@ -326,13 +325,96 @@ export const useAuthStore = create((set,get) => ({
         }
     },
 
-    // Helper functions
+    // SEND RESET CODE
+    sendResetCode: async (email) => {
+        set({ isLoading: true });
+        try {
+            const response = await fetch(`https://habits-mobile-app.onrender.com/api/auth/forgot-password`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ email }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || "Failed to send reset code");
+            }
+
+            return {
+                success: true,
+                message: "Reset code sent to your email"
+            };
+        } catch (error) {
+            return {
+                success: false,
+                message: error.message || "Failed to send reset code"
+            };
+        } finally {
+            set({ isLoading: false });
+        }
+    },
+
+    // RESET PASSWORD
+    resetPassword: async (resetCode, newPassword) => {
+        set({ isLoading: true });
+        try {
+            // CHECK RESET CODE AND GET TEMPORARY TOKEN
+            const checkResponse = await fetch(`https://habits-mobile-app.onrender.com/api/auth/check-reset-token`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ resetCode }),
+            });
+
+            const checkData = await checkResponse.json();
+
+            if (!checkResponse.ok || !checkData.success) {
+                throw new Error(checkData.message || "Invalid reset code");
+            }
+
+            // USE TEMPORARY TOKEN TO RESET PASSWORD
+            const resetResponse = await fetch(`https://habits-mobile-app.onrender.com/api/auth/change-password`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ 
+                    password: newPassword, 
+                    temporaryToken: checkData.temporaryToken 
+                }),
+            });
+
+            const resetData = await resetResponse.json();
+
+            if (!resetResponse.ok || !resetData.success) {
+                throw new Error(resetData.message || "Failed to reset password");
+            }
+
+            return {
+                success: true,
+                message: "Password reset successfully"
+            };
+        } catch (error) {
+            return {
+                success: false,
+                message: error.message || "Failed to reset password"
+            };
+        } finally {
+            set({ isLoading: false });
+        }
+    },
+
+    // HELPER FUNCTIONS
     isAuthenticated: () => {
         const { token } = get();
         return !!token;
     },
 
-    // Smart API wrapper with auto refresh
+    // API WRAPPER WITH AUTO REFRESH
     makeAuthenticatedRequest: async (url, options = {}) => {
         const { token, tokenExpirationTime } = get();
         
@@ -340,7 +422,7 @@ export const useAuthStore = create((set,get) => ({
             throw new Error("No authentication token available");
         }
 
-        // Check token expiry and refresh if needed
+        // CHECK TOKEN EXPIRY
         const currentTime = Date.now();
         const twoMinutes = 2 * 60 * 1000;
         
@@ -352,7 +434,7 @@ export const useAuthStore = create((set,get) => ({
             }
         }
 
-        // Prepare request with auth header
+        // PREPARE REQUEST WITH AUTH HEADER
         const currentToken = get().token;
         const requestOptions = {
             ...options,
@@ -362,14 +444,14 @@ export const useAuthStore = create((set,get) => ({
             },
         };
 
-        // Auto add Content-Type for requests with body
+        // AUTO ADD CONTENT-TYPE
         if (options.body && !options.headers?.['Content-Type'] && !options.headers?.['content-type']) {
             requestOptions.headers["Content-Type"] = "application/json";
         }
 
         const response = await fetch(url, requestOptions);
 
-        // Handle 401 with retry mechanism
+        // HANDLE 401 WITH RETRY
         if (response.status === 401) {
             const refreshResult = await get().refreshAccessToken();
             if (refreshResult.success) {

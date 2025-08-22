@@ -7,8 +7,7 @@ import {
     checkResetToken,
     forgotPassword,
     changePassword,
-    changePasswordAuth,
-    editProfile,
+    updateProfile,
     logout
 } from '../controllers/auth.controller.js';
 
@@ -21,8 +20,7 @@ router.post('/forgot-password', forgotPassword);
 router.post('/check-reset-token', checkResetToken);
 router.post('/change-password', changePassword);
 
-router.post('/change-password-auth', verifyToken, changePasswordAuth);
-router.post('/edit-profile', verifyToken, editProfile);
+router.post('/edit-profile', verifyToken, updateProfile);
 router.post('/logout', verifyToken, logout);
 
 export default router; 

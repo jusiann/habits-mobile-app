@@ -9,7 +9,7 @@ export default function Profile() {
   const { clearStore } = useHabitStore();
   const router = useRouter();
 
-  const handleLogout = async () => {
+  const logoutAction = async () => {
     try {
       clearStore();
       const result = await logout();
@@ -28,7 +28,7 @@ export default function Profile() {
   return (
     <View>
       <Text>Profile</Text>
-      <TouchableOpacity onPress={handleLogout}>
+      <TouchableOpacity onPress={logoutAction}>
         <Text>Logout</Text>
       </TouchableOpacity>            
     </View>
