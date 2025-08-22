@@ -308,53 +308,23 @@ export const changePassword = async (req, res) => {
     }
 };
 
-export const changePasswordAuth = async (req, res) => {
+export const updateProfile = async (req, res) => {
     try {
-        const {currentPassword, newPassword} = req.body;
+        const { fullname, gender, height, weight, profilePicture, currentPassword, newPassword } = req.body;
         const userId = req.user._id;
         
-        if (!currentPassword || !newPassword)
-            throw new ApiError("Current password and new password are required.", 400);
-
+        if (!fullname && !gender && !height && !weight && !profilePicture && !currentPassword && !newPassword)
+            throw new ApiError("At least one field (fullname, gender, height, weight, profilePicture, currentPassword, newPassword) is required.", 400);
+        
         const user = await User.findById(userId);
         if (!user)
             throw new ApiError("User not found.", 404);
-
-        const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
-        if (!isCurrentPasswordValid)
-            throw new ApiError("Current password is incorrect.", 401);
-
-        const salt = await bcrypt.genSalt(10);
-        const hashedNewPassword = await bcrypt.hash(newPassword, salt);
-
-        user.password = hashedNewPassword;
-        await user.save();
-
-        res.status(200).json({
-            success: true,
-            message: "Password changed successfully"
-        });
-    } catch (error) {
-        res.status(error.statusCode || 500).json({
-            success: false,
-            message: error.message || "Password change failed"
-        });
-    }
-};
-
-export const editProfile = async (req, res) => {
-    try {
-        const {fullname, gender, height, weight, profilePicture} = req.body;
-        const userId = req.user._id;
         
-        if (!fullname && !gender && !height && !weight && !profilePicture)
-            throw new ApiError("At least one field (fullname, gender, height, weight, profilePicture) is required.", 400);
-
-        const user = await User.findById(userId);
-        if (!user)
-            throw new ApiError("User not found.", 404);
+        if ((currentPassword && !newPassword) || (!currentPassword && newPassword))
+            throw new ApiError("Both current password and new password are required for password change.", 400);
 
         let updateData = {};
+        let passwordChanged = false;
         
         if (fullname) {
             if (fullname.length < 2)
@@ -382,6 +352,17 @@ export const editProfile = async (req, res) => {
         
         if (profilePicture)
             updateData.profilePicture = profilePicture;
+
+        if (currentPassword && newPassword) {
+            const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
+            if (!isCurrentPasswordValid)
+                throw new ApiError("Current password is incorrect.", 401);
+
+            const salt = await bcrypt.genSalt(10);
+            const hashedNewPassword = await bcrypt.hash(newPassword, salt);
+            updateData.password = hashedNewPassword;
+            passwordChanged = true;
+        }
         
         const updatedUser = await User.findByIdAndUpdate(
             userId,
@@ -389,9 +370,16 @@ export const editProfile = async (req, res) => {
             { new: true, runValidators: true }
         );
 
+        let message;
+        if (passwordChanged)
+            message = "Password updated successfully";
+        else
+            message = "Profile updated successfully";
+        
+
         res.status(200).json({
             success: true,
-            message: "Profile updated successfully",
+            message: message,
             user: {
                 _id: updatedUser._id,
                 username: updatedUser.username,

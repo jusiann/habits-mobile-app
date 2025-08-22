@@ -22,6 +22,8 @@ export default function Create() {
   const [selectedUnit, setSelectedUnit] = useState('');
   const [showIconModal, setShowIconModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [hasChanges] = useState(false);
+
 
   useEffect(() => {
     if (token && presets.length === 0) {
@@ -347,7 +349,20 @@ export default function Create() {
         <View style={styles.buttonContainer}>
           <TouchableOpacity
             style={[styles.button, { flex: 1, marginRight: 8, marginTop: 0 }]}
-            onPress={() => router.back()}
+            onPress={() => {
+              if (hasChanges) {
+                  Alert.alert(
+                    'Unsaved Changes',
+                    'You have unsaved changes. Are you sure you want to leave?',
+                    [
+                      { text: 'Stay', style: 'cancel' },
+                      { text: 'Leave', onPress: () => router.back() }
+                    ]
+                  )
+                } else {
+                  router.back()
+                }
+            }}
           >
             <Text style={styles.buttonText}>Cancel</Text>
           </TouchableOpacity>

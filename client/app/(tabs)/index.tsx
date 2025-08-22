@@ -12,6 +12,12 @@ export default function Home() {
   const { habits, fetchHabits, incrementHabit, isLoading } = useHabitStore();
   const [pressedButton, setPressedButton] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (token) {
+      fetchHabits();
+    }
+  }, [token, fetchHabits]);
+
   const getGreeting = () => {
     const currentHour = new Date().getHours();
     if (currentHour >= 6 && currentHour < 12)
@@ -23,12 +29,6 @@ export default function Home() {
     else
       return "Good Night";
   };
-
-  useEffect(() => {
-    if (token) {
-      fetchHabits();
-    }
-  }, [token, fetchHabits]);
 
   return (
     <View style={homeStyles.container}>
@@ -161,7 +161,6 @@ export default function Home() {
             })
           )}
       </ScrollView>
-
     </View>
   );
 }
