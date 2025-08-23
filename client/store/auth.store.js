@@ -26,7 +26,13 @@ export const useAuthStore = create((set,get) => ({
                 }),
             });
 
-            const data = await response.json();
+            let data;
+            try {
+                data = await response.json();
+            } catch (parseError) {
+                console.error("JSON parse error:", parseError);
+                throw new Error("Invalid server response format");
+            }
 
             if(!response.ok) {
                 const errorMessage = data.error || data.message || "Registration failed";
@@ -82,9 +88,15 @@ export const useAuthStore = create((set,get) => ({
                 body: JSON.stringify(body),
             });
 
-            const data = await response.json();
+            let data;
+            try {
+                data = await response.json();
+            } catch (parseError) {
+                console.error("JSON parse error:", parseError);
+                throw new Error("Invalid server response format");
+            }
 
-            if (!response.ok) throw new Error(data.message || "Login failed");
+            if (!response.ok) throw new Error(data.message || data.error || "Login failed");
 
             // SAVE TO STORAGE
             await AsyncStorage.setItem("user", JSON.stringify(data.user));
@@ -135,10 +147,16 @@ export const useAuthStore = create((set,get) => ({
                 body: JSON.stringify({ refreshToken }),
             });
 
-            const data = await response.json();
+            let data;
+            try {
+                data = await response.json();
+            } catch (parseError) {
+                console.error("JSON parse error:", parseError);
+                throw new Error("Invalid server response format");
+            }
 
             if (!response.ok) {
-                throw new Error(data.message || "Token refresh failed");
+                throw new Error(data.message || data.error || "Token refresh failed");
             }
 
             // UPDATE TOKENS IN STORAGE
@@ -331,10 +349,16 @@ export const useAuthStore = create((set,get) => ({
                 body: JSON.stringify({ email }),
             });
 
-            const data = await response.json();
+            let data;
+            try {
+                data = await response.json();
+            } catch (parseError) {
+                console.error("JSON parse error:", parseError);
+                throw new Error("Invalid server response format");
+            }
 
             if (!response.ok) {
-                throw new Error(data.message || "Failed to send reset code");
+                throw new Error(data.message || data.error || "Failed to send reset code");
             }
 
             return {
@@ -364,10 +388,16 @@ export const useAuthStore = create((set,get) => ({
                 body: JSON.stringify({ resetCode }),
             });
 
-            const checkData = await checkResponse.json();
+            let checkData;
+            try {
+                checkData = await checkResponse.json();
+            } catch (parseError) {
+                console.error("JSON parse error:", parseError);
+                throw new Error("Invalid server response format");
+            }
 
             if (!checkResponse.ok || !checkData.success) {
-                throw new Error(checkData.message || "Invalid reset code");
+                throw new Error(checkData.message || checkData.error || "Invalid reset code");
             }
 
             // USE TEMPORARY TOKEN TO RESET PASSWORD
@@ -382,10 +412,16 @@ export const useAuthStore = create((set,get) => ({
                 }),
             });
 
-            const resetData = await resetResponse.json();
+            let resetData;
+            try {
+                resetData = await resetResponse.json();
+            } catch (parseError) {
+                console.error("JSON parse error:", parseError);
+                throw new Error("Invalid server response format");
+            }
 
             if (!resetResponse.ok || !resetData.success) {
-                throw new Error(resetData.message || "Failed to reset password");
+                throw new Error(resetData.message || resetData.error || "Failed to reset password");
             }
 
             return {
@@ -433,37 +469,41 @@ export const useAuthStore = create((set,get) => ({
         const requestOptions = {
             ...options,
             headers: {
+                "Content-Type": "application/json",
                 ...options.headers,
                 "Authorization": `Bearer ${currentToken}`,
             },
         };
 
-        // AUTO ADD CONTENT-TYPE
-        if (options.body && !options.headers?.['Content-Type'] && !options.headers?.['content-type']) {
-            requestOptions.headers["Content-Type"] = "application/json";
-        }
+        try {
+            const response = await fetch(url, requestOptions);
 
-        const response = await fetch(url, requestOptions);
-
-        // HANDLE 401 WITH RETRY
-        if (response.status === 401) {
-            const refreshResult = await get().refreshAccessToken();
-            if (refreshResult.success) {
-                const newToken = get().token;
-                const retryOptions = {
-                    ...requestOptions,
-                    headers: {
-                        ...requestOptions.headers,
-                        "Authorization": `Bearer ${newToken}`,
-                    },
-                };
-                return await fetch(url, retryOptions);
-            } else {
-                await get().logout();
-                throw new Error("Session expired. Please log in again.");
+            // HANDLE 401 WITH RETRY
+            if (response.status === 401) {
+                const refreshResult = await get().refreshAccessToken();
+                if (refreshResult.success) {
+                    const newToken = get().token;
+                    const retryOptions = {
+                        ...requestOptions,
+                        headers: {
+                            ...requestOptions.headers,
+                            "Authorization": `Bearer ${newToken}`,
+                        },
+                    };
+                    return await fetch(url, retryOptions);
+                } else {
+                    await get().logout();
+                    throw new Error("Session expired. Please log in again.");
+                }
             }
+            return response;
+        } catch (error) {
+            console.error("Network request failed:", error);
+            if (error.message.includes("Network request failed") || error.message.includes("fetch")) {
+                throw new Error("Network connection failed. Please check your internet connection.");
+            }
+            throw error;
         }
-        return response;
     },
 
     // UPDATE PROFILE
@@ -478,34 +518,34 @@ export const useAuthStore = create((set,get) => ({
                 }
             );
 
-            // CHECK IF RESPONSE IS JSON
-            const contentType = response.headers.get("content-type");
-            if (!contentType || !contentType.includes("application/json")) {
-                const text = await response.text();
-                console.error("Non-JSON response:", text);
-                throw new Error("Server returned non-JSON response. Please try again.");
+            let data;
+            try {
+                data = await response.json();
+            } catch (parseError) {
+                console.error("JSON parse error:", parseError);
+                throw new Error("Invalid server response format");
             }
 
-            const data = await response.json();
-
             if (!response.ok) {
-                throw new Error(data.message || "Profile update failed");
+                throw new Error(data.message || data.error || "Profile update failed");
             }
 
             // UPDATE USER IN STORAGE AND STATE
-            await AsyncStorage.setItem("user", JSON.stringify(data.user));
-            set({ 
-                user: data.user,
-                isLoading: false 
-            });
+            if (data.user) {
+                await AsyncStorage.setItem("user", JSON.stringify(data.user));
+                set({ 
+                    user: data.user,
+                    isLoading: false 
+                });
+            }
 
             return {
                 success: true,
                 message: data.message || "Profile updated successfully"
             };
         } catch (error) {
-            set({ isLoading: false });
             console.error("Update profile error:", error);
+            set({ isLoading: false });
             return {
                 success: false,
                 message: error.message || "Profile update failed"
@@ -530,18 +570,16 @@ export const useAuthStore = create((set,get) => ({
                 }
             );
 
-            // CHECK IF RESPONSE IS JSON
-            const contentType = response.headers.get("content-type");
-            if (!contentType || !contentType.includes("application/json")) {
-                const text = await response.text();
-                console.error("Non-JSON response:", text);
-                throw new Error("Server returned non-JSON response. Please try again.");
+            let data;
+            try {
+                data = await response.json();
+            } catch (parseError) {
+                console.error("JSON parse error:", parseError);
+                throw new Error("Invalid server response format");
             }
 
-            const data = await response.json();
-
             if (!response.ok) {
-                throw new Error(data.message || "Password change failed");
+                throw new Error(data.message || data.error || "Password change failed");
             }
 
             // UPDATE USER IN STORAGE AND STATE IF USER DATA IS RETURNED
@@ -550,15 +588,13 @@ export const useAuthStore = create((set,get) => ({
                 set({ user: data.user });
             }
 
-            set({ isLoading: false });
-
             return {
                 success: true,
                 message: data.message || "Password changed successfully"
             };
         } catch (error) {
-            set({ isLoading: false });
             console.error("Change password error:", error);
+            set({ isLoading: false });
             return {
                 success: false,
                 message: error.message || "Password change failed"
