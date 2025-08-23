@@ -1,5 +1,80 @@
-.history
+# IDE AND EDITOR FILES
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
 
+# OS FILES
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# LOG FILES
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+logs/
+
+# RUNTIME DATA
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# COVERAGE DIRECTORY USED BY TOOLS LIKE ISTANBUL
+coverage/
+.nyc_output
+
+# DEPENDENCY DIRECTORIES
+node_modules/
+jspm_packages/
+
+# ENVIRONMENT VARIABLES
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# BUILD OUTPUTS
+build/
+dist/
+out/
+
+# CACHE DIRECTORIES
+.cache/
+.parcel-cache/
+.next/
+.nuxt/
+
+# TEMPORARY FOLDERS
+tmp/
+temp/
+
+# HISTORY
+.history/
+
+# DOCUMENTATION (IF AUTO GENERATED)
+# docs/
+
+# TEST COVERAGE
+.coverage/
+
+# BACKUP FILES
+*.bak
+*.backup
+
+# DATABASE
+*.sqlite
+*.db
+
+# POSTMAN COLLECTIONS (IF CONTAINS SENSITIVE DATA)
 .auth-request-body.md
 .habit-postman-example.md
 .mobile-api-mapping.md

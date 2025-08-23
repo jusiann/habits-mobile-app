@@ -288,35 +288,28 @@ export const updateHabit = async (req, res) => {
             if (targetAmount <= 0)
                 throw new ApiError("Target amount must be greater than 0.", 400);
             
-            // Target amount değişti mi kontrol et
-            if (habit.targetAmount !== targetAmount) {
+            if (habit.targetAmount !== targetAmount)
                 shouldResetProgress = true;
-            }
             updateData.targetAmount = targetAmount;
         }
         
         if (incrementAmount !== undefined) {
             if (incrementAmount <= 0)
                 throw new ApiError("Increment amount must be greater than 0.", 400);
-            
-            // Increment amount değişti mi kontrol et  
-            if (habit.incrementAmount !== incrementAmount) {
+            if (habit.incrementAmount !== incrementAmount)
                 shouldResetProgress = true;
-            }
             updateData.incrementAmount = incrementAmount;
         }
         
         if (unit !== undefined) {
             if (habit.type === 'default' && habit.availableUnits && habit.availableUnits.length > 0) {
-                if (!habit.availableUnits.includes(unit)) {
+                if (!habit.availableUnits.includes(unit)) 
                     throw new ApiError(`Invalid unit '${unit}' for this preset habit. Available units: ${habit.availableUnits.join(', ')}`, 400);
-                }
+                
             }
-            
-            // Unit değişti mi kontrol et
-            if (habit.unit !== unit) {
+            if (habit.unit !== unit)
                 shouldResetProgress = true;
-            }
+
             updateData.unit = unit;
         }
 
@@ -331,9 +324,8 @@ export const updateHabit = async (req, res) => {
         }
 
         if (name !== undefined) {
-            if (habit.type === 'default') {
+            if (habit.type === 'default')
                 throw new ApiError("Name cannot be changed for preset habits.", 400);
-            }
             
             const existingHabit = await Habit.findOne({ 
                 userId, 
@@ -341,24 +333,24 @@ export const updateHabit = async (req, res) => {
                 isActive: true,
                 _id: { $ne: habitId }
             });
+
             if (existingHabit)
                 throw new ApiError("A habit with this name already exists.", 400);
-            
             updateData.name = name;
         }
 
-        // Eğer unit, targetAmount veya incrementAmount değiştiyse progress'i sıfırla
         if (shouldResetProgress) {
             const today = new Date();
             today.setHours(0, 0, 0, 0);
-            const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
+            const todayEnd = new Date(today);
+            todayEnd.setHours(23, 59, 59, 999);
             
             await HabitLog.deleteMany({
                 habitId: habitId,
                 userId: userId,
                 date: {
                     $gte: today,
-                    $lt: tomorrow
+                    $lte: todayEnd
                 }
             });
         }
@@ -402,7 +394,7 @@ export const deleteHabit = async (req, res) => {
 
 
         await Habit.deleteOne({ _id: habitId, userId });
-        //opsiyonel
+        //opsiyonel  
         await HabitLog.deleteMany({ habitId, userId });
 
         res.status(200).json({

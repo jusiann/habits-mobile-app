@@ -4,7 +4,8 @@ import styles from '../../assets/styles/signup.styles';
 import COLORS from "../../constants/colors";
 import { Ionicons } from '@expo/vector-icons';
 import { Link } from "expo-router";
-import { useAuthStore } from '@/store/auth.store';
+import { useAuthStore } from '../../store/auth.store';
+import SafeScreen from '../../constants/SafeScreen';
 
 export default function Signup() {
   const [username, setUsername] = React.useState("");
@@ -17,67 +18,74 @@ export default function Signup() {
   const { isLoading, register } = useAuthStore();
 
   const signupAction = async () => {
-    // Frontend validation
-    if (!username || !email || !fullName || !password) {
-      Alert.alert(
-        "Missing Information",
-        "Username, fullname, email and password are required.",
-        [{ text: "OK" }]
-      );
-      return;
-    }
-
-    if (!confirmPassword) {
-      Alert.alert(
-        "Missing Information",
-        "Please confirm your password.",
-        [{ text: "OK" }]
-      );
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      Alert.alert(
-        "Password Mismatch",
-        "Passwords do not match. Please try again.",
-        [{ text: "OK" }]
-      );
-      return;
-    }
-
-    // Email format validation
-    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
-    if (!emailRegex.test(email)) {
-      Alert.alert(
-        "Invalid Email",
-        "Please enter a valid email address.",
-        [{ text: "OK" }]
-      );
-      return;
-    }
-
     try {
       const result = await register(email, username, fullName, password);
-      
-      if (!result.success) {
-        // Backend'den gelen hata mesajını doğrudan kullan
+      if (!username || !email || !fullName || !password) {
         Alert.alert(
-          "Sign Up Failed",
-          result.message || "Registration failed",
+          "Missing Information",
+          "Username, full name, email and password are required.",
           [{ text: "OK" }]
         );
         return;
       }
 
-      // Başarılı kayıt
+      if (!confirmPassword) {
+        Alert.alert(
+          "Missing Information",
+          "Please confirm your password.",
+          [{ text: "OK" }]
+        );
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        Alert.alert(
+          "Password Mismatch",
+          "Passwords do not match. Please try again.",
+          [{ text: "OK" }]
+        );
+        return;
+      }
+
+      const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+      if (!emailRegex.test(email)) {
+        Alert.alert(
+          "Invalid Email",
+          "Please enter a valid email address.",
+          [{ text: "OK" }]
+        );
+        return;
+      }
+      
+      if (!result.success) {
+        let alertTitle = "Sign Up Failed";
+        let alertMessage = result.message || "Registration failed";
+        
+        if (result.message?.toLowerCase().includes("email")) {
+          alertTitle = "Email Already Exists";
+          alertMessage = "This email address is already registered.";
+        }
+        
+        if (result.message?.toLowerCase().includes("username")) {
+          alertTitle = "Username Already Exists";
+          alertMessage = "This username is already taken.";
+        }
+        
+        Alert.alert(
+          alertTitle,
+          alertMessage,
+          [{ text: "OK" }]
+        );
+        return;
+      }
+
       Alert.alert(
-        "Success",
+        "Sign Up Successful",
         "Account created successfully!",
         [{ text: "OK" }]
       );
       
     } catch (error: any) {
-      console.error("Registration error:", error);
       Alert.alert(
         "Connection Error",
         "Failed to connect to server. Please check your internet connection and try again.",
@@ -87,25 +95,29 @@ export default function Signup() {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={{flex:1}}
-      behavior={Platform.OS === "android" ? "padding" : "height"}
-    >
-      <View style={styles.container}>
+    <SafeScreen>
+      <KeyboardAvoidingView
+        style={{flex:1}}
+        behavior={Platform.OS === "android" ? "padding" : "height"}
+      >
+        <View style={styles.container}>
         <View style={styles.card}>
+
           {/* HEADER */}
           <View style={styles.header}>
             <Text style={styles.title}>Create an Account</Text>
             <Text style={styles.subtitle}>Sign up to get started</Text>
           </View>
+
           {/* FORM */}
           <View style={styles.formContainer}>
+
             {/* USERNAME */}
             <View style={styles.inputGroup}>
               {/* <Text style={styles.label}>Username</Text> */}
               <View style={styles.inputContainer}>
                 <Ionicons
-                  name="person-outline"
+                  name="at-outline"
                   size={24}
                   color={COLORS.primary}
                   style={styles.inputIcon}
@@ -120,6 +132,7 @@ export default function Signup() {
                 />
               </View>
             </View>
+
             {/* EMAIL */}
             <View style={styles.inputGroup}>
               {/* <Text style={styles.label}>Email</Text> */}
@@ -140,6 +153,7 @@ export default function Signup() {
                 />
               </View>
             </View>
+
             {/* FULL NAME */}
             <View style={styles.inputGroup}>
               {/* <Text style={styles.label}>Full Name</Text> */}
@@ -160,10 +174,12 @@ export default function Signup() {
                 />
               </View>
             </View>
+
             {/* PASSWORD */}
             <View style={styles.inputGroup}>
               {/* <Text style={styles.label}>Password</Text> */}
               <View style={styles.inputContainer}>
+
                 {/* LEFT ICON */}
                 <Ionicons
                   name="lock-closed-outline"
@@ -171,6 +187,7 @@ export default function Signup() {
                   color={COLORS.primary}
                   style={styles.inputIcon}
                 />
+
                 {/* INPUT */}
                 <TextInput
                   style={styles.input}
@@ -192,10 +209,12 @@ export default function Signup() {
                 </TouchableOpacity>
               </View>
             </View>
+
             {/* CONFIRM PASSWORD */}
             <View style={styles.inputGroup}>
               {/* <Text style={styles.label}>Confirm Password</Text> */}
               <View style={styles.inputContainer}>
+
                 {/* LEFT ICON */}
                 <Ionicons
                   name="lock-closed-outline"
@@ -203,6 +222,7 @@ export default function Signup() {
                   color={COLORS.primary}
                   style={styles.inputIcon}
                 />
+
                 {/* INPUT */}
                 <TextInput
                   style={styles.input}
@@ -224,6 +244,7 @@ export default function Signup() {
                 </TouchableOpacity>
               </View>
             </View>
+
             {/* SIGNUP BUTTON */}
             <TouchableOpacity style={styles.button} onPress={signupAction} disabled={isLoading}>
               {
@@ -234,6 +255,7 @@ export default function Signup() {
                 )
               }
             </TouchableOpacity>
+
             {/* SIGN IN LINK */}
             <View style={styles.footer}>
               <Text style={styles.footerText}>Already have an account?</Text>
@@ -243,10 +265,11 @@ export default function Signup() {
                 </TouchableOpacity>
               </Link>
             </View>
+            
           </View>
         </View>
-      </View>
-
-    </KeyboardAvoidingView>
+        </View>
+      </KeyboardAvoidingView>
+    </SafeScreen>
   );
 }

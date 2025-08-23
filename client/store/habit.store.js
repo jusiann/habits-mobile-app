@@ -6,19 +6,38 @@ export const useHabitStore = create((set, get) => ({
   presets: [],
   isLoading: false,
   error: null,
+  lastFetchDate: null,
 
+  // MAKE AUTHENTICATED REQUEST
+  makeRequest: async (url, options = {}) => {
+    return await useAuthStore.getState().makeAuthenticatedRequest(url, options);
+  },
+
+  // CHECK AND RESET DAILY
+  checkAndResetDaily: () => {
+    const now = new Date();
+    const today = now.toDateString();
+    const lastFetch = get().lastFetchDate;
+    
+    if (lastFetch && lastFetch !== today) {
+      console.log('New day detected, clearing habits cache');
+      // CLEAR HABITS FOR NEW DAY
+      set({ habits: [], lastFetchDate: today });
+      return true; 
+    } else if (!lastFetch) {
+      // SET INITIAL DATE
+      set({ lastFetchDate: today });
+    }
+    return false;
+  },
+
+  // FETCH PRESETS
   fetchPresets: async () => {
     try {
       set({ isLoading: true, error: null });
       
-      const authHeaders = useAuthStore.getState().getAuthHeader();
-      
-      const response = await fetch('https://habits-mobile-app.onrender.com/api/habits/presets', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          ...authHeaders
-        }
+      const response = await get().makeRequest('https://habits-mobile-app.onrender.com/api/habits/presets', {
+        method: 'GET'
       });
 
       const data = await response.json();
@@ -26,6 +45,7 @@ export const useHabitStore = create((set, get) => ({
       if (response.ok) {
         const cleanPresets = data.data.presets.health || [];
         
+        // UPDATE STATE WITH PRESETS
         set({ 
           presets: cleanPresets, 
           isLoading: false 
@@ -41,28 +61,31 @@ export const useHabitStore = create((set, get) => ({
     }
   },
 
+  // FETCH HABITS
   fetchHabits: async () => {
     try {
+      // CHECK FOR NEW DAY
+      const isNewDay = get().checkAndResetDaily();
       set({ isLoading: true, error: null });
       
-      const authHeaders = useAuthStore.getState().getAuthHeader();
-      
-      const response = await fetch('https://habits-mobile-app.onrender.com/api/habits/dashboard', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          ...authHeaders
-        }
+      const response = await get().makeRequest('https://habits-mobile-app.onrender.com/api/habits/dashboard', {
+        method: 'GET'
       });
 
       const data = await response.json();
 
       if (response.ok) {
         const cleanHabits = data.data.habits || [];
+        // UPDATE STATE WITH HABITS
         set({ 
           habits: cleanHabits, 
           isLoading: false 
         });
+        
+        if (isNewDay) {
+          console.log('Habits refreshed for new day');
+        }
+        
         return { success: true, data: data.data };
       } else {
         set({ error: data.message, isLoading: false });
@@ -74,20 +97,15 @@ export const useHabitStore = create((set, get) => ({
     }
   },
 
+  // CREATE HABIT
   createHabit: async (habitData) => {
     try {
       set({ isLoading: true, error: null });
       
-      const authHeaders = useAuthStore.getState().getAuthHeader();
-      
       console.log('Creating habit with data:', habitData);
       
-      const response = await fetch('https://habits-mobile-app.onrender.com/api/habits/add', {
+      const response = await get().makeRequest('https://habits-mobile-app.onrender.com/api/habits/add', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...authHeaders
-        },
         body: JSON.stringify(habitData)
       });
 
@@ -97,6 +115,7 @@ export const useHabitStore = create((set, get) => ({
       console.log('Response data:', data);
 
       if (response.ok) {
+        // REFRESH HABITS LIST
         await get().fetchHabits();
         set({ isLoading: false });
         return { success: true, data: data.data };
@@ -111,21 +130,17 @@ export const useHabitStore = create((set, get) => ({
     }
   },
 
+  // INCREMENT HABIT
   incrementHabit: async (habitId) => {
     try {
-      const authHeaders = useAuthStore.getState().getAuthHeader();
-      
-      const response = await fetch(`https://habits-mobile-app.onrender.com/api/habits/${habitId}/increment`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...authHeaders
-        }
+      const response = await get().makeRequest(`https://habits-mobile-app.onrender.com/api/habits/${habitId}/increment`, {
+        method: 'POST'
       });
 
       const data = await response.json();
 
       if (response.ok) {
+        // REFRESH HABITS LIST
         await get().fetchHabits();
         return { success: true, data: data.data };
       } else {
@@ -136,29 +151,20 @@ export const useHabitStore = create((set, get) => ({
     }
   },
 
+  // UPDATE HABIT
   updateHabit: async (habitId, updateData) => {
     try {
       set({ isLoading: true, error: null });
-      
-      const authHeaders = useAuthStore.getState().getAuthHeader();
-      
-      console.log('Updating habit with data:', updateData);
-      
-      const response = await fetch(`https://habits-mobile-app.onrender.com/api/habits/${habitId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          ...authHeaders
-        },
+
+      const response = await get().makeRequest(`https://habits-mobile-app.onrender.com/api/habits/${habitId}`, {
+        method: 'PATCH',
         body: JSON.stringify(updateData)
       });
 
-      console.log('Response status:', response.status);
-      
       const data = await response.json();
-      console.log('Response data:', data);
 
       if (response.ok) {
+        // REFRESH HABITS LIST
         await get().fetchHabits();
         set({ isLoading: false });
         return { success: true, data: data.data };
@@ -173,12 +179,14 @@ export const useHabitStore = create((set, get) => ({
     }
   },
 
+  // CLEAR STORE
   clearStore: () => {
     set({
       habits: [],
       presets: [],
       isLoading: false,
-      error: null
+      error: null,
+      lastFetchDate: null
     });
   }
 }));

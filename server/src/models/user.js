@@ -5,11 +5,13 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
         unique: true,
+        lowercase: true,
     },
     username: {
         type: String,
         required: true,
         unique: true,
+        lowercase: true,
     },
     fullname: {
         type: String,
@@ -22,6 +24,10 @@ const userSchema = new mongoose.Schema({
     },
     gender:{
         type: String
+    },
+    age: {
+        type: Number,
+        default: 0,
     },
     height: {
         type: Number,

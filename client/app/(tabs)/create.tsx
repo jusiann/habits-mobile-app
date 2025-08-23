@@ -1,27 +1,30 @@
-import { View, Text, TouchableOpacity, ScrollView, TextInput, Alert, Modal } from 'react-native'
+import {View, Text, TouchableOpacity, ScrollView, TextInput, Alert, Modal, KeyboardAvoidingView, Platform} from 'react-native'
 import React, { useState, useEffect } from 'react'
-import { useRouter } from 'expo-router'
-import { Ionicons } from '@expo/vector-icons'
+import {useRouter, useFocusEffect} from 'expo-router'
+import {Ionicons} from '@expo/vector-icons'
 import COLORS from '../../constants/colors'
 import styles from '../../assets/styles/create.styles'
-import { useAuthStore } from '../../store/auth.store'
-import { useHabitStore } from '@/store/habit.store'
-import { CUSTOM_ICONS } from '../../constants/customIcons'
+import {useAuthStore} from '../../store/auth.store'
+import {useHabitStore} from '../../store/habit.store'
+import {CUSTOM_ICONS} from '../../constants/customIcons'
+import SafeScreen from '../../constants/SafeScreen'
 
 export default function Create() {
-  const router = useRouter()
-  const {token} = useAuthStore()
-  const {presets, fetchPresets, createHabit, isLoading: storeLoading, error: storeError} = useHabitStore()
-  const [habitType, setHabitType] = useState('default')
-  const [selectedHabit, setSelectedHabit] = useState<any>(null)
-  const [customName, setCustomName] = useState('')
-  const [customIcon, setCustomIcon] = useState('heart-outline')
-  const [customUnit, setCustomUnit] = useState('')
-  const [targetAmount, setTargetAmount] = useState('')
-  const [incrementAmount, setIncrementAmount] = useState('')
-  const [selectedUnit, setSelectedUnit] = useState('')
-  const [showIconModal, setShowIconModal] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const router = useRouter();
+  const {token} = useAuthStore();
+  const {presets, fetchPresets, createHabit, isLoading: storeLoading, error: storeError} = useHabitStore();
+  const [habitType, setHabitType] = useState('default');
+  const [selectedHabit, setSelectedHabit] = useState<any>(null) ;
+  const [customName, setCustomName] = useState('');
+  const [customIcon, setCustomIcon] = useState('heart-outline') 
+  const [customUnit, setCustomUnit] = useState('') 
+  const [targetAmount, setTargetAmount] = useState('');
+  const [incrementAmount, setIncrementAmount] = useState(''); 
+  const [selectedUnit, setSelectedUnit] = useState('');
+  const [showIconModal, setShowIconModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasChanges] = useState(false);
+
 
   useEffect(() => {
     if (token && presets.length === 0) {
@@ -36,6 +39,21 @@ export default function Create() {
       setSelectedUnit(selectedHabit.unit)
     }
   }, [selectedHabit, habitType])
+
+  useFocusEffect(
+    React.useCallback(() => {
+      setHabitType('default');
+      setSelectedHabit(null);
+      setCustomName('');
+      setCustomIcon('heart-outline');
+      setCustomUnit('');
+      setTargetAmount('');
+      setIncrementAmount('');
+      setSelectedUnit('');
+      setShowIconModal(false);
+      setIsLoading(false);
+    }, [])
+  );
 
   const createHabitAction = async () => {
     try {
@@ -78,7 +96,6 @@ export default function Create() {
         }
       }
 
-      // Validation for numeric values
       if (isNaN(parseInt(targetAmount)) || parseInt(targetAmount) <= 0) {
         Alert.alert('Invalid Input', 'Target amount must be a positive number.')
         return;
@@ -90,126 +107,126 @@ export default function Create() {
       }
 
       const result = await createHabit(habitData)
-
-      console.log('Create habit result:', result);
-
       if (result.success) {
-        Alert.alert('Success', 'Habit created successfully!', [
-          { 
+        Alert.alert('Success', 'Habit created successfully!', [{ 
             text: 'OK', 
             onPress: () => router.push('/(tabs)') 
           }
         ]);
       } else {
-        // Backend'den gelen hata mesajını doğrudan kullan
         Alert.alert('Habit Creation Failed', result.message || 'Failed to create habit')
       }
     } catch (error: any) {
-      console.error('HandleCreateHabit error:', error);
       Alert.alert('Connection Error', 'Failed to connect to server. Please check your internet connection and try again.')
     } finally {
       setIsLoading(false)
     }
-  }
+  };
 
   const renderDefaultHabits = () => (
     <View style={styles.formGroup}>
       <Text style={styles.label}>Choose a Default Habit</Text>
-      {storeLoading ? (
-        <Text style={styles.label}>Loading presets...</Text>
-      ) : storeError ? (
-        <View>
-          <Text style={[styles.label, { color: 'red' }]}>Failed to load presets: {storeError}</Text>
-          <TouchableOpacity 
-            style={styles.button}
-            onPress={() => token && fetchPresets()}
-          >
-            <Text style={styles.buttonText}>Retry</Text>
-          </TouchableOpacity>
-        </View>
-      ) : presets.length === 0 ? (
-        <Text style={styles.label}>No presets available</Text>
-      ) : (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{marginVertical: 10}}>
-          {presets.map((habit: any, index: number) => (
-            <TouchableOpacity
-              key={index}
-              style={[
-                styles.habitCard,
-                selectedHabit?.name === habit.name && styles.selectedHabitCard
-              ]}
-              onPress={() => setSelectedHabit(habit)}
-            >
-              <Ionicons 
-                name={(habit.icon || "heart-outline") as any} 
-                size={32} 
-                color={selectedHabit?.name === habit.name ? COLORS.white : COLORS.primary} 
-              />
-              <Text style={[
-                styles.habitCardText,
-                selectedHabit?.name === habit.name && styles.selectedHabitCardText
-              ]}>
-                {habit.name}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      )}
-      
-      {selectedHabit && (
-        <>
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Unit</Text>
-            <View style={styles.unitContainer}>
-              {selectedHabit.availableUnits.map((unit: string) => (
+        {
+          storeLoading ? (
+            <Text style={styles.label}>Loading presets...</Text>
+          ) : storeError ? (
+            <View>
+              {/* ERROR: FAILED TO LOAD PRESETS */}
+              <Text style={[styles.label, { color: 'red' }]}>Failed to load presets: {storeError}</Text>
+              <TouchableOpacity 
+                style={styles.button}
+                onPress={() => token && fetchPresets()}
+              >
+                <Text style={styles.buttonText}>Retry</Text>
+              </TouchableOpacity>
+            </View>
+          ) : presets.length === 0 ? (
+            <Text style={styles.label}>No presets available</Text>
+          ) : (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{marginVertical: 10}}>
+              {presets.map((habit: any, index: number) => (
                 <TouchableOpacity
-                  key={unit}
+                  key={index}
                   style={[
-                    styles.unitButton,
-                    selectedUnit === unit && styles.selectedUnitButton
+                    styles.habitCard,
+                    selectedHabit?.name === habit.name && styles.selectedHabitCard
                   ]}
-                  onPress={() => setSelectedUnit(unit)}
+                  onPress={() => setSelectedHabit(habit)}
                 >
+                  <Ionicons 
+                    name={(habit.icon || "heart-outline") as any} 
+                    size={32} 
+                    color={selectedHabit?.name === habit.name ? COLORS.white : COLORS.primary} 
+                  />
                   <Text style={[
-                    styles.unitButtonText,
-                    selectedUnit === unit && styles.selectedUnitButtonText
+                    styles.habitCardText,
+                    selectedHabit?.name === habit.name && styles.selectedHabitCardText
                   ]}>
-                    {unit}
+                    {habit.name}
                   </Text>
                 </TouchableOpacity>
               ))}
-            </View>
-          </View>
-          
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Target Amount</Text>
-            <View style={styles.inputContainer}>
-              <TextInput
-                style={styles.input}
-                value={targetAmount}
-                onChangeText={setTargetAmount}
-                keyboardType="numeric"
-                placeholder="Enter target amount"
-                placeholderTextColor={COLORS.textSecondary}
-              />
-            </View>
-          </View>
-          
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Increment Amount</Text>
-            <View style={styles.inputContainer}>
-              <TextInput
-                style={styles.input}
-                value={incrementAmount}
-                onChangeText={setIncrementAmount}
-                keyboardType="numeric"
-                placeholder="Enter increment amount"
-                placeholderTextColor={COLORS.textSecondary}
-              />
-            </View>
-          </View>
-        </>
-      )}
+            </ScrollView>
+          )
+        }
+        {
+          selectedHabit && (
+            <>
+              <View style={styles.formGroup}>
+                <Text style={styles.label}>Unit</Text>
+                <View style={styles.unitContainer}>
+                  {selectedHabit.availableUnits.map((unit: string) => (
+                    <TouchableOpacity
+                      key={unit}
+                      style={[
+                        styles.unitButton,
+                        selectedUnit === unit && styles.selectedUnitButton
+                      ]}
+                      onPress={() => setSelectedUnit(unit)}
+                    >
+                      <Text style={[
+                        styles.unitButtonText,
+                        selectedUnit === unit && styles.selectedUnitButtonText
+                      ]}>
+                        {unit}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+                
+              {/* TARGET AMOUNT */}
+              <View style={styles.formGroup}>
+                <Text style={styles.label}>Target Amount</Text>
+                <View style={styles.inputContainer}>
+                  <TextInput
+                    style={styles.input}
+                    value={targetAmount}
+                    onChangeText={setTargetAmount}
+                    keyboardType="numeric"
+                    placeholder="Enter target amount"
+                    placeholderTextColor={COLORS.textSecondary}
+                  />
+                </View>
+              </View>
+                
+              {/* INCREMENT AMOUNT */}
+              <View style={styles.formGroup}>
+                <Text style={styles.label}>Increment Amount</Text>
+                <View style={styles.inputContainer}>
+                  <TextInput
+                    style={styles.input}
+                    value={incrementAmount}
+                    onChangeText={setIncrementAmount}
+                    keyboardType="numeric"
+                    placeholder="Enter increment amount"
+                    placeholderTextColor={COLORS.textSecondary}
+                  />
+                </View>
+              </View>
+            </>
+          )
+        }
     </View>
   );
 
@@ -283,7 +300,73 @@ export default function Create() {
   );
 
   return (
-    <ScrollView style={styles.scrollViewStyle} contentContainerStyle={styles.container}>
+    <SafeScreen>
+      <KeyboardAvoidingView 
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+      >
+        {/* HEADER WITH BACK AND CREATE BUTTONS */}
+        <View style={{ 
+          flexDirection: 'row', 
+          alignItems: 'center', 
+          justifyContent: 'space-between',
+          paddingHorizontal: 20, 
+          paddingVertical: 10
+        }}>
+          <TouchableOpacity 
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 8
+            }}
+            onPress={() => 
+              Alert.alert(
+                  'Cancel Habit Creation',
+                  'Are you sure you want to cancel creating this habit?',
+                  [
+                    { text: 'Stay', style: 'cancel' },
+                    { text: 'Cancel', onPress: () => router.back() }
+                  ]
+                )}
+          >
+            <Ionicons 
+              name="arrow-back" 
+              size={24} 
+              color={COLORS.primary} 
+            />
+            <Text style={{
+              fontSize: 16,
+              fontWeight: '600',
+              color: COLORS.primary
+            }}>
+              Cancel
+            </Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity
+            style={{
+              opacity: isLoading ? 0.5 : 1
+            }}
+            onPress={createHabitAction}
+            disabled={isLoading}
+          >
+            <Text style={{
+              fontSize: 16,
+              fontWeight: '600',
+              color: COLORS.primary
+            }}>
+              {isLoading ? 'Creating...' : 'Create'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+        
+        <ScrollView 
+          style={styles.scrollViewStyle} 
+          contentContainerStyle={styles.container}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
       <View style={styles.card}>
         <View style={styles.header}>
           <Text style={styles.title}>Create New Habit</Text>
@@ -291,7 +374,7 @@ export default function Create() {
         </View>
         
         <View style={styles.form}>
-          {/* Habit Type Selector */}
+          {/* HABIT TYPE SELECTION*/}
           <View style={styles.formGroup}>
             <Text style={styles.label}>Habit Type</Text>
             <View style={styles.typeSelector}>
@@ -328,29 +411,9 @@ export default function Create() {
           
           {habitType === 'default' ? renderDefaultHabits() : renderCustomHabit()}
         </View>
-        
-        {/* Action Buttons */}
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            style={[styles.button, { flex: 1, marginRight: 8, marginTop: 0 }]}
-            onPress={() => router.back()}
-          >
-            <Text style={styles.buttonText}>Cancel</Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            style={[styles.button, { flex: 1, marginTop: 0 }, isLoading && styles.disabledButton]}
-            onPress={createHabitAction}
-            disabled={isLoading}
-          >
-            <Text style={styles.buttonText}>
-              {isLoading ? 'Creating...' : 'Create Habit'}
-            </Text>
-          </TouchableOpacity>
-        </View>
+
       </View>
       
-      {/* Icon Selection Modal */}
       <Modal
         visible={showIconModal}
         transparent={true}
@@ -390,6 +453,8 @@ export default function Create() {
           </View>
         </View>
       </Modal>
-    </ScrollView>
-  )
-}
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeScreen>
+  );
+};
