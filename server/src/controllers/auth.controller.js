@@ -49,10 +49,10 @@ export const signUp = async (req, res) => {
         
         const existingUser = await User.findOne({
             $or: [{ 
-                email: email 
+                email: email ? email.toLowerCase() : undefined 
             }, { 
-                username: username
-            }]
+                username: username ? username.toLowerCase() : undefined
+            }].filter(condition => Object.values(condition).some(value => value !== undefined))
         });
         
         if (existingUser)
@@ -101,12 +101,16 @@ export const signIn = async (req, res) => {
         if (!password || (!username && !email))
             throw new ApiError("Either username or email, and password are required.", 400);
         
+        const searchCriteria = [];
+        if (email) {
+            searchCriteria.push({ email: email.toLowerCase() });
+        }
+        if (username) {
+            searchCriteria.push({ username: username.toLowerCase() });
+        }
+        
         const existingUser = await User.findOne({
-            $or: [{ 
-                email: email 
-            }, { 
-                username: username
-            }]
+            $or: searchCriteria
         });
 
         if (!existingUser)
@@ -204,7 +208,7 @@ export const forgotPassword = async (req, res) => {
         if (!email)
             throw new ApiError("Email is required.", 400);
 
-        const user = await User.findOne({ email });
+        const user = await User.findOne({ email: email.toLowerCase() });
         if (!user)
             throw new ApiError("User with this email does not exist.", 404);
 

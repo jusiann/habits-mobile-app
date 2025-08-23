@@ -109,8 +109,14 @@ export default function UpdateProfile() {
         return;
       }
 
+     
       if (newPassword !== confirmNewPassword) {
         Alert.alert('Error', 'New passwords do not match.');
+        return;
+      }
+
+      if (currentPassword === newPassword) {
+        Alert.alert('Error', 'New password must be different from current password.');
         return;
       }
 

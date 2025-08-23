@@ -478,6 +478,14 @@ export const useAuthStore = create((set,get) => ({
                 }
             );
 
+            // CHECK IF RESPONSE IS JSON
+            const contentType = response.headers.get("content-type");
+            if (!contentType || !contentType.includes("application/json")) {
+                const text = await response.text();
+                console.error("Non-JSON response:", text);
+                throw new Error("Server returned non-JSON response. Please try again.");
+            }
+
             const data = await response.json();
 
             if (!response.ok) {
@@ -497,10 +505,13 @@ export const useAuthStore = create((set,get) => ({
             };
         } catch (error) {
             set({ isLoading: false });
+            console.error("Update profile error:", error);
             return {
                 success: false,
                 message: error.message || "Profile update failed"
             };
+        } finally {
+            set({ isLoading: false });
         }
     },
 
@@ -518,6 +529,14 @@ export const useAuthStore = create((set,get) => ({
                     }),
                 }
             );
+
+            // CHECK IF RESPONSE IS JSON
+            const contentType = response.headers.get("content-type");
+            if (!contentType || !contentType.includes("application/json")) {
+                const text = await response.text();
+                console.error("Non-JSON response:", text);
+                throw new Error("Server returned non-JSON response. Please try again.");
+            }
 
             const data = await response.json();
 
@@ -539,10 +558,13 @@ export const useAuthStore = create((set,get) => ({
             };
         } catch (error) {
             set({ isLoading: false });
+            console.error("Change password error:", error);
             return {
                 success: false,
                 message: error.message || "Password change failed"
             };
+        } finally {
+            set({ isLoading: false });
         }
     },
 
