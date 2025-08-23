@@ -3,9 +3,10 @@ import React, { useEffect, useState } from 'react';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import homeStyles from '../../assets/styles/home.styles';
+import styles from '../../assets/styles/home.styles';
 import { useAuthStore } from '../../store/auth.store';
 import { useHabitStore } from '../../store/habit.store';
+import SafeScreen from '../../constants/SafeScreen';
 
 export default function Home() {
   const { user, token } = useAuthStore();
@@ -31,27 +32,28 @@ export default function Home() {
   };
 
   return (
-    <View style={homeStyles.container}>
+    <SafeScreen>
+      <View style={styles.container}>
 
       {/* FIXED HEADER SECTION */}
-      <View style={homeStyles.header}>
-        <View style={homeStyles.userInfo}>
+      <View style={styles.header}>
+        <View style={styles.userInfo}>
           <Image 
             source={{ uri: user?.profilePicture || 'https://via.placeholder.com/40' }} 
-            style={homeStyles.avatar}
+            style={styles.avatar}
           />
           <View style={{ marginTop: 10 }}>
-            <Text style={homeStyles.headerSubtitle}>{getGreeting()}</Text>
-            <Text style={homeStyles.headerTitle}>{user?.username || 'Guest'}</Text>
+            <Text style={styles.headerSubtitle}>{getGreeting()}</Text>
+            <Text style={styles.headerTitle}>{user?.username || 'Guest'}</Text>
           </View>
         </View>
       </View>
 
       {/* FIXED HABIRT SECTION */}
-      <View style={homeStyles.habitHeader}>
-        <Text style={homeStyles.habitTitle}>HABITS</Text>
+      <View style={styles.habitHeader}>
+        <Text style={styles.habitTitle}>HABITS</Text>
         <TouchableOpacity 
-          style={homeStyles.addButton}
+          style={styles.addButton}
           onPress={() => router.push('/(tabs)/create')}
         >
           <Ionicons 
@@ -63,17 +65,17 @@ export default function Home() {
       </View>
 
       {/* SCROLLABLE HABITS LIST */}
-      <ScrollView style={homeStyles.listContainer} showsVerticalScrollIndicator={false}>
+      <ScrollView style={styles.listContainer} showsVerticalScrollIndicator={false}>
         {
           isLoading ? (
-            <View style={homeStyles.habitCard}>
-              <Text style={homeStyles.emptyText}>Loading Habits...</Text>
+            <View style={styles.habitCard}>
+              <Text style={styles.emptyText}>Loading Habits...</Text>
             </View>
           ) : habits.length === 0 ? (
-            <View style={homeStyles.habitCard}>
-              <View style={homeStyles.emptyContainer}>
-                <Text style={homeStyles.emptyText}>Add a new habit</Text>
-                <Text style={homeStyles.emptySubtext}>Start building better routines by adding your first habit</Text>
+            <View style={styles.habitCard}>
+              <View style={styles.emptyContainer}>
+                <Text style={styles.emptyText}>Add a new habit</Text>
+                <Text style={styles.emptySubtext}>Start building better routines by adding your first habit</Text>
               </View>
             </View>
           ) : (
@@ -88,30 +90,30 @@ export default function Home() {
                 <View 
                   key={habit.id} 
                   style={[
-                    homeStyles.habitCard,
-                    isCompleted && homeStyles.habitCardCompleted
+                    styles.habitCard,
+                    isCompleted && styles.habitCardCompleted
                   ]}
                 >
-                  <View style={homeStyles.habitItem}>
-                    <View style={homeStyles.habitInfo}>
-                      <View style={homeStyles.habitIconContainer}>
+                  <View style={styles.habitItem}>
+                    <View style={styles.habitInfo}>
+                      <View style={styles.habitIconContainer}>
                         <Ionicons 
                           name={habit?.icon || 'checkmark-circle'} 
                           size={16} 
                           color="white" 
-                          style={homeStyles.habitIcon}
+                          style={styles.habitIcon}
                         />
                       </View>
 
                       {/* HABIT NAME */}
-                      <View style={homeStyles.habitTextContainer}>
-                        <Text style={homeStyles.habitName}>{habit.name}</Text>
+                      <View style={styles.habitTextContainer}>
+                        <Text style={styles.habitName}>{habit.name}</Text>
                       </View>
 
                       {/* DETAIL BUTTON */}
                       <TouchableOpacity 
                         style={[
-                          homeStyles.habitDetailButton,
+                          styles.habitDetailButton,
                           pressedButton === `detail-${habit.id}` && { backgroundColor: 'rgba(255, 255, 255, 0.3)' }
                         ]}
                         onPressIn={() => setPressedButton(`detail-${habit.id}`)}
@@ -121,35 +123,35 @@ export default function Home() {
                         }}
                         activeOpacity={0.7}
                       >
-                        <Text style={homeStyles.habitDetailButtonText}>⋯</Text>
+                        <Text style={styles.habitDetailButtonText}>⋯</Text>
                       </TouchableOpacity>
                     </View>
 
                     {/* INCREMENT BUTTON */}
-                    <View style={homeStyles.habitActions}>
+                    <View style={styles.habitActions}>
                       <TouchableOpacity 
-                        style={homeStyles.actionButton}
+                        style={styles.actionButton}
                         onPress={() => token && incrementHabit(habit.id)}
                       >
-                        <Text style={homeStyles.actionButtonText}>+</Text>
+                        <Text style={styles.actionButtonText}>+</Text>
                       </TouchableOpacity>
                     </View>
                   </View>
 
                   {/* PROGRESS BAR */}
-                  <View style={homeStyles.progressContainer}>
-                    <View style={homeStyles.progressHeaderContainer}>
-                      <Text style={isCompleted ? homeStyles.progressTextCompleted : homeStyles.progressText}>
+                  <View style={styles.progressContainer}>
+                    <View style={styles.progressHeaderContainer}>
+                      <Text style={isCompleted ? styles.progressTextCompleted : styles.progressText}>
                         {unit}
                       </Text>
-                      <Text style={isCompleted ? homeStyles.progressTextCompleted : homeStyles.progressText}>
+                      <Text style={isCompleted ? styles.progressTextCompleted : styles.progressText}>
                         {current}/{target}
                       </Text>
                     </View>
-                    <View style={homeStyles.progressBar}>
+                    <View style={styles.progressBar}>
                       <View 
                         style={[
-                          isCompleted ? homeStyles.progressFillCompleted : homeStyles.progressFill, 
+                          isCompleted ? styles.progressFillCompleted : styles.progressFill, 
                           { width: `${Math.min(progress * 100, 100)}%` }
                         ]} 
                       />
@@ -161,6 +163,7 @@ export default function Home() {
             })
           )}
       </ScrollView>
-    </View>
+      </View>
+    </SafeScreen>
   );
 }

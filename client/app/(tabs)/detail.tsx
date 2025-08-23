@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, ScrollView, TextInput, Alert, Modal } from 'react-native'
+import { View, Text, TouchableOpacity, ScrollView, TextInput, Alert, Modal, KeyboardAvoidingView, Platform } from 'react-native'
 import React, { useState, useEffect } from 'react'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
@@ -6,6 +6,7 @@ import COLORS from '../../constants/colors'
 import styles from '../../assets/styles/create.styles'
 import { useHabitStore } from '../../store/habit.store'
 import { CUSTOM_ICONS } from '../../constants/customIcons'
+import SafeScreen from '../../constants/SafeScreen'
 
 export default function Detail() {
   const router = useRouter()
@@ -304,7 +305,78 @@ export default function Detail() {
   );
 
   return (
-    <ScrollView style={styles.scrollViewStyle} contentContainerStyle={styles.container}>
+    <SafeScreen>
+      <KeyboardAvoidingView 
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+      >
+        {/* HEADER WITH BACK AND SAVE BUTTONS */}
+        <View style={{ 
+          flexDirection: 'row', 
+          alignItems: 'center', 
+          justifyContent: 'space-between',
+          paddingHorizontal: 20, 
+          paddingVertical: 10
+        }}>
+          <TouchableOpacity 
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 8
+            }}
+            onPress={() => {
+              if (hasChanges) {
+                Alert.alert(
+                  'Unsaved Changes',
+                  'You have unsaved changes. Are you sure you want to leave?',
+                  [
+                    { text: 'Stay', style: 'cancel' },
+                    { text: 'Leave', onPress: () => router.back() }
+                  ]
+                )
+              } else {
+                router.back()
+              }
+            }}
+          >
+            <Ionicons 
+              name="arrow-back" 
+              size={24} 
+              color={COLORS.primary} 
+            />
+            <Text style={{
+              fontSize: 16,
+              fontWeight: '600',
+              color: COLORS.primary
+            }}>
+              Back
+            </Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity
+            style={{
+              opacity: (!hasChanges || isLoading) ? 0.5 : 1
+            }}
+            onPress={updateHabitAction}
+            disabled={!hasChanges || isLoading}
+          >
+            <Text style={{
+              fontSize: 16,
+              fontWeight: '600',
+              color: COLORS.primary
+            }}>
+              {isLoading ? 'Saving...' : 'Save'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+        
+        <ScrollView 
+          style={styles.scrollViewStyle} 
+          contentContainerStyle={styles.container}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
       {!habit ? (
         <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
           <Text style={styles.title}>Habit not found</Text>
@@ -328,42 +400,7 @@ export default function Detail() {
             {habit.type === 'default' ? renderDefaultHabitEdit() : renderCustomHabitEdit()}
           </View>
         
-          {/* ACTION BUTTONS */}
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              style={[styles.button, { flex: 1, marginRight: 8, marginTop: 0 }]}
-              onPress={() => {
-                if (hasChanges) {
-                  Alert.alert(
-                    'Unsaved Changes',
-                    'You have unsaved changes. Are you sure you want to leave?',
-                    [
-                      { text: 'Stay', style: 'cancel' },
-                      { text: 'Leave', onPress: () => router.back() }
-                    ]
-                  )
-                } else {
-                  router.back()
-                }
-              }}
-            >
-              <Text style={styles.buttonText}>Cancel</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity
-              style={[
-                styles.button, 
-                { flex: 1, marginTop: 0 }, 
-                (!hasChanges || isLoading) && styles.disabledButton
-              ]}
-              onPress={updateHabitAction}
-              disabled={!hasChanges || isLoading}
-            >
-              <Text style={styles.buttonText}>
-                {isLoading ? 'Saving...' : 'Save Changes'}
-              </Text>
-            </TouchableOpacity>
-          </View>
+
         </View>
       )};
       
@@ -409,6 +446,8 @@ export default function Detail() {
           </View>
         </Modal>
       )};
-    </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeScreen>
   )
 }

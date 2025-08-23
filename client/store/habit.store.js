@@ -8,11 +8,12 @@ export const useHabitStore = create((set, get) => ({
   error: null,
   lastFetchDate: null,
 
-  // Helper function to make authenticated requests with auto refresh
+  // MAKE AUTHENTICATED REQUEST
   makeRequest: async (url, options = {}) => {
     return await useAuthStore.getState().makeAuthenticatedRequest(url, options);
   },
 
+  // CHECK AND RESET DAILY
   checkAndResetDaily: () => {
     const now = new Date();
     const today = now.toDateString();
@@ -20,14 +21,17 @@ export const useHabitStore = create((set, get) => ({
     
     if (lastFetch && lastFetch !== today) {
       console.log('New day detected, clearing habits cache');
+      // CLEAR HABITS FOR NEW DAY
       set({ habits: [], lastFetchDate: today });
       return true; 
     } else if (!lastFetch) {
+      // SET INITIAL DATE
       set({ lastFetchDate: today });
     }
     return false;
   },
 
+  // FETCH PRESETS
   fetchPresets: async () => {
     try {
       set({ isLoading: true, error: null });
@@ -41,6 +45,7 @@ export const useHabitStore = create((set, get) => ({
       if (response.ok) {
         const cleanPresets = data.data.presets.health || [];
         
+        // UPDATE STATE WITH PRESETS
         set({ 
           presets: cleanPresets, 
           isLoading: false 
@@ -56,9 +61,10 @@ export const useHabitStore = create((set, get) => ({
     }
   },
 
+  // FETCH HABITS
   fetchHabits: async () => {
     try {
-      
+      // CHECK FOR NEW DAY
       const isNewDay = get().checkAndResetDaily();
       set({ isLoading: true, error: null });
       
@@ -70,6 +76,7 @@ export const useHabitStore = create((set, get) => ({
 
       if (response.ok) {
         const cleanHabits = data.data.habits || [];
+        // UPDATE STATE WITH HABITS
         set({ 
           habits: cleanHabits, 
           isLoading: false 
@@ -90,6 +97,7 @@ export const useHabitStore = create((set, get) => ({
     }
   },
 
+  // CREATE HABIT
   createHabit: async (habitData) => {
     try {
       set({ isLoading: true, error: null });
@@ -107,6 +115,7 @@ export const useHabitStore = create((set, get) => ({
       console.log('Response data:', data);
 
       if (response.ok) {
+        // REFRESH HABITS LIST
         await get().fetchHabits();
         set({ isLoading: false });
         return { success: true, data: data.data };
@@ -121,6 +130,7 @@ export const useHabitStore = create((set, get) => ({
     }
   },
 
+  // INCREMENT HABIT
   incrementHabit: async (habitId) => {
     try {
       const response = await get().makeRequest(`https://habits-mobile-app.onrender.com/api/habits/${habitId}/increment`, {
@@ -130,6 +140,7 @@ export const useHabitStore = create((set, get) => ({
       const data = await response.json();
 
       if (response.ok) {
+        // REFRESH HABITS LIST
         await get().fetchHabits();
         return { success: true, data: data.data };
       } else {
@@ -140,6 +151,7 @@ export const useHabitStore = create((set, get) => ({
     }
   },
 
+  // UPDATE HABIT
   updateHabit: async (habitId, updateData) => {
     try {
       set({ isLoading: true, error: null });
@@ -152,6 +164,7 @@ export const useHabitStore = create((set, get) => ({
       const data = await response.json();
 
       if (response.ok) {
+        // REFRESH HABITS LIST
         await get().fetchHabits();
         set({ isLoading: false });
         return { success: true, data: data.data };
@@ -166,6 +179,7 @@ export const useHabitStore = create((set, get) => ({
     }
   },
 
+  // CLEAR STORE
   clearStore: () => {
     set({
       habits: [],

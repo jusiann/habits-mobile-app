@@ -5,6 +5,7 @@ import COLORS from "../../constants/colors";
 import { Ionicons } from '@expo/vector-icons';
 import { Link } from "expo-router";
 import { useAuthStore } from '../../store/auth.store';
+import SafeScreen from '../../constants/SafeScreen';
 
 export default function Signup() {
   const [username, setUsername] = React.useState("");
@@ -94,11 +95,12 @@ export default function Signup() {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={{flex:1}}
-      behavior={Platform.OS === "android" ? "padding" : "height"}
-    >
-      <View style={styles.container}>
+    <SafeScreen>
+      <KeyboardAvoidingView
+        style={{flex:1}}
+        behavior={Platform.OS === "android" ? "padding" : "height"}
+      >
+        <View style={styles.container}>
         <View style={styles.card}>
 
           {/* HEADER */}
@@ -266,8 +268,8 @@ export default function Signup() {
             
           </View>
         </View>
-      </View>
-
-    </KeyboardAvoidingView>
+        </View>
+      </KeyboardAvoidingView>
+    </SafeScreen>
   );
 }

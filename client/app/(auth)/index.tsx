@@ -5,6 +5,7 @@ import {Ionicons} from "@expo/vector-icons";
 import styles from "../../assets/styles/signin.styles";
 import COLORS from "../../constants/colors";
 import {useAuthStore} from "../../store/auth.store";
+import SafeScreen from "../../constants/SafeScreen";
 
 export default function Login() {
   const [email, setEmail] = React.useState("");
@@ -17,8 +18,10 @@ export default function Login() {
   const handleEmailUsernameChange = (text: string) => {
     if (text.includes("@")) {
       setEmail(text);
+      setUsername("");
     } else {
       setUsername(text);
+      setEmail(""); 
     }
   };
 
@@ -70,11 +73,12 @@ export default function Login() {
   };
   
   return (
-    <KeyboardAvoidingView 
-      style={{flex:1}}
-      behavior={Platform.OS === "android" ? "padding" : "height"}
-    >
-      <View style={styles.container}>
+    <SafeScreen>
+      <KeyboardAvoidingView 
+        style={{flex:1}}
+        behavior={Platform.OS === "android" ? "padding" : "height"}
+      >
+        <View style={styles.container}>
         <View style={styles.topIllustration}>
           {/* PICTURE */}
           <Image
@@ -171,8 +175,9 @@ export default function Login() {
             </View>
           </View>
         </View>
-      </View>
-    </KeyboardAvoidingView>
+        </View>
+      </KeyboardAvoidingView>
+    </SafeScreen>
   );
 };
 

@@ -246,14 +246,8 @@ export const useAuthStore = create((set,get) => ({
             await AsyncStorage.removeItem("refreshToken");
             await AsyncStorage.removeItem("tokenExpirationTime");
             
-            // CLEAR STATE
-            set({ 
-                user: null, 
-                token: null, 
-                refreshToken: null, 
-                tokenExpirationTime: null,
-                refreshTimer: null
-            });
+            // CLEAR STORE STATE
+            get().clearStore();
             
             return {
                 success: true,
@@ -358,7 +352,7 @@ export const useAuthStore = create((set,get) => ({
     },
 
     // RESET PASSWORD
-    resetPassword: async (resetCode, newPassword) => {
+    resetPassword: async (email, resetCode, newPassword) => {
         set({ isLoading: true });
         try {
             // CHECK RESET CODE AND GET TEMPORARY TOKEN
@@ -470,6 +464,102 @@ export const useAuthStore = create((set,get) => ({
             }
         }
         return response;
+    },
+
+    // UPDATE PROFILE
+    updateProfile: async (profileData) => {
+        set({ isLoading: true });
+        try {
+            const response = await get().makeAuthenticatedRequest(
+                `https://habits-mobile-app.onrender.com/api/auth/update-profile`,
+                {
+                    method: "POST",
+                    body: JSON.stringify(profileData),
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || "Profile update failed");
+            }
+
+            // UPDATE USER IN STORAGE AND STATE
+            await AsyncStorage.setItem("user", JSON.stringify(data.user));
+            set({ 
+                user: data.user,
+                isLoading: false 
+            });
+
+            return {
+                success: true,
+                message: data.message || "Profile updated successfully"
+            };
+        } catch (error) {
+            set({ isLoading: false });
+            return {
+                success: false,
+                message: error.message || "Profile update failed"
+            };
+        }
+    },
+
+    // CHANGE PASSWORD
+    changePassword: async (currentPassword, newPassword) => {
+        set({ isLoading: true });
+        try {
+            const response = await get().makeAuthenticatedRequest(
+                `https://habits-mobile-app.onrender.com/api/auth/update-profile`,
+                {
+                    method: "POST",
+                    body: JSON.stringify({
+                        currentPassword,
+                        newPassword
+                    }),
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || "Password change failed");
+            }
+
+            // UPDATE USER IN STORAGE AND STATE IF USER DATA IS RETURNED
+            if (data.user) {
+                await AsyncStorage.setItem("user", JSON.stringify(data.user));
+                set({ user: data.user });
+            }
+
+            set({ isLoading: false });
+
+            return {
+                success: true,
+                message: data.message || "Password changed successfully"
+            };
+        } catch (error) {
+            set({ isLoading: false });
+            return {
+                success: false,
+                message: error.message || "Password change failed"
+            };
+        }
+    },
+
+    // CLEAR STORE
+    clearStore: () => {
+        // STOP AUTO REFRESH
+        get().stopAutoRefresh();
+        
+        // CLEAR STATE
+        set({
+            user: null,
+            token: null,
+            refreshToken: null,
+            tokenExpirationTime: null,
+            refreshTimer: null,
+            isLoading: false
+        });
     },
 
 }));

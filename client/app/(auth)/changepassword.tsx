@@ -15,6 +15,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useAuthStore } from "../../store/auth.store";
 import COLORS from "../../constants/colors";
 import styles from "../../assets/styles/passwordpages.styles";
+import SafeScreen from "../../constants/SafeScreen";
 
 const ChangePassword = () => {
   const { email, resetCode } = useLocalSearchParams();
@@ -50,16 +51,49 @@ const ChangePassword = () => {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
-      <View style={styles.container}>
+    <SafeScreen>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "android" ? "padding" : "height"}
+      >
+        {/* BACK TO SIGN IN HEADER */}
+        <View style={{ 
+          flexDirection: 'row', 
+          alignItems: 'center', 
+          paddingHorizontal: 20, 
+        }}>
+          <TouchableOpacity 
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 8
+            }}
+            onPress={() => {
+              router.dismissAll();
+              router.push('/');
+            }}
+          >
+            <Ionicons 
+              name="arrow-back" 
+              size={24} 
+              color={COLORS.primary} 
+            />
+            <Text style={{
+              fontSize: 16,
+              fontWeight: '600',
+              color: COLORS.primary
+            }}>
+              Sign In
+            </Text>
+          </TouchableOpacity>
+        </View>
+        
+        <View style={[styles.container, { paddingTop: 60 }]}>
 
         {/* CARD */}
         <View style={styles.card}>
           {/* HEADER */}
-          <View style={[styles.header, { marginBottom: 40 }]}>
+          <View style={[styles.header, { marginBottom: 25 }]}>
             <Text style={styles.title}>Change Password</Text>
             <Text style={styles.subtitle}>
               Enter your new password below
@@ -135,10 +169,10 @@ const ChangePassword = () => {
           </View>
 
           {/* BUTTONS SECTION */}
-          <View style={{ marginTop: 30 }}>
+          <View style={{ marginTop: 10 }}>
             {/* CHANGE PASSWORD BUTTON */}
             <TouchableOpacity
-              style={[styles.button, isLoading && styles.buttonDisabled]}
+              style={[styles.button, { marginTop: 0 }, isLoading && styles.buttonDisabled]}
               onPress={changePasswordAction}
               disabled={isLoading}
             >
@@ -150,20 +184,12 @@ const ChangePassword = () => {
                 )}
             </TouchableOpacity>
 
-            {/* BACK TO LOGIN BUTTON */}
-            <TouchableOpacity
-              style={[styles.button, { backgroundColor: COLORS.primary   || '#6c757d', marginTop: 10 }]}
-              onPress={() => {
-                router.dismissAll();
-                router.push('/');
-              }}
-            >
-              <Text style={styles.buttonText}>Back to Sign In</Text>
-            </TouchableOpacity>
+
           </View>
         </View>
-      </View>
-    </KeyboardAvoidingView>
+        </View>
+      </KeyboardAvoidingView>
+    </SafeScreen>
   );
 };
 

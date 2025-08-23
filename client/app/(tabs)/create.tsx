@@ -1,4 +1,4 @@
-import {View, Text, TouchableOpacity, ScrollView, TextInput, Alert, Modal} from 'react-native'
+import {View, Text, TouchableOpacity, ScrollView, TextInput, Alert, Modal, KeyboardAvoidingView, Platform} from 'react-native'
 import React, { useState, useEffect } from 'react'
 import {useRouter, useFocusEffect} from 'expo-router'
 import {Ionicons} from '@expo/vector-icons'
@@ -7,6 +7,7 @@ import styles from '../../assets/styles/create.styles'
 import {useAuthStore} from '../../store/auth.store'
 import {useHabitStore} from '../../store/habit.store'
 import {CUSTOM_ICONS} from '../../constants/customIcons'
+import SafeScreen from '../../constants/SafeScreen'
 
 export default function Create() {
   const router = useRouter();
@@ -299,7 +300,73 @@ export default function Create() {
   );
 
   return (
-    <ScrollView style={styles.scrollViewStyle} contentContainerStyle={styles.container}>
+    <SafeScreen>
+      <KeyboardAvoidingView 
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+      >
+        {/* HEADER WITH BACK AND CREATE BUTTONS */}
+        <View style={{ 
+          flexDirection: 'row', 
+          alignItems: 'center', 
+          justifyContent: 'space-between',
+          paddingHorizontal: 20, 
+          paddingVertical: 10
+        }}>
+          <TouchableOpacity 
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 8
+            }}
+            onPress={() => 
+              Alert.alert(
+                  'Cancel Habit Creation',
+                  'Are you sure you want to cancel creating this habit?',
+                  [
+                    { text: 'Stay', style: 'cancel' },
+                    { text: 'Cancel', onPress: () => router.back() }
+                  ]
+                )}
+          >
+            <Ionicons 
+              name="arrow-back" 
+              size={24} 
+              color={COLORS.primary} 
+            />
+            <Text style={{
+              fontSize: 16,
+              fontWeight: '600',
+              color: COLORS.primary
+            }}>
+              Cancel
+            </Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity
+            style={{
+              opacity: isLoading ? 0.5 : 1
+            }}
+            onPress={createHabitAction}
+            disabled={isLoading}
+          >
+            <Text style={{
+              fontSize: 16,
+              fontWeight: '600',
+              color: COLORS.primary
+            }}>
+              {isLoading ? 'Creating...' : 'Create'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+        
+        <ScrollView 
+          style={styles.scrollViewStyle} 
+          contentContainerStyle={styles.container}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
       <View style={styles.card}>
         <View style={styles.header}>
           <Text style={styles.title}>Create New Habit</Text>
@@ -344,39 +411,7 @@ export default function Create() {
           
           {habitType === 'default' ? renderDefaultHabits() : renderCustomHabit()}
         </View>
-        
-        {/* ACTION BUTTONS */}
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            style={[styles.button, { flex: 1, marginRight: 8, marginTop: 0 }]}
-            onPress={() => {
-              if (hasChanges) {
-                  Alert.alert(
-                    'Unsaved Changes',
-                    'You have unsaved changes. Are you sure you want to leave?',
-                    [
-                      { text: 'Stay', style: 'cancel' },
-                      { text: 'Leave', onPress: () => router.back() }
-                    ]
-                  )
-                } else {
-                  router.back()
-                }
-            }}
-          >
-            <Text style={styles.buttonText}>Cancel</Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            style={[styles.button, { flex: 1, marginTop: 0 }, isLoading && styles.disabledButton]}
-            onPress={createHabitAction}
-            disabled={isLoading}
-          >
-            <Text style={styles.buttonText}>
-              {isLoading ? 'Creating...' : 'Create Habit'}
-            </Text>
-          </TouchableOpacity>
-        </View>
+
       </View>
       
       <Modal
@@ -418,6 +453,8 @@ export default function Create() {
           </View>
         </View>
       </Modal>
-    </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeScreen>
   );
 };

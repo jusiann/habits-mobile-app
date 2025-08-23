@@ -2,12 +2,14 @@ import {Text, TouchableOpacity, View} from "react-native";
 import {Image} from "expo-image";
 import {useRouter} from "expo-router";
 import styles from "../assets/styles/main.styles";
+import SafeScreen from '../constants/SafeScreen'
 
 export default function Index() {
   const router = useRouter();
 
   return (
-    <View style={styles.container}>
+    <SafeScreen>
+      <View style={styles.container}>
       {/* TITLE SELECTION */}
       <View style={styles.card}>
         
@@ -44,6 +46,7 @@ export default function Index() {
           </TouchableOpacity>
         </View>
       </View>
-    </View>
+      </View>
+    </SafeScreen>
   );
 };

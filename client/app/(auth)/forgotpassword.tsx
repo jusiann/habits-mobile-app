@@ -15,6 +15,7 @@ import { router } from "expo-router";
 import { useAuthStore } from "../../store/auth.store";
 import COLORS from "../../constants/colors";
 import styles from "../../assets/styles/passwordpages.styles";
+import SafeScreen from "../../constants/SafeScreen";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
@@ -125,11 +126,45 @@ const ForgotPassword = () => {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === "android" ? "padding" : "height"}
-    >
-      <View style={styles.container}>        
+    <SafeScreen>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "android" ? "padding" : "height"}
+      >
+        {/* BACK TO SIGN IN HEADER */}
+        <View style={{ 
+          flexDirection: 'row', 
+          alignItems: 'center', 
+          paddingHorizontal: 20, 
+        }}>
+          <TouchableOpacity 
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 8
+            }}
+            onPress={() => {
+              router.dismissAll();
+              router.push('/');
+            }}
+          >
+            <Ionicons 
+              name="arrow-back" 
+              size={24} 
+              color={COLORS.primary} 
+            />
+            <Text style={{
+              fontSize: 16,
+              fontWeight: '600',
+              color: COLORS.primary
+            }}>
+              Sign In
+            </Text>
+          </TouchableOpacity>
+        </View>
+        
+        <View style={[styles.container, { paddingTop: 60 }]}>
+        
         <View style={styles.card}>
           {/* HEADER */}
           <View style={[styles.header, { marginBottom: 40 }]}>
@@ -228,22 +263,14 @@ const ForgotPassword = () => {
                  )}
                </TouchableOpacity>
 
-              {/* BACK TO SIGN IN BUTTON */}
-              <TouchableOpacity 
-                style={[styles.button, { backgroundColor: COLORS.primary || '#6c757d', marginTop: 10 }]} 
-                onPress={() => {
-                  router.dismissAll();
-                  router.push('/');
-                }}
-              >
-                <Text style={styles.buttonText}>Back to Sign In</Text>
-              </TouchableOpacity>
+
             </View>
 
 
           </View>
-      </View>
-    </KeyboardAvoidingView>
+        </View>
+      </KeyboardAvoidingView>
+    </SafeScreen>
   );
 };
 
