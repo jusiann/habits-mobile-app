@@ -15,6 +15,7 @@ export default function UpdateProfile() {
   // Form states
   const [fullname, setFullname] = useState(user?.fullname || '');
   const [gender, setGender] = useState(user?.gender || '');
+  const [age, setAge] = useState(user?.age?.toString() || '');
   const [height, setHeight] = useState(user?.height?.toString() || '');
   const [weight, setWeight] = useState(user?.weight?.toString() || '');
   const [profilePicture, setProfilePicture] = useState(user?.profilePicture || '');
@@ -33,6 +34,7 @@ export default function UpdateProfile() {
     if (user) {
       setFullname(user.fullname || '');
       setGender(user.gender || '');
+      setAge(user.age?.toString() || '');
       setHeight(user.height?.toString() || '');
       setWeight(user.weight?.toString() || '');
       setProfilePicture(user.profilePicture || '');
@@ -44,6 +46,7 @@ export default function UpdateProfile() {
     
     const changes = fullname !== (user.fullname || '') ||
                    gender !== (user.gender || '') ||
+                   age !== (user.age?.toString() || '') ||
                    height !== (user.height?.toString() || '') ||
                    weight !== (user.weight?.toString() || '') ||
                    profilePicture !== (user.profilePicture || '');
@@ -63,6 +66,11 @@ export default function UpdateProfile() {
         return;
       }
 
+      if (age && (isNaN(Number(age)) || Number(age) < 0 || Number(age) > 150)) {
+        Alert.alert('Error', 'Age must be between 0-150 years.');
+        return;
+      }
+
       if (height && (isNaN(Number(height)) || Number(height) < 0 || Number(height) > 300)) {
         Alert.alert('Error', 'Height must be between 0-300 cm.');
         return;
@@ -76,6 +84,7 @@ export default function UpdateProfile() {
       const profileData = {
         fullname: fullname.trim(),
         gender: gender || undefined,
+        age: age ? Number(age) : undefined,
         height: height ? Number(height) : undefined,
         weight: weight ? Number(weight) : undefined,
         profilePicture: profilePicture || undefined
@@ -252,6 +261,7 @@ export default function UpdateProfile() {
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Gender</Text>
             <View style={styles.genderContainer}>
+
               <TouchableOpacity 
                 style={[styles.genderOption, gender === 'male' && styles.genderOptionSelected]}
                 onPress={() => setGender(gender === 'male' ? '' : 'male')}
@@ -287,6 +297,22 @@ export default function UpdateProfile() {
                 />
                 <Text style={[styles.genderText, gender === 'other' && styles.genderTextSelected]}>Other</Text>
               </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Age */}
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Age</Text>
+            <View style={styles.inputContainer}>
+              <Ionicons name="calendar-outline" size={24} color={COLORS.textSecondary} style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                value={age}
+                onChangeText={setAge}
+                placeholder="Age"
+                placeholderTextColor={COLORS.placeholderText}
+                keyboardType="numeric"
+              />
             </View>
           </View>
 

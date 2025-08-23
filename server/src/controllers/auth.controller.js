@@ -331,11 +331,11 @@ export const changePassword = async (req, res) => {
 
 export const updateProfile = async (req, res) => {
     try {
-        const { fullname, gender, height, weight, profilePicture, currentPassword, newPassword } = req.body;
+        const { fullname, gender, height, weight, age, profilePicture, currentPassword, newPassword } = req.body;
         const userId = req.user._id;
         
-        if (!fullname && !gender && !height && !weight && !profilePicture && !currentPassword && !newPassword)
-            throw new ApiError("At least one field (fullname, gender, height, weight, profilePicture, currentPassword, newPassword) is required.", 400);
+        if (!fullname && !gender && !height && !weight && !age && !profilePicture && !currentPassword && !newPassword)
+            throw new ApiError("At least one field (fullname, gender, height, weight, age, profilePicture, currentPassword, newPassword) is required.", 400);
         
         const user = await User.findById(userId);
         if (!user)
@@ -369,6 +369,12 @@ export const updateProfile = async (req, res) => {
             if (weight < 0 || weight > 500)
                 throw new ApiError("Weight must be between 0 and 500 kg.", 400);
             updateData.weight = weight;
+        }
+        
+        if (age !== undefined) {
+            if (age < 0 || age > 150)
+                throw new ApiError("Age must be between 0 and 150 years.", 400);
+            updateData.age = age;
         }
         
         if (profilePicture)
@@ -409,6 +415,7 @@ export const updateProfile = async (req, res) => {
                 gender: updatedUser.gender,
                 height: updatedUser.height,
                 weight: updatedUser.weight,
+                age: updatedUser.age,
                 profilePicture: updatedUser.profilePicture
             }
         });

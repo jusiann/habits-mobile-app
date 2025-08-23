@@ -74,6 +74,16 @@ export default function Profile() {
           </View>
 
           <View style={styles.detailRow}>
+            <View style={styles.detailIcon}>
+              <Ionicons name="calendar-outline" size={24} color={COLORS.primary} />
+            </View>
+            <View style={styles.detailContent}>
+              <Text style={styles.detailLabel}>Age</Text>
+              <Text style={styles.detailValue}>{user?.age ? `${user.age} years` : 'Not specified'}</Text>
+            </View>
+          </View>
+
+          <View style={styles.detailRow}>
              <View style={styles.detailIcon}>
                <Ionicons name="resize-outline" size={24} color={COLORS.primary} />
              </View>

@@ -11,16 +11,14 @@ const app = express();
 
 job.start();
 
-// CORS middleware
 app.use(cors({
-    origin: '*', // Allow all origins for mobile app
+    origin: '*', 
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 app.use(express.json());
 
-// Global error handler to ensure JSON responses
 app.use((err, req, res, next) => {
     console.error('Global error handler:', err);
     res.status(err.statusCode || 500).json({
@@ -32,8 +30,7 @@ app.use((err, req, res, next) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/habits", habitRoutes);
 
-// 404 handler
-app.use('*', (req, res) => {
+app.use((req, res) => {
     res.status(404).json({
         success: false,
         message: 'Route not found'

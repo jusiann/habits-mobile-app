@@ -507,14 +507,23 @@ export const useAuthStore = create((set,get) => ({
     },
 
     // UPDATE PROFILE
-    updateProfile: async (profileData) => {
+    updateProfile: async ({ fullname, gender, height, weight, age, profilePicture, currentPassword, newPassword }) => {
         set({ isLoading: true });
         try {
             const response = await get().makeAuthenticatedRequest(
                 `https://habits-mobile-app.onrender.com/api/auth/update-profile`,
                 {
                     method: "POST",
-                    body: JSON.stringify(profileData),
+                    body: JSON.stringify({
+                        fullname,
+                        gender,
+                        height,
+                        weight,
+                        age,
+                        profilePicture,
+                        currentPassword,
+                        newPassword
+                    }),
                 }
             );
 
