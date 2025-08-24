@@ -4,7 +4,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  Alert,
+
   KeyboardAvoidingView,
   Platform,
   Image,
@@ -15,7 +15,8 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useAuthStore } from "../../store/auth.store";
 import COLORS from "../../constants/colors";
 import styles from "../../assets/styles/passwordpages.styles";
-import SafeScreen from "../../constants/SafeScreen";
+import CustomAlert from '../../constants/CustomAlert'
+import SafeScreen from '../../constants/SafeScreen'
 
 const ChangePassword = () => {
   const { email, resetCode } = useLocalSearchParams();
@@ -24,34 +25,68 @@ const ChangePassword = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { resetPassword, isLoading } = useAuthStore();
+  const [showAlert, setShowAlert] = useState({
+    visible: false,
+    title: '',
+    message: '',
+    type: 'info' as 'success' | 'error' | 'warning' | 'info',
+    buttons: [] as Array<{ text: string; onPress: () => void; style?: 'default' | 'cancel' | 'destructive' }>
+  });
 
   const changePasswordAction = async () => {
     if (!newPassword.trim()) {
-      Alert.alert('Error', 'Please enter a new password');
+      setShowAlert({
+        visible: true,
+        title: 'Error',
+        message: 'Please enter a new password',
+        type: 'error',
+        buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+      });
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
+      setShowAlert({
+        visible: true,
+        title: 'Error',
+        message: 'Passwords do not match',
+        type: 'error',
+        buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+      });
       return;
     }
 
     const result = await resetPassword(email as string, resetCode as string, newPassword);
     
     if (result.success) {
-      Alert.alert('Success', 'Password changed successfully!', [
-        {
-          text: 'OK',
-          onPress: () => router.push('/(auth)'),
-        },
-      ]);
+      setShowAlert({
+        visible: true,
+        title: 'Success',
+        message: 'Password changed successfully!',
+        type: 'success',
+        buttons: [{ text: 'OK', onPress: () => { setShowAlert(prev => ({ ...prev, visible: false })); router.push('/(auth)'); }, style: 'default' }]
+      });
     } else {
-      Alert.alert('Error', result.message);
+      setShowAlert({
+        visible: true,
+        title: 'Error',
+        message: result.message || 'An error occurred while changing password',
+        type: 'error',
+        buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+      });
     }
   };
 
   return (
     <SafeScreen>
+      <CustomAlert
+        visible={showAlert.visible}
+        title={showAlert.title}
+        message={showAlert.message}
+        type={showAlert.type}
+        buttons={showAlert.buttons}
+        onDismiss={() => setShowAlert(prev => ({ ...prev, visible: false }))}
+      />
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "android" ? "padding" : "height"}

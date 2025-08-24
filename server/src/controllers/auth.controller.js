@@ -427,6 +427,36 @@ export const updateProfile = async (req, res) => {
     }
 };
 
+export const getMe = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const user = await User.findById(userId);
+        
+        if (!user)
+            throw new ApiError("User not found.", 404);
+
+        res.status(200).json({
+            success: true,
+            user: {
+                _id: user._id,
+                username: user.username,
+                email: user.email,
+                fullname: user.fullname,
+                gender: user.gender,
+                height: user.height,
+                weight: user.weight,
+                age: user.age,
+                profilePicture: user.profilePicture
+            }
+        });
+    } catch (error) {
+        res.status(error.statusCode || 500).json({
+            success: false,
+            message: error.message || "Failed to get user data"
+        });
+    }
+};
+
 export const logout = async (req, res) => {
     try {
         const userId = req.user._id;

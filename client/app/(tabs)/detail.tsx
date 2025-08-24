@@ -1,4 +1,5 @@
-import { View, Text, TouchableOpacity, ScrollView, TextInput, Alert, Modal, KeyboardAvoidingView, Platform } from 'react-native'
+import { View, Text, TouchableOpacity, ScrollView, TextInput, Modal, KeyboardAvoidingView, Platform } from 'react-native'
+import CustomAlert from '../../constants/CustomAlert'
 import React, { useState, useEffect } from 'react'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
@@ -24,6 +25,13 @@ export default function Detail() {
   const [showIconModal, setShowIconModal] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [hasChanges, setHasChanges] = useState(false)
+  const [showAlert, setShowAlert] = useState({
+    visible: false,
+    title: '',
+    message: '',
+    type: 'info' as 'success' | 'error' | 'warning' | 'info',
+    buttons: [] as Array<{ text: string; onPress: () => void; style?: 'default' | 'cancel' | 'destructive' }>
+  })
 
   useEffect(() => {
     if (habitId && habits.length > 0) {
@@ -88,22 +96,46 @@ export default function Detail() {
       }
       
       if (isNaN(parseInt(targetAmount)) || parseInt(targetAmount) <= 0) {
-        Alert.alert('Invalid Input', 'Target amount must be a positive number.')
+        setShowAlert({
+          visible: true,
+          title: 'Invalid Input',
+          message: 'Target amount must be a positive number.',
+          type: 'error',
+          buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+        })
         return;
       }
 
       if (isNaN(parseInt(incrementAmount)) || parseInt(incrementAmount) <= 0) {
-        Alert.alert('Invalid Input', 'Increment amount must be a positive number.')
+        setShowAlert({
+          visible: true,
+          title: 'Invalid Input',
+          message: 'Increment amount must be a positive number.',
+          type: 'error',
+          buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+        })
         return;
       }
 
       if (habit.type === 'other') {
         if (!customName.trim()) {
-          Alert.alert('Invalid Input', 'Habit name is required.')
+          setShowAlert({
+            visible: true,
+            title: 'Invalid Input',
+            message: 'Habit name is required.',
+            type: 'error',
+            buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+          })
           return;
         }
         if (!customUnit.trim()) {
-          Alert.alert('Invalid Input', 'Unit is required.')
+          setShowAlert({
+            visible: true,
+            title: 'Invalid Input',
+            message: 'Unit is required.',
+            type: 'error',
+            buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+          })
           return;
         }
       }
@@ -111,18 +143,31 @@ export default function Detail() {
       const result = await updateHabit(habit.id, updateData)
 
       if (result.success) {
-        Alert.alert('Success', 'Habit updated successfully!', [
-          { 
-            text: 'OK', 
-            onPress: () => router.back()
-          }
-        ]);
+        setShowAlert({
+          visible: true,
+          title: 'Success',
+          message: 'Habit updated successfully!',
+          type: 'success',
+          buttons: [{ text: 'OK', onPress: () => { setShowAlert(prev => ({ ...prev, visible: false })); router.back(); }, style: 'default' }]
+        });
       } else {
-        Alert.alert('Update Failed', result.message || 'Failed to update habit')
+        setShowAlert({
+          visible: true,
+          title: 'Update Failed',
+          message: result.message || 'Failed to update habit',
+          type: 'error',
+          buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+        })
       }
     } catch (error: any) {
       console.error('UpdateHabit error:', error);
-      Alert.alert('Connection Error', 'Failed to connect to server. Please check your internet connection and try again.')
+      setShowAlert({
+        visible: true,
+        title: 'Connection Error',
+        message: 'Failed to connect to server. Please check your internet connection and try again.',
+        type: 'error',
+        buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+      })
     } finally {
       setIsLoading(false)
     }
@@ -306,6 +351,14 @@ export default function Detail() {
 
   return (
     <SafeScreen>
+      <CustomAlert
+        visible={showAlert.visible}
+        title={showAlert.title}
+        message={showAlert.message}
+        type={showAlert.type}
+        buttons={showAlert.buttons}
+        onDismiss={() => setShowAlert(prev => ({ ...prev, visible: false }))}
+      />
       <KeyboardAvoidingView 
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -327,14 +380,16 @@ export default function Detail() {
             }}
             onPress={() => {
               if (hasChanges) {
-                Alert.alert(
-                  'Unsaved Changes',
-                  'You have unsaved changes. Are you sure you want to leave?',
-                  [
-                    { text: 'Stay', style: 'cancel' },
-                    { text: 'Leave', onPress: () => router.back() }
+                setShowAlert({
+                  visible: true,
+                  title: 'Unsaved Changes',
+                  message: 'You have unsaved changes. Are you sure you want to leave?',
+                  type: 'warning',
+                  buttons: [
+                    { text: 'Stay', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'cancel' },
+                    { text: 'Leave', onPress: () => { setShowAlert(prev => ({ ...prev, visible: false })); router.back(); }, style: 'destructive' }
                   ]
-                )
+                })
               } else {
                 router.back()
               }
@@ -373,7 +428,7 @@ export default function Detail() {
         
         <ScrollView 
           style={styles.scrollViewStyle} 
-          contentContainerStyle={styles.container}
+          contentContainerStyle={[styles.container, { paddingBottom: 60 }]}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
@@ -402,7 +457,7 @@ export default function Detail() {
         
 
         </View>
-      )};
+      )}
       
       {/* ICON SELECTION MODAL */}
       {habit && (
@@ -445,7 +500,7 @@ export default function Detail() {
             </View>
           </View>
         </Modal>
-      )};
+      )}
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeScreen>

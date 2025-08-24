@@ -65,7 +65,11 @@ export default function Home() {
       </View>
 
       {/* SCROLLABLE HABITS LIST */}
-      <ScrollView style={styles.listContainer} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={styles.listContainer} 
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 60 }}
+      >
         {
           isLoading ? (
             <View style={styles.habitCard}>

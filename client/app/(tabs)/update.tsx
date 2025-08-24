@@ -1,12 +1,12 @@
-import { View, Text, TouchableOpacity, Alert, Image, ScrollView, TextInput, Modal, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native'
+import { View, Text, TouchableOpacity, Image, ScrollView, TextInput, Modal, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native'
 import React, { useState, useEffect } from 'react'
 import { useAuthStore } from '@/store/auth.store'
 import { useRouter } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
+import CustomAlert from '../../constants/CustomAlert'
 import SafeScreen from '../../constants/SafeScreen'
 import COLORS from '../../constants/colors'
 import styles from '../../assets/styles/profile.styles'
-// import { Picker } from '@react-native-picker/picker' // Not installed
 
 export default function UpdateProfile() {
   const { user, updateProfile, changePassword, isLoading } = useAuthStore();
@@ -29,9 +29,17 @@ export default function UpdateProfile() {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [showAlert, setShowAlert] = useState({
+    visible: false,
+    title: '',
+    message: '',
+    type: 'info' as 'success' | 'error' | 'warning' | 'info',
+    buttons: [] as Array<{ text: string; onPress: () => void; style?: 'default' | 'cancel' | 'destructive' }>
+  });
 
   useEffect(() => {
     if (user) {
+      console.log('User data:', user);
       setFullname(user.fullname || '');
       setGender(user.gender || '');
       setAge(user.age?.toString() || '');
@@ -57,27 +65,57 @@ export default function UpdateProfile() {
   const handleUpdateProfile = async () => {
     try {
       if (!fullname.trim()) {
-        Alert.alert('Error', 'Full name field cannot be empty.');
+        setShowAlert({
+          visible: true,
+          title: 'Error',
+          message: 'Full name field cannot be empty.',
+          type: 'error',
+          buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+        });
         return;
       }
 
       if (fullname.trim().length < 2) {
-        Alert.alert('Error', 'Full name must be at least 2 characters long.');
+        setShowAlert({
+          visible: true,
+          title: 'Error',
+          message: 'Full name must be at least 2 characters long.',
+          type: 'error',
+          buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+        });
         return;
       }
 
       if (age && (isNaN(Number(age)) || Number(age) < 0 || Number(age) > 150)) {
-        Alert.alert('Error', 'Age must be between 0-150 years.');
+        setShowAlert({
+          visible: true,
+          title: 'Error',
+          message: 'Age must be between 0-150 years.',
+          type: 'error',
+          buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+        });
         return;
       }
 
       if (height && (isNaN(Number(height)) || Number(height) < 0 || Number(height) > 300)) {
-        Alert.alert('Error', 'Height must be between 0-300 cm.');
+        setShowAlert({
+          visible: true,
+          title: 'Error',
+          message: 'Height must be between 0-300 cm.',
+          type: 'error',
+          buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+        });
         return;
       }
 
       if (weight && (isNaN(Number(weight)) || Number(weight) < 0 || Number(weight) > 500)) {
-        Alert.alert('Error', 'Weight must be between 0-500 kg.');
+        setShowAlert({
+          visible: true,
+          title: 'Error',
+          message: 'Weight must be between 0-500 kg.',
+          type: 'error',
+          buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+        });
         return;
       }
 
@@ -100,49 +138,102 @@ export default function UpdateProfile() {
       const result = await updateProfile(profileData);
 
       if (result.success) {
-        Alert.alert('Success', result.message || 'Profile updated successfully.');
-        router.back();
+        setShowAlert({
+          visible: true,
+          title: 'Success',
+          message: result.message || 'Profile updated successfully.',
+          type: 'success',
+          buttons: [{ text: 'OK', onPress: () => { setShowAlert(prev => ({ ...prev, visible: false })); router.back(); }, style: 'default' }]
+        });
       } else {
-        Alert.alert('Error', result.message || 'An error occurred while updating profile.');
+        setShowAlert({
+          visible: true,
+          title: 'Error',
+          message: result.message || 'An error occurred while updating profile.',
+          type: 'error',
+          buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+        });
       }
     } catch (error) {
       console.error('Update profile error:', error);
-      Alert.alert('Error', 'An unexpected error occurred.');
+      setShowAlert({
+        visible: true,
+        title: 'Error',
+        message: 'An unexpected error occurred.',
+        type: 'error',
+        buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+      });
     }
   };
 
   const renderChangePassword = async () => {
     try {
       if (!currentPassword || !newPassword || !confirmNewPassword) {
-        Alert.alert('Error', 'All password fields must be filled.');
+        setShowAlert({
+          visible: true,
+          title: 'Error',
+          message: 'All password fields must be filled.',
+          type: 'error',
+          buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+        });
         return;
       }
 
      
       if (newPassword !== confirmNewPassword) {
-        Alert.alert('Error', 'New passwords do not match.');
+        setShowAlert({
+          visible: true,
+          title: 'Error',
+          message: 'New passwords do not match.',
+          type: 'error',
+          buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+        });
         return;
       }
 
       if (currentPassword === newPassword) {
-        Alert.alert('Error', 'New password must be different from current password.');
+        setShowAlert({
+          visible: true,
+          title: 'Error',
+          message: 'New password must be different from current password.',
+          type: 'error',
+          buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+        });
         return;
       }
 
       const result = await changePassword(currentPassword, newPassword);
 
       if (result.success) {
-        Alert.alert('Success', result.message || 'Password changed successfully.');
+        setShowAlert({
+          visible: true,
+          title: 'Success',
+          message: result.message || 'Password changed successfully.',
+          type: 'success',
+          buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+        });
         setShowPasswordModal(false);
         setCurrentPassword('');
         setNewPassword('');
         setConfirmNewPassword('');
       } else {
-        Alert.alert('Error', result.message || 'An error occurred while changing password.');
+        setShowAlert({
+          visible: true,
+          title: 'Error',
+          message: result.message || 'An error occurred while changing password.',
+          type: 'error',
+          buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+        });
       }
     } catch (error) {
       console.error('Change password error:', error);
-      Alert.alert('Error', 'An unexpected error occurred.');
+      setShowAlert({
+        visible: true,
+        title: 'Error',
+        message: 'An unexpected error occurred.',
+        type: 'error',
+        buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+      });
     }
   };
 
@@ -154,6 +245,14 @@ export default function UpdateProfile() {
 
   return (
     <SafeScreen>
+      <CustomAlert
+        visible={showAlert.visible}
+        title={showAlert.title}
+        message={showAlert.message}
+        type={showAlert.type}
+        buttons={showAlert.buttons}
+        onDismiss={() => setShowAlert(prev => ({ ...prev, visible: false }))}
+      />
       <KeyboardAvoidingView 
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -176,16 +275,18 @@ export default function UpdateProfile() {
             }}
             onPress={() => {
               if (hasChanges) {
-                Alert.alert(
-                  'Unsaved Changes',
-                  'You have unsaved changes. Are you sure you want to leave?',
-                  [
-                    { text: 'Stay', style: 'cancel' },
-                    { text: 'Leave', onPress: () => router.push("/(tabs)/profile") }
+                setShowAlert({
+                  visible: true,
+                  title: 'Unsaved Changes',
+                  message: 'You have unsaved changes. Are you sure you want to leave?',
+                  type: 'warning',
+                  buttons: [
+                    { text: 'Stay', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'cancel' },
+                    { text: 'Leave', onPress: () => { setShowAlert(prev => ({ ...prev, visible: false })); router.push("/(tabs)/profile"); }, style: 'destructive' }
                   ]
-                )
+                })
               } else {
-                router.back()
+                router.push("/(tabs)/profile")
               }
             }}
           >
@@ -224,7 +325,7 @@ export default function UpdateProfile() {
           style={styles.container} 
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
-          contentContainerStyle={{ paddingBottom: 20 }}
+          contentContainerStyle={{ paddingBottom: 90 }}
         >
           {/* Profile Picture Section */}
         <View style={styles.profileSection}>

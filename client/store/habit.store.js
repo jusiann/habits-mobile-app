@@ -16,17 +16,17 @@ export const useHabitStore = create((set, get) => ({
   // CHECK AND RESET DAILY
   checkAndResetDaily: () => {
     const now = new Date();
-    const today = now.toDateString();
-    const lastFetch = get().lastFetchDate;
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    const lastFetch = get().lastFetchDate ? new Date(get().lastFetchDate).getTime() : null;
     
-    if (lastFetch && lastFetch !== today) {
+    if (lastFetch && lastFetch < today) {
       console.log('New day detected, clearing habits cache');
       // CLEAR HABITS FOR NEW DAY
-      set({ habits: [], lastFetchDate: today });
+      set({ habits: [], lastFetchDate: now.toISOString() });
       return true; 
     } else if (!lastFetch) {
       // SET INITIAL DATE
-      set({ lastFetchDate: today });
+      set({ lastFetchDate: now.toISOString() });
     }
     return false;
   },

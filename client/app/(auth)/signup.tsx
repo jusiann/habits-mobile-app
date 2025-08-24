@@ -1,11 +1,12 @@
-import { View, Text, KeyboardAvoidingView, Platform, TextInput, TouchableOpacity, ActivityIndicator, Alert } from 'react-native'
-import React from 'react'
+import { View, Text, KeyboardAvoidingView, Platform, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native'
+import React, { useState } from 'react'
 import styles from '../../assets/styles/signup.styles';
 import COLORS from "../../constants/colors";
 import { Ionicons } from '@expo/vector-icons';
 import { Link } from "expo-router";
 import { useAuthStore } from '../../store/auth.store';
-import SafeScreen from '../../constants/SafeScreen';
+import CustomAlert from '../../constants/CustomAlert'
+import SafeScreen from '../../constants/SafeScreen'
 
 export default function Signup() {
   const [username, setUsername] = React.useState("");
@@ -16,44 +17,59 @@ export default function Signup() {
   const [confirmPassword, setConfirmPassword] = React.useState("");
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
   const { isLoading, register } = useAuthStore();
+  const [showAlert, setShowAlert] = useState({
+    visible: false,
+    title: '',
+    message: '',
+    type: 'info' as 'success' | 'error' | 'warning' | 'info',
+    buttons: [] as Array<{ text: string; onPress: () => void; style?: 'default' | 'cancel' | 'destructive' }>
+  });
 
   const signupAction = async () => {
     try {
       const result = await register(email, username, fullName, password);
       if (!username || !email || !fullName || !password) {
-        Alert.alert(
-          "Missing Information",
-          "Username, full name, email and password are required.",
-          [{ text: "OK" }]
-        );
+        setShowAlert({
+          visible: true,
+          title: 'Missing Information',
+          message: 'Username, full name, email and password are required.',
+          type: 'error',
+          buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+        });
         return;
       }
 
       if (!confirmPassword) {
-        Alert.alert(
-          "Missing Information",
-          "Please confirm your password.",
-          [{ text: "OK" }]
-        );
+        setShowAlert({
+          visible: true,
+          title: 'Missing Information',
+          message: 'Please confirm your password.',
+          type: 'error',
+          buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+        });
         return;
       }
 
       if (password !== confirmPassword) {
-        Alert.alert(
-          "Password Mismatch",
-          "Passwords do not match. Please try again.",
-          [{ text: "OK" }]
-        );
+        setShowAlert({
+          visible: true,
+          title: 'Password Mismatch',
+          message: 'Passwords do not match. Please try again.',
+          type: 'error',
+          buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+        });
         return;
       }
 
       const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
       if (!emailRegex.test(email)) {
-        Alert.alert(
-          "Invalid Email",
-          "Please enter a valid email address.",
-          [{ text: "OK" }]
-        );
+        setShowAlert({
+          visible: true,
+          title: 'Invalid Email',
+          message: 'Please enter a valid email address.',
+          type: 'error',
+          buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+        });
         return;
       }
       
@@ -71,31 +87,45 @@ export default function Signup() {
           alertMessage = "This username is already taken.";
         }
         
-        Alert.alert(
-          alertTitle,
-          alertMessage,
-          [{ text: "OK" }]
-        );
+        setShowAlert({
+          visible: true,
+          title: alertTitle,
+          message: alertMessage,
+          type: 'error',
+          buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+        });
         return;
       }
 
-      Alert.alert(
-        "Sign Up Successful",
-        "Account created successfully!",
-        [{ text: "OK" }]
-      );
+      setShowAlert({
+        visible: true,
+        title: 'Sign Up Successful',
+        message: 'Account created successfully!',
+        type: 'success',
+        buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+      });
       
     } catch (error: any) {
-      Alert.alert(
-        "Connection Error",
-        "Failed to connect to server. Please check your internet connection and try again.",
-        [{ text: "OK" }]
-      );
+      setShowAlert({
+        visible: true,
+        title: 'Connection Error',
+        message: 'Failed to connect to server. Please check your internet connection and try again.',
+        type: 'error',
+        buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+      });
     }
   };
 
   return (
     <SafeScreen>
+      <CustomAlert
+        visible={showAlert.visible}
+        title={showAlert.title}
+        message={showAlert.message}
+        type={showAlert.type}
+        buttons={showAlert.buttons}
+        onDismiss={() => setShowAlert(prev => ({ ...prev, visible: false }))}
+      />
       <KeyboardAvoidingView
         style={{flex:1}}
         behavior={Platform.OS === "android" ? "padding" : "height"}
