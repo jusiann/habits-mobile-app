@@ -1,11 +1,12 @@
 import React from "react";
-import {ActivityIndicator, Alert, Image, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from "react-native";
+import {ActivityIndicator, Image, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from "react-native";
 import {Link, router} from "expo-router";
 import {Ionicons} from "@expo/vector-icons";
 import styles from "../../assets/styles/signin.styles";
 import COLORS from "../../constants/colors";
 import {useAuthStore} from "../../store/auth.store";
 import SafeScreen from "../../constants/SafeScreen";
+import CustomAlert from "../../constants/CustomAlert";
 
 export default function Login() {
   const [email, setEmail] = React.useState("");
@@ -13,7 +14,13 @@ export default function Login() {
   const [password, setPassword] = React.useState("");
   const [showPassword, setShowPassword] = React.useState(false);
   const { isLoading, login } = useAuthStore();
-
+  const [showAlert, setShowAlert] = React.useState({
+    visible: false,
+    title: '',
+    message: '',
+    type: 'info' as 'success' | 'error' | 'warning' | 'info',
+    buttons: [] as Array<{ text: string; onPress: () => void; style?: 'default' | 'cancel' | 'destructive' }>
+  });
 
   const handleEmailUsernameChange = (text: string) => {
     if (text.includes("@")) {
@@ -27,53 +34,71 @@ export default function Login() {
 
   const signinAction = async () => {
     try {
-      const result = await login(email, username, password);
-
       if (!email && !username) {
-        Alert.alert(
-          "Missing Information",
-          "Please enter your email or username.",
-          [{ text: "OK" }]
-        );
+        setShowAlert({
+          visible: true,
+          title: 'Missing Information',
+          message: 'Please enter your email or username.',
+          type: 'error',
+          buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+        });
         return;
       }
 
       if (!password) {
-        Alert.alert(
-          "Missing Information", 
-          "Please enter your password.",
-          [{ text: "OK" }]
-        );
+        setShowAlert({
+          visible: true,
+          title: 'Missing Information',
+          message: 'Please enter your password.',
+          type: 'error',
+          buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+        });
         return;
       }
+
+      const result = await login(email, username, password);
 
       if (!result.success) {
-        Alert.alert(
-          "Sign In Failed",
-          result.message || "Login failed",
-          [{ text: "OK" }]
-        );
+        setShowAlert({
+          visible: true,
+          title: 'Sign In Failed',
+          message: result.message || 'Login failed',
+          type: 'error',
+          buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+        });
         return;
       }
 
-      Alert.alert(
-        "Sign In Successful",
-        "You have successfully signed in.",
-        [{ text: "OK" }]
-      );
+      setShowAlert({
+        visible: true,
+        title: 'Sign In Successful',
+        message: 'You have successfully signed in.',
+        type: 'success',
+        buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+      });
 
     } catch (error: any) {
       console.error("Login error:", error);
-      Alert.alert(
-        "Connection Error",
-        "Failed to connect to server. Please check your internet connection and try again.",
-        [{ text: "OK" }]
-      );
+      setShowAlert({
+        visible: true,
+        title: 'Connection Error',
+        message: 'Failed to connect to server. Please check your internet connection and try again.',
+        type: 'error',
+        buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+      });
     }
   };
   
   return (
     <SafeScreen>
+      <CustomAlert
+        visible={showAlert.visible}
+        title={showAlert.title}
+        message={showAlert.message}
+        type={showAlert.type}
+        buttons={showAlert.buttons}
+        onDismiss={() => setShowAlert(prev => ({ ...prev, visible: false }))}
+      />
       <KeyboardAvoidingView 
         style={{flex:1}}
         behavior={Platform.OS === "android" ? "padding" : "height"}

@@ -159,9 +159,12 @@ export const useAuthStore = create((set,get) => ({
                 throw new Error(data.message || data.error || "Token refresh failed");
             }
 
-            // UPDATE TOKENS IN STORAGE
+            // UPDATE TOKENS AND USER IN STORAGE
             await AsyncStorage.setItem("token", data.accessToken);
             await AsyncStorage.setItem("refreshToken", data.refreshToken);
+            if (data.user) {
+                await AsyncStorage.setItem("user", JSON.stringify(data.user));
+            }
             
             // TOKEN EXPIRES IN 15 MINUTES
             const expirationTime = Date.now() + (15 * 60 * 1000);
@@ -258,14 +261,15 @@ export const useAuthStore = create((set,get) => ({
                     console.warn("Server logout failed, but continuing with local logout:", serverError);
                 }
             }
-            // CLEAR LOCAL STORAGE
+
+            // CLEAR STORE STATE FIRST
+            get().clearStore();
+
+            // THEN CLEAR LOCAL STORAGE
             await AsyncStorage.removeItem("user");
             await AsyncStorage.removeItem("token");
             await AsyncStorage.removeItem("refreshToken");
             await AsyncStorage.removeItem("tokenExpirationTime");
-            
-            // CLEAR STORE STATE
-            get().clearStore();
             
             return {
                 success: true,
@@ -283,12 +287,15 @@ export const useAuthStore = create((set,get) => ({
     // CHECK AUTH STATUS
     checkAuth: async () => {
         try {
+            console.log('Starting checkAuth...');
             // LOAD FROM STORAGE
             const userJson = await AsyncStorage.getItem("user");
             const token = await AsyncStorage.getItem("token");
             const refreshToken = await AsyncStorage.getItem("refreshToken");
             const tokenExpirationTimeStr = await AsyncStorage.getItem("tokenExpirationTime");
               
+            console.log('Storage data:', { userJson, token: !!token, refreshToken: !!refreshToken });
+            
             const user = userJson ? JSON.parse(userJson) : null;
             const tokenExpirationTime = tokenExpirationTimeStr ? parseInt(tokenExpirationTimeStr) : null;
             
@@ -301,11 +308,60 @@ export const useAuthStore = create((set,get) => ({
                     tokenExpirationTime
                 });
                 
+                // FETCH LATEST USER DATA
+                try {
+                    console.log('Fetching latest user data...');
+                    const response = await fetch(
+                        `https://habits-mobile-app.onrender.com/api/auth/me`,
+                        {
+                            method: 'GET',
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            }
+                        }
+                    );
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        console.log('Latest user data:', data);
+                        
+                        // Merge existing user data with new data
+                        const updatedUser = {
+                            ...user,
+                            ...data.user,
+                            gender: data.user?.gender || user?.gender,
+                            age: data.user?.age || user?.age,
+                            height: data.user?.height || user?.height,
+                            weight: data.user?.weight || user?.weight,
+                            profilePicture: data.user?.profilePicture || user?.profilePicture
+                        };
+
+                        // Remove undefined values
+                        Object.keys(updatedUser).forEach(key => {
+                            if (updatedUser[key] === undefined) {
+                                delete updatedUser[key];
+                            }
+                        });
+
+                        console.log('Updated user data:', updatedUser);
+                        await AsyncStorage.setItem("user", JSON.stringify(updatedUser));
+                        set({ user: updatedUser });
+                    } else {
+                        console.log('Failed to fetch user data:', response.status);
+                        throw new Error('Failed to fetch user data');
+                    }
+                } catch (error) {
+                    console.error('Error fetching user data:', error);
+                    throw error;
+                }
+                
                 // CHECK IF TOKEN NEEDS REFRESH
                 const currentTime = Date.now();
                 const twoMinutes = 2 * 60 * 1000;
                 
                 if (tokenExpirationTime && (currentTime >= tokenExpirationTime - twoMinutes)) {
+                    console.log('Token needs refresh...');
                     const refreshResult = await get().refreshAccessToken();
                     if (refreshResult.success) {
                         get().startAutoRefresh();
@@ -322,6 +378,7 @@ export const useAuthStore = create((set,get) => ({
                 }
             } else {
                 // NO TOKENS FOUND
+                console.log('No tokens found');
                 set({ user: null, token: null, refreshToken: null, tokenExpirationTime: null });
                 return { 
                     success: false, 
@@ -329,6 +386,7 @@ export const useAuthStore = create((set,get) => ({
                 };
             }
         } catch (error) {
+            console.error('CheckAuth error:', error);
             set({ user: null, token: null, refreshToken: null, tokenExpirationTime: null });
             return {
                 success: false,
@@ -444,6 +502,18 @@ export const useAuthStore = create((set,get) => ({
         return !!token;
     },
 
+    // CLEAR STORE
+    clearStore: () => {
+        set({
+            user: null,
+            token: null,
+            refreshToken: null,
+            tokenExpirationTime: null,
+            refreshTimer: null,
+            isLoading: false
+        });
+    },
+
     // API WRAPPER WITH AUTO REFRESH
     makeAuthenticatedRequest: async (url, options = {}) => {
         const { token, tokenExpirationTime } = get();
@@ -510,6 +580,8 @@ export const useAuthStore = create((set,get) => ({
     updateProfile: async ({ fullname, gender, height, weight, age, profilePicture, currentPassword, newPassword }) => {
         set({ isLoading: true });
         try {
+            console.log('Updating profile with data:', { fullname, gender, height, weight, age, profilePicture });
+            
             const response = await get().makeAuthenticatedRequest(
                 `https://habits-mobile-app.onrender.com/api/auth/update-profile`,
                 {
@@ -530,6 +602,7 @@ export const useAuthStore = create((set,get) => ({
             let data;
             try {
                 data = await response.json();
+                console.log('Update profile response:', data);
             } catch (parseError) {
                 console.error("JSON parse error:", parseError);
                 throw new Error("Invalid server response format");
@@ -540,13 +613,29 @@ export const useAuthStore = create((set,get) => ({
             }
 
             // UPDATE USER IN STORAGE AND STATE
-            if (data.user) {
-                await AsyncStorage.setItem("user", JSON.stringify(data.user));
-                set({ 
-                    user: data.user,
-                    isLoading: false 
-                });
-            }
+            const updatedUser = {
+                ...get().user,
+                fullname,
+                gender,
+                height: height ? Number(height) : undefined,
+                weight: weight ? Number(weight) : undefined,
+                age: age ? Number(age) : undefined,
+                profilePicture
+            };
+
+            // Remove undefined values
+            Object.keys(updatedUser).forEach(key => {
+                if (updatedUser[key] === undefined) {
+                    delete updatedUser[key];
+                }
+            });
+
+            console.log('Updating user data in storage:', updatedUser);
+            await AsyncStorage.setItem("user", JSON.stringify(updatedUser));
+            set({ 
+                user: updatedUser,
+                isLoading: false 
+            });
 
             return {
                 success: true,

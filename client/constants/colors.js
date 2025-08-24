@@ -11,7 +11,7 @@
 //   border: "#c8e6c9",
 //   white: "#ffffff",
 //   black: "#000000",
-//   success: "#2E7D32",
+//   success: "#388E3C",
 //   successLight: "#E8F5E9",
 // };
 
@@ -28,8 +28,8 @@ const COLORS = {
   border: "#D5BDEC",         
   white: "#ffffff",
   black: "#000000",
-  success: "#27AE60",
-  successLight: "#E8F8F5",
+  success: "#9B59B6",
+  successLight: "#F3E5F5",
 };
 
 // RETRO
@@ -46,28 +46,27 @@ const COLORS = {
 //   border: "#e2d6c1",
 //   white: "#ffffff",
 //   black: "#000000",
-//   success: "#6B8E23",
-//   successLight: "#F5F8E8",
+//   success: "#D35400",
+//   successLight: "#FDF2E9",
 // };
 
 // OCEAN
-/*
-const COLORS = {
-  primary: "#1976D2", 
-  textPrimary: "#1a4971",
-  textSecondary: "#6d93b8", 
-  textDark: "#0d2b43", 
-  placeholderText: "#767676",
-  background: "#e3f2fd", 
-  cardBackground: "#f5f9ff",
-  inputBackground: "#f0f8ff", 
-  border: "#bbdefb",
-  white: "#ffffff",
-  black: "#000000",
-  success: "#0288D1",
-  successLight: "#E1F5FE",
-};
-*/
+
+// const COLORS = {
+//   primary: "#1976D2", 
+//   textPrimary: "#1a4971",
+//   textSecondary: "#6d93b8", 
+//   textDark: "#0d2b43", 
+//   placeholderText: "#767676",
+//   background: "#e3f2fd", 
+//   cardBackground: "#f5f9ff",
+//   inputBackground: "#f0f8ff", 
+//   border: "#bbdefb",
+//   white: "#ffffff",
+//   black: "#000000",
+//   success: "#0277BD",
+//   successLight: "#E1F5FE",
+// };
 
 // BLOSSOM
 // const COLORS = {
@@ -99,8 +98,8 @@ const COLORS = {
 //   border: "#FFCC9C",         // Açık turuncu border
 //   white: "#ffffff",
 //   black: "#000000",
-//   success: "#FF6F00",
-//   successLight: "#FFF8E1",
+//   success: "#F57C00",
+//   successLight: "#FFF3E0",
 // };
 
 

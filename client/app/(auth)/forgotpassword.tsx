@@ -4,11 +4,9 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
-  Image,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -16,6 +14,7 @@ import { useAuthStore } from "../../store/auth.store";
 import COLORS from "../../constants/colors";
 import styles from "../../assets/styles/passwordpages.styles";
 import SafeScreen from "../../constants/SafeScreen";
+import CustomAlert from "../../constants/CustomAlert";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
@@ -24,6 +23,13 @@ const ForgotPassword = () => {
   const [sendingCode, setSendingCode] = useState(false);
   const [verifyingCode, setVerifyingCode] = useState(false);
   const { sendResetCode } = useAuthStore();
+  const [showAlert, setShowAlert] = useState({
+    visible: false,
+    title: '',
+    message: '',
+    type: 'info' as 'success' | 'error' | 'warning' | 'info',
+    buttons: [] as Array<{ text: string; onPress: () => void; style?: 'default' | 'cancel' | 'destructive' }>
+  });
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -33,20 +39,24 @@ const ForgotPassword = () => {
   const sendResetCodeAction = async () => {
     try {
       if (!email) {
-        Alert.alert(
-          "Missing Information",
-          "Please enter your email address.",
-          [{ text: "OK" }]
-        );
+        setShowAlert({
+          visible: true,
+          title: "Missing Information",
+          message: "Please enter your email address.",
+          type: "warning",
+          buttons: [{ text: "OK", onPress: () => setShowAlert(prev => ({ ...prev, visible: false })) }]
+        });
         return;
       }
 
       if (!validateEmail(email)) {
-        Alert.alert(
-          "Invalid Email",
-          "Please enter a valid email address.",
-          [{ text: "OK" }]
-        );
+        setShowAlert({
+          visible: true,
+          title: "Invalid Email",
+          message: "Please enter a valid email address.",
+          type: "warning",
+          buttons: [{ text: "OK", onPress: () => setShowAlert(prev => ({ ...prev, visible: false })) }]
+        });
         return;
       }
 
@@ -54,26 +64,32 @@ const ForgotPassword = () => {
       const result = await sendResetCode(email);
       
       if (result.success) {
-        Alert.alert(
-          "Reset Code Sent",
-          result.message,
-          [{ text: "OK" }]
-        );
+        setShowAlert({
+          visible: true,
+          title: "Reset Code Sent",
+          message: result.message,
+          type: "success",
+          buttons: [{ text: "OK", onPress: () => setShowAlert(prev => ({ ...prev, visible: false })) }]
+        });
         setCodeSent(true);
       } else {
-        Alert.alert(
-          "Error",
-          result.message,
-          [{ text: "OK" }]
-        );
+        setShowAlert({
+          visible: true,
+          title: "Error",
+          message: result.message,
+          type: "error",
+          buttons: [{ text: "OK", onPress: () => setShowAlert(prev => ({ ...prev, visible: false })) }]
+        });
       }
     } catch (error: any) {
       console.error("Send reset code error:", error);
-      Alert.alert(
-        "Connection Error",
-        "Failed to send reset code. Please check your internet connection and try again.",
-        [{ text: "OK" }]
-      );
+      setShowAlert({
+        visible: true,
+        title: "Connection Error",
+        message: "Failed to send reset code. Please check your internet connection and try again.",
+        type: "error",
+        buttons: [{ text: "OK", onPress: () => setShowAlert(prev => ({ ...prev, visible: false })) }]
+      });
     } finally {
       setSendingCode(false);
     }
@@ -82,11 +98,13 @@ const ForgotPassword = () => {
   const verifyCodeAction = async () => {
     try {
       if (!resetCode.trim()) {
-        Alert.alert(
-          "Missing Information",
-          "Please enter the reset code.",
-          [{ text: "OK" }]
-        );
+        setShowAlert({
+          visible: true,
+          title: "Missing Information",
+          message: "Please enter the reset code.",
+          type: "warning",
+          buttons: [{ text: "OK", onPress: () => setShowAlert(prev => ({ ...prev, visible: false })) }]
+        });
         return;
       }
 
@@ -107,19 +125,23 @@ const ForgotPassword = () => {
           params: { email, resetCode }
         });
       } else {
-        Alert.alert(
-          "Verification Failed",
-          checkData.message || 'Invalid reset code',
-          [{ text: "OK" }]
-        );
+        setShowAlert({
+          visible: true,
+          title: "Verification Failed",
+          message: checkData.message || 'Invalid reset code',
+          type: "error",
+          buttons: [{ text: "OK", onPress: () => setShowAlert(prev => ({ ...prev, visible: false })) }]
+        });
       }
     } catch (error: any) {
       console.error("Verify code error:", error);
-      Alert.alert(
-        "Connection Error",
-        "Failed to verify reset code. Please check your internet connection.",
-        [{ text: "OK" }]
-      );
+      setShowAlert({
+        visible: true,
+        title: "Connection Error",
+        message: "Failed to verify reset code. Please check your internet connection.",
+        type: "error",
+        buttons: [{ text: "OK", onPress: () => setShowAlert(prev => ({ ...prev, visible: false })) }]
+      });
     } finally {
       setVerifyingCode(false);
     }
@@ -262,18 +284,19 @@ const ForgotPassword = () => {
                    <Text style={styles.buttonText}>Verify Code</Text>
                  )}
                </TouchableOpacity>
-
-
             </View>
-
-
           </View>
         </View>
       </KeyboardAvoidingView>
+      <CustomAlert
+        visible={showAlert.visible}
+        title={showAlert.title}
+        message={showAlert.message}
+        buttons={showAlert.buttons}
+        type={showAlert.type}
+      />
     </SafeScreen>
   );
 };
-
-
 
 export default ForgotPassword;

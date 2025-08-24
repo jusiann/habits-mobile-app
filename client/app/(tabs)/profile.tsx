@@ -1,9 +1,10 @@
-import { View, Text, TouchableOpacity, Image, Alert, ScrollView } from 'react-native';
-import React from 'react'
+import { View, Text, TouchableOpacity, Image, ScrollView } from 'react-native';
+import React, { useState } from 'react'
 import { useAuthStore } from '@/store/auth.store'
 import { useHabitStore } from '@/store/habit.store'
 import { useRouter } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
+import CustomAlert from '../../constants/CustomAlert'
 import SafeScreen from '../../constants/SafeScreen'
 import COLORS from '../../constants/colors'
 import styles from '../../assets/styles/profile.styles'
@@ -13,6 +14,23 @@ export default function Profile() {
   const { clearStore } = useHabitStore();
   const router = useRouter();
 
+  // Log user data
+  React.useEffect(() => {
+    console.log('Current user data:', user);
+    console.log('gender', user?.gender);
+    console.log('height', user?.height);
+    console.log('weight', user?.weight);
+    console.log('age', user?.age);
+  }, [user]);
+
+  const [showAlert, setShowAlert] = useState({
+    visible: false,
+    title: '',
+    message: '',
+    type: 'info' as 'success' | 'error' | 'warning' | 'info',
+    buttons: [] as Array<{ text: string; onPress: () => void; style?: 'default' | 'cancel' | 'destructive' }>
+  });
+
   const logoutAction = async () => {
     try {
       clearStore();
@@ -21,11 +39,23 @@ export default function Profile() {
         router.dismissAll();
         router.push('/');
       } else {
-        Alert.alert('Error', result.message || 'Logout failed');
+        setShowAlert({
+          visible: true,
+          title: 'Error',
+          message: result.message || 'Logout failed',
+          type: 'error',
+          buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+        });
       }
     } catch (error) {
       console.error('Logout error:', error);
-      Alert.alert('Error', 'An unexpected error occurred during logout');
+      setShowAlert({
+        visible: true,
+        title: 'Error',
+        message: 'An unexpected error occurred during logout',
+        type: 'error',
+        buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+      });
     }
   };
 
@@ -35,10 +65,18 @@ export default function Profile() {
 
   return (
     <SafeScreen>
+      <CustomAlert
+        visible={showAlert.visible}
+        title={showAlert.title}
+        message={showAlert.message}
+        type={showAlert.type}
+        buttons={showAlert.buttons}
+        onDismiss={() => setShowAlert(prev => ({ ...prev, visible: false }))}
+      />
       <ScrollView 
         style={styles.container} 
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 20 }}
+        contentContainerStyle={{ paddingBottom: 90 }}
       >
 
         {/* PROFILE CARD */}

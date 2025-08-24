@@ -1,4 +1,4 @@
-import {View, Text, TouchableOpacity, ScrollView, TextInput, Alert, Modal, KeyboardAvoidingView, Platform} from 'react-native'
+import {View, Text, TouchableOpacity, ScrollView, TextInput, Modal, KeyboardAvoidingView, Platform} from 'react-native'
 import React, { useState, useEffect } from 'react'
 import {useRouter, useFocusEffect} from 'expo-router'
 import {Ionicons} from '@expo/vector-icons'
@@ -7,6 +7,7 @@ import styles from '../../assets/styles/create.styles'
 import {useAuthStore} from '../../store/auth.store'
 import {useHabitStore} from '../../store/habit.store'
 import {CUSTOM_ICONS} from '../../constants/customIcons'
+import CustomAlert from '../../constants/CustomAlert'
 import SafeScreen from '../../constants/SafeScreen'
 
 export default function Create() {
@@ -24,6 +25,13 @@ export default function Create() {
   const [showIconModal, setShowIconModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [hasChanges] = useState(false);
+  const [showAlert, setShowAlert] = useState({
+    visible: false,
+    title: '',
+    message: '',
+    type: 'info' as 'success' | 'error' | 'warning' | 'info',
+    buttons: [] as Array<{ text: string; onPress: () => void; style?: 'default' | 'cancel' | 'destructive' }>
+  });
 
 
   useEffect(() => {
@@ -62,11 +70,23 @@ export default function Create() {
       
       if (habitType === 'default') {
         if (!selectedHabit) {
-          Alert.alert('Missing Information', 'Please select a habit preset.')
+          setShowAlert({
+            visible: true,
+            title: 'Missing Information',
+            message: 'Please select a habit preset.',
+            type: 'error',
+            buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+          })
           return;
         }
         if (!targetAmount || !incrementAmount || !selectedUnit) {
-          Alert.alert('Missing Information', 'For preset habits: name, type, category, unit, targetAmount and incrementAmount are required.')
+          setShowAlert({
+            visible: true,
+            title: 'Missing Information',
+            message: 'For preset habits: name, type, category, unit, targetAmount and incrementAmount are required.',
+            type: 'error',
+            buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+          })
           return;
         }
         
@@ -80,7 +100,13 @@ export default function Create() {
         }
       } else {
         if (!customName || !customIcon || !customUnit || !targetAmount || !incrementAmount) {
-          Alert.alert('Missing Information', 'For custom habits: icon, unit, targetAmount and incrementAmount are required.')
+          setShowAlert({
+            visible: true,
+            title: 'Missing Information',
+            message: 'For custom habits: icon, unit, targetAmount and incrementAmount are required.',
+            type: 'error',
+            buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+          })
           return
         }
         
@@ -97,27 +123,53 @@ export default function Create() {
       }
 
       if (isNaN(parseInt(targetAmount)) || parseInt(targetAmount) <= 0) {
-        Alert.alert('Invalid Input', 'Target amount must be a positive number.')
+        setShowAlert({
+          visible: true,
+          title: 'Invalid Input',
+          message: 'Target amount must be a positive number.',
+          type: 'error',
+          buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+        })
         return;
       }
 
       if (isNaN(parseInt(incrementAmount)) || parseInt(incrementAmount) <= 0) {
-        Alert.alert('Invalid Input', 'Increment amount must be a positive number.')
+        setShowAlert({
+          visible: true,
+          title: 'Invalid Input',
+          message: 'Increment amount must be a positive number.',
+          type: 'error',
+          buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+        })
         return;
       }
 
       const result = await createHabit(habitData)
       if (result.success) {
-        Alert.alert('Success', 'Habit created successfully!', [{ 
-            text: 'OK', 
-            onPress: () => router.push('/(tabs)') 
-          }
-        ]);
+        setShowAlert({
+          visible: true,
+          title: 'Success',
+          message: 'Habit created successfully!',
+          type: 'success',
+          buttons: [{ text: 'OK', onPress: () => { setShowAlert(prev => ({ ...prev, visible: false })); router.push('/(tabs)'); }, style: 'default' }]
+        });
       } else {
-        Alert.alert('Habit Creation Failed', result.message || 'Failed to create habit')
+        setShowAlert({
+          visible: true,
+          title: 'Habit Creation Failed',
+          message: result.message || 'Failed to create habit',
+          type: 'error',
+          buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+        })
       }
     } catch (error: any) {
-      Alert.alert('Connection Error', 'Failed to connect to server. Please check your internet connection and try again.')
+      setShowAlert({
+        visible: true,
+        title: 'Connection Error',
+        message: 'Failed to connect to server. Please check your internet connection and try again.',
+        type: 'error',
+        buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+      })
     } finally {
       setIsLoading(false)
     }
@@ -301,6 +353,14 @@ export default function Create() {
 
   return (
     <SafeScreen>
+      <CustomAlert
+        visible={showAlert.visible}
+        title={showAlert.title}
+        message={showAlert.message}
+        type={showAlert.type}
+        buttons={showAlert.buttons}
+        onDismiss={() => setShowAlert(prev => ({ ...prev, visible: false }))}
+      />
       <KeyboardAvoidingView 
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -321,14 +381,17 @@ export default function Create() {
               gap: 8
             }}
             onPress={() => 
-              Alert.alert(
-                  'Cancel Habit Creation',
-                  'Are you sure you want to cancel creating this habit?',
-                  [
-                    { text: 'Stay', style: 'cancel' },
-                    { text: 'Cancel', onPress: () => router.back() }
-                  ]
-                )}
+              setShowAlert({
+                visible: true,
+                title: 'Cancel Habit Creation',
+                message: 'Are you sure you want to cancel creating this habit?',
+                type: 'warning',
+                buttons: [
+                  { text: 'Stay', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'cancel' },
+                  { text: 'Cancel', onPress: () => { setShowAlert(prev => ({ ...prev, visible: false })); router.back(); }, style: 'destructive' }
+                ]
+              })
+            }
           >
             <Ionicons 
               name="arrow-back" 
@@ -363,7 +426,7 @@ export default function Create() {
         
         <ScrollView 
           style={styles.scrollViewStyle} 
-          contentContainerStyle={styles.container}
+          contentContainerStyle={[styles.container, { paddingBottom: 60 }]}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
