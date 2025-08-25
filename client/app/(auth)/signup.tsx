@@ -1,10 +1,10 @@
-import { View, Text, KeyboardAvoidingView, Platform, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native'
-import React, { useState } from 'react'
+import {View, Text, KeyboardAvoidingView, Platform, TextInput, TouchableOpacity, ActivityIndicator} from 'react-native'
+import React from 'react'
 import styles from '../../assets/styles/signup.styles';
 import COLORS from "../../constants/colors";
-import { Ionicons } from '@expo/vector-icons';
-import { Link } from "expo-router";
-import { useAuthStore } from '../../store/auth.store';
+import {Ionicons} from '@expo/vector-icons';
+import {Link} from "expo-router";
+import {useAuthStore} from '../../store/auth.store';
 import CustomAlert from '../../constants/CustomAlert'
 import SafeScreen from '../../constants/SafeScreen'
 
@@ -16,8 +16,8 @@ export default function Signup() {
   const [showPassword, setShowPassword] = React.useState(false);
   const [confirmPassword, setConfirmPassword] = React.useState("");
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
-  const { isLoading, register } = useAuthStore();
-  const [showAlert, setShowAlert] = useState({
+  const {isLoading, register} = useAuthStore();
+  const [showAlert, setShowAlert] = React.useState({
     visible: false,
     title: '',
     message: '',
@@ -34,7 +34,7 @@ export default function Signup() {
           title: 'Missing Information',
           message: 'Username, full name, email and password are required.',
           type: 'error',
-          buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+          buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
         });
         return;
       }
@@ -45,7 +45,7 @@ export default function Signup() {
           title: 'Missing Information',
           message: 'Please confirm your password.',
           type: 'error',
-          buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+          buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
         });
         return;
       }
@@ -56,7 +56,7 @@ export default function Signup() {
           title: 'Password Mismatch',
           message: 'Passwords do not match. Please try again.',
           type: 'error',
-          buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+          buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
         });
         return;
       }
@@ -68,7 +68,7 @@ export default function Signup() {
           title: 'Invalid Email',
           message: 'Please enter a valid email address.',
           type: 'error',
-          buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+          buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
         });
         return;
       }
@@ -92,7 +92,7 @@ export default function Signup() {
           title: alertTitle,
           message: alertMessage,
           type: 'error',
-          buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+          buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
         });
         return;
       }
@@ -102,16 +102,16 @@ export default function Signup() {
         title: 'Sign Up Successful',
         message: 'Account created successfully!',
         type: 'success',
-        buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+        buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
       });
       
-    } catch (error: any) {
+    } catch (error) {
       setShowAlert({
         visible: true,
         title: 'Connection Error',
         message: 'Failed to connect to server. Please check your internet connection and try again.',
         type: 'error',
-        buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+        buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
       });
     }
   };
@@ -124,7 +124,7 @@ export default function Signup() {
         message={showAlert.message}
         type={showAlert.type}
         buttons={showAlert.buttons}
-        onDismiss={() => setShowAlert(prev => ({ ...prev, visible: false }))}
+        onDismiss={() => setShowAlert(previous => ({ ...previous, visible: false }))}
       />
       <KeyboardAvoidingView
         style={{flex:1}}

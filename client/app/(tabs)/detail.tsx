@@ -1,58 +1,38 @@
-import { View, Text, TouchableOpacity, ScrollView, TextInput, Modal, KeyboardAvoidingView, Platform } from 'react-native'
+import {View, Text, TouchableOpacity, ScrollView, TextInput, Modal, KeyboardAvoidingView, Platform} from 'react-native'
 import CustomAlert from '../../constants/CustomAlert'
-import React, { useState, useEffect } from 'react'
-import { useRouter, useLocalSearchParams } from 'expo-router'
-import { Ionicons } from '@expo/vector-icons'
+import React from 'react'
+import {useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router'
+import {Ionicons} from '@expo/vector-icons'
 import COLORS from '../../constants/colors'
 import styles from '../../assets/styles/create.styles'
-import { useHabitStore } from '../../store/habit.store'
-import { CUSTOM_ICONS } from '../../constants/customIcons'
+import {useHabitStore} from '../../store/habit.store'
+import {CUSTOM_ICONS} from '../../constants/custom.icons'
 import SafeScreen from '../../constants/SafeScreen'
 
 export default function Detail() {
   const router = useRouter()
-  const { habitId } = useLocalSearchParams()
-  const { habits, updateHabit } = useHabitStore()
-  
-  const [habit, setHabit] = useState<any>(null)
-  const [originalUnit, setOriginalUnit] = useState('')
-  const [customName, setCustomName] = useState('')
-  const [customIcon, setCustomIcon] = useState('heart-outline')
-  const [customUnit, setCustomUnit] = useState('')
-  const [targetAmount, setTargetAmount] = useState('')
-  const [incrementAmount, setIncrementAmount] = useState('')
-  const [selectedUnit, setSelectedUnit] = useState('')
-  const [showIconModal, setShowIconModal] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [hasChanges, setHasChanges] = useState(false)
-  const [showAlert, setShowAlert] = useState({
+  const {habitId} = useLocalSearchParams()
+  const {habits, updateHabit} = useHabitStore()
+  const [habit, setHabit] = React.useState<any>(null)
+  const [originalUnit, setOriginalUnit] = React.useState('')
+  const [customName, setCustomName] = React.useState('')
+  const [customIcon, setCustomIcon] = React.useState('heart-outline')
+  const [customUnit, setCustomUnit] = React.useState('')
+  const [targetAmount, setTargetAmount] = React.useState('')
+  const [incrementAmount, setIncrementAmount] = React.useState('')
+  const [selectedUnit, setSelectedUnit] = React.useState('')
+  const [showIconModal, setShowIconModal] = React.useState(false)
+  const [isLoading, setIsLoading] = React.useState(false)
+  const [hasChanges, setHasChanges] = React.useState(false)
+  const [showAlert, setShowAlert] = React.useState({
     visible: false,
     title: '',
     message: '',
     type: 'info' as 'success' | 'error' | 'warning' | 'info',
     buttons: [] as Array<{ text: string; onPress: () => void; style?: 'default' | 'cancel' | 'destructive' }>
-  })
+  });
 
-  useEffect(() => {
-    if (habitId && habits.length > 0) {
-      const foundHabit = habits.find((h: any) => h.id === habitId)
-      if (foundHabit) {
-        setHabit(foundHabit)
-        setOriginalUnit(foundHabit.unit)
-        setTargetAmount(foundHabit.targetAmount.toString())
-        setIncrementAmount(foundHabit.incrementAmount.toString())
-        setSelectedUnit(foundHabit.unit)
-        
-        if (foundHabit.type === 'other') {
-          setCustomName(foundHabit.name)
-          setCustomIcon(foundHabit.icon)
-          setCustomUnit(foundHabit.unit)
-        }
-      }
-    }
-  }, [habitId, habits])
-
-  useEffect(() => {
+  React.useEffect(() => {
     if (!habit) 
       return;
     
@@ -69,16 +49,37 @@ export default function Detail() {
                 targetAmount !== habit.targetAmount.toString() ||
                 incrementAmount !== habit.incrementAmount.toString()
     setHasChanges(changes)
-  }, [habit, customName, customIcon, customUnit, targetAmount, incrementAmount, selectedUnit])
+  }, [habit, customName, customIcon, customUnit, targetAmount, incrementAmount, selectedUnit]);
 
-  const updateHabitAction = async () => {
+  useFocusEffect(
+    React.useCallback(() => {
+      if (habitId && habits.length > 0) {
+        const foundHabit = habits.find((h: any) => h.id === habitId)
+        if (foundHabit) {
+          setHabit(foundHabit)
+          setOriginalUnit(foundHabit.unit)
+          setTargetAmount(foundHabit.targetAmount.toString())
+          setIncrementAmount(foundHabit.incrementAmount.toString())
+          setSelectedUnit(foundHabit.unit)
+          setHasChanges(false)
+          
+          if (foundHabit.type === 'other') {
+            setCustomName(foundHabit.name)
+            setCustomIcon(foundHabit.icon)
+            setCustomUnit(foundHabit.unit)
+          }
+        }
+      }
+    }, [habitId, habits])
+  );
+
+  const detailHabitAction = async () => {
     if (!habit || !hasChanges) 
       return;
 
+    setIsLoading(true)
     try {
-      setIsLoading(true)
       let updateData = {}
-      
       if (habit.type === 'default') {
         updateData = {
           unit: selectedUnit,
@@ -101,7 +102,7 @@ export default function Detail() {
           title: 'Invalid Input',
           message: 'Target amount must be a positive number.',
           type: 'error',
-          buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+          buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
         })
         return;
       }
@@ -112,7 +113,7 @@ export default function Detail() {
           title: 'Invalid Input',
           message: 'Increment amount must be a positive number.',
           type: 'error',
-          buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+          buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
         })
         return;
       }
@@ -124,7 +125,7 @@ export default function Detail() {
             title: 'Invalid Input',
             message: 'Habit name is required.',
             type: 'error',
-            buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+            buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
           })
           return;
         }
@@ -134,21 +135,20 @@ export default function Detail() {
             title: 'Invalid Input',
             message: 'Unit is required.',
             type: 'error',
-            buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+            buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
           })
           return;
         }
       }
 
       const result = await updateHabit(habit.id, updateData)
-
       if (result.success) {
         setShowAlert({
           visible: true,
           title: 'Success',
           message: 'Habit updated successfully!',
           type: 'success',
-          buttons: [{ text: 'OK', onPress: () => { setShowAlert(prev => ({ ...prev, visible: false })); router.back(); }, style: 'default' }]
+          buttons: [{ text: 'OK', onPress: () => { setShowAlert(previous => ({ ...previous, visible: false })); router.back(); }, style: 'default' }]
         });
       } else {
         setShowAlert({
@@ -156,24 +156,21 @@ export default function Detail() {
           title: 'Update Failed',
           message: result.message || 'Failed to update habit',
           type: 'error',
-          buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+          buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
         })
       }
-    } catch (error: any) {
-      console.error('UpdateHabit error:', error);
+    } catch (error) {
       setShowAlert({
         visible: true,
         title: 'Connection Error',
         message: 'Failed to connect to server. Please check your internet connection and try again.',
         type: 'error',
-        buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+        buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
       })
     } finally {
       setIsLoading(false)
     }
-  }
-
-
+  };
 
   const renderDefaultHabitEdit = () => (
     <View>
@@ -191,7 +188,6 @@ export default function Detail() {
         </View>
 
         {/* DEFAULT HABIT WARNING FOR CHANGES */}
-
         {(selectedUnit !== originalUnit || 
           targetAmount !== habit.targetAmount.toString() || 
           incrementAmount !== habit.incrementAmount.toString()) && (
@@ -264,7 +260,6 @@ export default function Detail() {
 
   const renderCustomHabitEdit = () => (
     <View>
-
       {/* CUSTOM HABIT INFORMATION */}
       <View style={styles.formGroup}>
         <Text style={styles.label}>Habit Name</Text>
@@ -357,13 +352,14 @@ export default function Detail() {
         message={showAlert.message}
         type={showAlert.type}
         buttons={showAlert.buttons}
-        onDismiss={() => setShowAlert(prev => ({ ...prev, visible: false }))}
+        onDismiss={() => setShowAlert(previous => ({ ...previous, visible: false }))}
       />
       <KeyboardAvoidingView 
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
+
         {/* HEADER WITH BACK AND SAVE BUTTONS */}
         <View style={{ 
           flexDirection: 'row', 
@@ -372,6 +368,8 @@ export default function Detail() {
           paddingHorizontal: 20, 
           paddingVertical: 10
         }}>
+
+          {/* BACK BUTTON */}
           <TouchableOpacity 
             style={{
               flexDirection: 'row',
@@ -386,8 +384,8 @@ export default function Detail() {
                   message: 'You have unsaved changes. Are you sure you want to leave?',
                   type: 'warning',
                   buttons: [
-                    { text: 'Stay', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'cancel' },
-                    { text: 'Leave', onPress: () => { setShowAlert(prev => ({ ...prev, visible: false })); router.back(); }, style: 'destructive' }
+                    { text: 'Stay', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'cancel' },
+                    { text: 'Leave', onPress: () => { setShowAlert(previous => ({ ...previous, visible: false })); router.back(); }, style: 'destructive' }
                   ]
                 })
               } else {
@@ -409,11 +407,12 @@ export default function Detail() {
             </Text>
           </TouchableOpacity>
           
+          {/* SAVE BUTTON */}
           <TouchableOpacity
             style={{
               opacity: (!hasChanges || isLoading) ? 0.5 : 1
             }}
-            onPress={updateHabitAction}
+            onPress={detailHabitAction}
             disabled={!hasChanges || isLoading}
           >
             <Text style={{
@@ -426,6 +425,7 @@ export default function Detail() {
           </TouchableOpacity>
         </View>
         
+        {/* MAIN CONTENT SCROLL VIEW */}
         <ScrollView 
           style={styles.scrollViewStyle} 
           contentContainerStyle={[styles.container, { paddingBottom: 60 }]}
@@ -441,6 +441,8 @@ export default function Detail() {
         </View>
       ) : (
         <View style={styles.card}>
+          
+          {/* HEADER SECTION */}
           <View style={styles.header}>
             <Text style={styles.title}>Edit Habit</Text>
             <Text style={styles.subtitle}>
@@ -454,8 +456,6 @@ export default function Detail() {
           <View style={styles.form}>
             {habit.type === 'default' ? renderDefaultHabitEdit() : renderCustomHabitEdit()}
           </View>
-        
-
         </View>
       )}
       
@@ -469,6 +469,8 @@ export default function Detail() {
         >
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
+
+              {/* MODAL HEADER */}
               <View style={styles.modalHeader}>
                 <Text style={styles.modalTitle}>Choose Icon</Text>
                 <TouchableOpacity onPress={() => setShowIconModal(false)}>
@@ -476,6 +478,7 @@ export default function Detail() {
                 </TouchableOpacity>
               </View>
               
+              {/* ICON GRID */}
               <ScrollView contentContainerStyle={styles.iconGrid}>
                 {CUSTOM_ICONS.map((icon) => (
                   <TouchableOpacity
@@ -504,5 +507,5 @@ export default function Detail() {
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeScreen>
-  )
-}
+  );
+};

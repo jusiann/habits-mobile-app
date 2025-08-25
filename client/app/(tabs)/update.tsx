@@ -1,35 +1,31 @@
-import { View, Text, TouchableOpacity, Image, ScrollView, TextInput, Modal, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native'
-import React, { useState, useEffect } from 'react'
-import { useAuthStore } from '@/store/auth.store'
-import { useRouter } from 'expo-router'
-import { Ionicons } from '@expo/vector-icons'
+import {View, Text, TouchableOpacity, Image, ScrollView, TextInput, Modal, ActivityIndicator, KeyboardAvoidingView, Platform} from 'react-native'
+import React from 'react'
+import {useAuthStore } from '@/store/auth.store'
+import {useRouter, useFocusEffect } from 'expo-router'
+import {Ionicons} from '@expo/vector-icons'
 import CustomAlert from '../../constants/CustomAlert'
 import SafeScreen from '../../constants/SafeScreen'
 import COLORS from '../../constants/colors'
 import styles from '../../assets/styles/profile.styles'
 
 export default function UpdateProfile() {
-  const { user, updateProfile, changePassword, isLoading } = useAuthStore();
+  const {user, updateProfile, changePassword, isLoading} = useAuthStore();
   const router = useRouter();
-
-  // Form states
-  const [fullname, setFullname] = useState(user?.fullname || '');
-  const [gender, setGender] = useState(user?.gender || '');
-  const [age, setAge] = useState(user?.age?.toString() || '');
-  const [height, setHeight] = useState(user?.height?.toString() || '');
-  const [weight, setWeight] = useState(user?.weight?.toString() || '');
-  const [profilePicture, setProfilePicture] = useState(user?.profilePicture || '');
-
-  // Password modal states
-  const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmNewPassword, setConfirmNewPassword] = useState('');
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [hasChanges, setHasChanges] = useState(false);
-  const [showAlert, setShowAlert] = useState({
+  const [fullname, setFullname] = React.useState(user?.fullname || '');
+  const [gender, setGender] = React.useState(user?.gender || '');
+  const [age, setAge] = React.useState(user?.age?.toString() || '');
+  const [height, setHeight] = React.useState(user?.height?.toString() || '');
+  const [weight, setWeight] = React.useState(user?.weight?.toString() || '');
+  const [profilePicture, setProfilePicture] = React.useState(user?.profilePicture || '');
+  const [showPasswordModal, setShowPasswordModal] = React.useState(false);
+  const [currentPassword, setCurrentPassword] = React.useState('');
+  const [newPassword, setNewPassword] = React.useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = React.useState('');
+  const [showCurrentPassword, setShowCurrentPassword] = React.useState(false);
+  const [showNewPassword, setShowNewPassword] = React.useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
+  const [hasChanges, setHasChanges] = React.useState(false);
+  const [showAlert, setShowAlert] = React.useState({
     visible: false,
     title: '',
     message: '',
@@ -37,20 +33,9 @@ export default function UpdateProfile() {
     buttons: [] as Array<{ text: string; onPress: () => void; style?: 'default' | 'cancel' | 'destructive' }>
   });
 
-  useEffect(() => {
-    if (user) {
-      console.log('User data:', user);
-      setFullname(user.fullname || '');
-      setGender(user.gender || '');
-      setAge(user.age?.toString() || '');
-      setHeight(user.height?.toString() || '');
-      setWeight(user.weight?.toString() || '');
-      setProfilePicture(user.profilePicture || '');
-    }
-  }, [user]);
-
-  useEffect(() => {
-    if (!user) return;
+  React.useEffect(() => {
+    if (!user) 
+      return;
     
     const changes = fullname !== (user.fullname || '') ||
                    gender !== (user.gender || '') ||
@@ -62,7 +47,28 @@ export default function UpdateProfile() {
     setHasChanges(changes);
   }, [user, fullname, gender, height, weight, profilePicture]);
 
-  const handleUpdateProfile = async () => {
+  useFocusEffect(
+    React.useCallback(() => {
+      if (user) {
+        setFullname(user.fullname || '');
+        setGender(user.gender || '');
+        setAge(user.age?.toString() || '');
+        setHeight(user.height?.toString() || '');
+        setWeight(user.weight?.toString() || '');
+        setProfilePicture(user.profilePicture || '');
+        setShowPasswordModal(false);
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmNewPassword('');
+        setShowCurrentPassword(false);
+        setShowNewPassword(false);
+        setShowConfirmPassword(false);
+        setHasChanges(false);
+      }
+    }, [user])
+  );
+
+  const updateProfileAction = async () => {
     try {
       if (!fullname.trim()) {
         setShowAlert({
@@ -70,7 +76,7 @@ export default function UpdateProfile() {
           title: 'Error',
           message: 'Full name field cannot be empty.',
           type: 'error',
-          buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+          buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
         });
         return;
       }
@@ -81,7 +87,7 @@ export default function UpdateProfile() {
           title: 'Error',
           message: 'Full name must be at least 2 characters long.',
           type: 'error',
-          buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+          buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
         });
         return;
       }
@@ -92,7 +98,7 @@ export default function UpdateProfile() {
           title: 'Error',
           message: 'Age must be between 0-150 years.',
           type: 'error',
-          buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+          buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
         });
         return;
       }
@@ -103,7 +109,7 @@ export default function UpdateProfile() {
           title: 'Error',
           message: 'Height must be between 0-300 cm.',
           type: 'error',
-          buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+          buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
         });
         return;
       }
@@ -114,7 +120,7 @@ export default function UpdateProfile() {
           title: 'Error',
           message: 'Weight must be between 0-500 kg.',
           type: 'error',
-          buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+          buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
         });
         return;
       }
@@ -128,7 +134,7 @@ export default function UpdateProfile() {
         profilePicture: profilePicture || undefined
       };
 
-      // Remove undefined values
+      // REMOVE UNDEFINED VALUES
       Object.keys(profileData).forEach(key => {
         if (profileData[key as keyof typeof profileData] === undefined) {
           delete profileData[key as keyof typeof profileData];
@@ -136,14 +142,13 @@ export default function UpdateProfile() {
       });
 
       const result = await updateProfile(profileData);
-
       if (result.success) {
         setShowAlert({
           visible: true,
           title: 'Success',
           message: result.message || 'Profile updated successfully.',
           type: 'success',
-          buttons: [{ text: 'OK', onPress: () => { setShowAlert(prev => ({ ...prev, visible: false })); router.back(); }, style: 'default' }]
+          buttons: [{ text: 'OK', onPress: () => { setShowAlert(previous => ({ ...previous, visible: false })); router.back(); }, style: 'default' }]
         });
       } else {
         setShowAlert({
@@ -151,7 +156,7 @@ export default function UpdateProfile() {
           title: 'Error',
           message: result.message || 'An error occurred while updating profile.',
           type: 'error',
-          buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+          buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
         });
       }
     } catch (error) {
@@ -161,7 +166,7 @@ export default function UpdateProfile() {
         title: 'Error',
         message: 'An unexpected error occurred.',
         type: 'error',
-        buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+        buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
       });
     }
   };
@@ -174,19 +179,18 @@ export default function UpdateProfile() {
           title: 'Error',
           message: 'All password fields must be filled.',
           type: 'error',
-          buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+          buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
         });
         return;
       }
 
-     
       if (newPassword !== confirmNewPassword) {
         setShowAlert({
           visible: true,
           title: 'Error',
           message: 'New passwords do not match.',
           type: 'error',
-          buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+          buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
         });
         return;
       }
@@ -197,20 +201,19 @@ export default function UpdateProfile() {
           title: 'Error',
           message: 'New password must be different from current password.',
           type: 'error',
-          buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+          buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
         });
         return;
       }
 
       const result = await changePassword(currentPassword, newPassword);
-
       if (result.success) {
         setShowAlert({
           visible: true,
           title: 'Success',
           message: result.message || 'Password changed successfully.',
           type: 'success',
-          buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+          buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
         });
         setShowPasswordModal(false);
         setCurrentPassword('');
@@ -222,7 +225,7 @@ export default function UpdateProfile() {
           title: 'Error',
           message: result.message || 'An error occurred while changing password.',
           type: 'error',
-          buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+          buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
         });
       }
     } catch (error) {
@@ -232,11 +235,12 @@ export default function UpdateProfile() {
         title: 'Error',
         message: 'An unexpected error occurred.',
         type: 'error',
-        buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+        buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
       });
     }
   };
 
+  // remove it
   const generateNewProfilePicture = () => {
     const name = fullname || user?.fullname || 'User';
     const newUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff&size=256&${Date.now()}`;
@@ -251,7 +255,7 @@ export default function UpdateProfile() {
         message={showAlert.message}
         type={showAlert.type}
         buttons={showAlert.buttons}
-        onDismiss={() => setShowAlert(prev => ({ ...prev, visible: false }))}
+        onDismiss={() => setShowAlert(previous => ({ ...previous, visible: false }))}
       />
       <KeyboardAvoidingView 
         style={{ flex: 1 }}
@@ -267,6 +271,7 @@ export default function UpdateProfile() {
           paddingVertical: 10,
           backgroundColor: COLORS.background
         }}>
+          {/* BACK BUTTON */}
           <TouchableOpacity 
             style={{
               flexDirection: 'row',
@@ -281,8 +286,8 @@ export default function UpdateProfile() {
                   message: 'You have unsaved changes. Are you sure you want to leave?',
                   type: 'warning',
                   buttons: [
-                    { text: 'Stay', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'cancel' },
-                    { text: 'Leave', onPress: () => { setShowAlert(prev => ({ ...prev, visible: false })); router.push("/(tabs)/profile"); }, style: 'destructive' }
+                    { text: 'Stay', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'cancel' },
+                    { text: 'Leave', onPress: () => { setShowAlert(previous => ({ ...previous, visible: false })); router.push("/(tabs)/profile"); }, style: 'destructive' }
                   ]
                 })
               } else {
@@ -304,11 +309,12 @@ export default function UpdateProfile() {
             </Text>
           </TouchableOpacity>
           
+          {/* SAVE BUTTON */}
           <TouchableOpacity
             style={{
               opacity: (!hasChanges || isLoading) ? 0.5 : 1
             }}
-            onPress={handleUpdateProfile}
+            onPress={updateProfileAction}
             disabled={!hasChanges || isLoading}
           >
             <Text style={{
@@ -321,152 +327,158 @@ export default function UpdateProfile() {
           </TouchableOpacity>
         </View>
         
+        {/* MAIN CONTENT SCROLL VIEW */}
         <ScrollView 
           style={styles.container} 
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={{ paddingBottom: 90 }}
         >
-          {/* Profile Picture Section */}
-        <View style={styles.profileSection}>
-          <View style={styles.profileImageContainer}>
-            <Image 
-              source={{ uri: profilePicture || user?.profilePicture || 'https://ui-avatars.com/api/?name=User&background=random&color=fff&size=256' }}
-              style={styles.profileImage}
-            />
-          </View>
-          <TouchableOpacity style={styles.changePictureButton} onPress={generateNewProfilePicture}>
-            <Ionicons name="camera" size={18} color={COLORS.white} />
-            <Text style={styles.changePictureText}>Change Picture</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Form */}
-        <View style={styles.formCard}>
-          {/* Full Name */}
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Full Name *</Text>
-            <View style={styles.inputContainer}>
-              <Ionicons name="person-outline" size={24} color={COLORS.textSecondary} style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                value={fullname}
-                onChangeText={setFullname}
-                placeholder="Full Name"
-                placeholderTextColor={COLORS.placeholderText}
+          {/* PROFILE PICTURE SECTION */}
+          <View style={styles.profileSection}>
+            <View style={styles.profileImageContainer}>
+              <Image 
+                source={{ uri: profilePicture || user?.profilePicture || 'https://ui-avatars.com/api/?name=User&background=random&color=fff&size=256' }}
+                style={styles.profileImage}
               />
             </View>
+            <TouchableOpacity style={styles.changePictureButton} onPress={generateNewProfilePicture}>
+              <Ionicons name="camera" size={18} color={COLORS.white} />
+              <Text style={styles.changePictureText}>Change Picture</Text>
+            </TouchableOpacity>
           </View>
 
-          {/* Gender */}
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Gender</Text>
-            <View style={styles.genderContainer}>
-
-              <TouchableOpacity 
-                style={[styles.genderOption, gender === 'male' && styles.genderOptionSelected]}
-                onPress={() => setGender(gender === 'male' ? '' : 'male')}
-              >
-                <Ionicons 
-                  name={gender === 'male' ? 'radio-button-on' : 'radio-button-off'} 
-                  size={24} 
-                  color={gender === 'male' ? COLORS.primary : COLORS.textSecondary} 
+          {/* FORM SECTION */}
+          <View style={styles.formCard}>
+            {/* FULL NAME INPUT */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Full Name *</Text>
+              <View style={styles.inputContainer}>
+                {/* USER ICON */}
+                <Ionicons name="person-outline" size={24} color={COLORS.textSecondary} style={styles.inputIcon} />
+                <TextInput
+                  style={styles.input}
+                  value={fullname}
+                  onChangeText={setFullname}
+                  placeholder="Full Name"
+                  placeholderTextColor={COLORS.placeholderText}
                 />
-                <Text style={[styles.genderText, gender === 'male' && styles.genderTextSelected]}>Male</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={[styles.genderOption, gender === 'female' && styles.genderOptionSelected]}
-                onPress={() => setGender(gender === 'female' ? '' : 'female')}
-              >
-                <Ionicons 
-                  name={gender === 'female' ? 'radio-button-on' : 'radio-button-off'} 
-                  size={24} 
-                  color={gender === 'female' ? COLORS.primary : COLORS.textSecondary} 
+              </View>
+            </View>
+
+            {/* GENDER SELECTION */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Gender</Text>
+              <View style={styles.genderContainer}>
+                {/* GENDER OPTIONS */}
+                <TouchableOpacity 
+                  style={[styles.genderOption, gender === 'male' && styles.genderOptionSelected]}
+                  onPress={() => setGender(gender === 'male' ? '' : 'male')}
+                >
+                  <Ionicons 
+                    name={gender === 'male' ? 'radio-button-on' : 'radio-button-off'} 
+                    size={24} 
+                    color={gender === 'male' ? COLORS.primary : COLORS.textSecondary} 
+                  />
+                  <Text style={[styles.genderText, gender === 'male' && styles.genderTextSelected]}>Male</Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity 
+                  style={[styles.genderOption, gender === 'female' && styles.genderOptionSelected]}
+                  onPress={() => setGender(gender === 'female' ? '' : 'female')}
+                >
+                  <Ionicons 
+                    name={gender === 'female' ? 'radio-button-on' : 'radio-button-off'} 
+                    size={24} 
+                    color={gender === 'female' ? COLORS.primary : COLORS.textSecondary} 
+                  />
+                  <Text style={[styles.genderText, gender === 'female' && styles.genderTextSelected]}>Female</Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity 
+                  style={[styles.genderOption, gender === 'other' && styles.genderOptionSelected]}
+                  onPress={() => setGender(gender === 'other' ? '' : 'other')}
+                >
+                  <Ionicons 
+                    name={gender === 'other' ? 'radio-button-on' : 'radio-button-off'} 
+                    size={24} 
+                    color={gender === 'other' ? COLORS.primary : COLORS.textSecondary} 
+                  />
+                  <Text style={[styles.genderText, gender === 'other' && styles.genderTextSelected]}>Other</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {/* AGE INPUT */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Age</Text>
+              <View style={styles.inputContainer}>
+                {/* CALENDAR ICON */}
+                <Ionicons name="calendar-outline" size={24} color={COLORS.textSecondary} style={styles.inputIcon} />
+                <TextInput
+                  style={styles.input}
+                  value={age}
+                  onChangeText={setAge}
+                  placeholder="Age"
+                  placeholderTextColor={COLORS.placeholderText}
+                  keyboardType="numeric"
                 />
-                <Text style={[styles.genderText, gender === 'female' && styles.genderTextSelected]}>Female</Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={[styles.genderOption, gender === 'other' && styles.genderOptionSelected]}
-                onPress={() => setGender(gender === 'other' ? '' : 'other')}
-              >
-                <Ionicons 
-                  name={gender === 'other' ? 'radio-button-on' : 'radio-button-off'} 
-                  size={24} 
-                  color={gender === 'other' ? COLORS.primary : COLORS.textSecondary} 
+              </View>
+            </View>
+
+            {/* HEIGHT INPUT */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Height (cm)</Text>
+              <View style={styles.inputContainer}>
+                {/* RESIZE ICON */}
+                <Ionicons name="resize-outline" size={24} color={COLORS.textSecondary} style={styles.inputIcon} />
+                <TextInput
+                  style={styles.input}
+                  value={height}
+                  onChangeText={setHeight}
+                  placeholder="Height (cm)"
+                  placeholderTextColor={COLORS.placeholderText}
+                  keyboardType="numeric"
                 />
-                <Text style={[styles.genderText, gender === 'other' && styles.genderTextSelected]}>Other</Text>
-              </TouchableOpacity>
+              </View>
+            </View>
+
+            {/* WEIGHT INPUT */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.label}>Weight (kg)</Text>
+              <View style={styles.inputContainer}>
+                {/* FITNESS ICON */}
+                <Ionicons name="fitness-outline" size={24} color={COLORS.textSecondary} style={styles.inputIcon} />
+                <TextInput
+                  style={styles.input}
+                  value={weight}
+                  onChangeText={setWeight}
+                  placeholder="Weight (kg)"
+                  placeholderTextColor={COLORS.placeholderText}
+                  keyboardType="numeric"
+                />
+              </View>
             </View>
           </View>
 
-          {/* Age */}
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Age</Text>
-            <View style={styles.inputContainer}>
-              <Ionicons name="calendar-outline" size={24} color={COLORS.textSecondary} style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                value={age}
-                onChangeText={setAge}
-                placeholder="Age"
-                placeholderTextColor={COLORS.placeholderText}
-                keyboardType="numeric"
-              />
-            </View>
+          {/* ACTIONS SECTION */}
+          <View style={styles.actionsCard}>
+            {/* CHANGE PASSWORD BUTTON */}
+            <TouchableOpacity 
+              style={styles.actionButton} 
+              onPress={() => setShowPasswordModal(true)}
+            >
+              <View style={styles.actionIcon}>
+                <Ionicons name="lock-closed-outline" size={24} color={COLORS.primary} />
+              </View>
+              <Text style={styles.actionText}>Change Password</Text>
+              <Ionicons name="chevron-forward" size={18} color={COLORS.textSecondary} />
+            </TouchableOpacity>
           </View>
-
-          {/* Height */}
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Height (cm)</Text>
-            <View style={styles.inputContainer}>
-              <Ionicons name="resize-outline" size={24} color={COLORS.textSecondary} style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                value={height}
-                onChangeText={setHeight}
-                placeholder="Height (cm)"
-                placeholderTextColor={COLORS.placeholderText}
-                keyboardType="numeric"
-              />
-            </View>
-          </View>
-
-          {/* Weight */}
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Weight (kg)</Text>
-            <View style={styles.inputContainer}>
-              <Ionicons name="fitness-outline" size={24} color={COLORS.textSecondary} style={styles.inputIcon} />
-              <TextInput
-                style={styles.input}
-                value={weight}
-                onChangeText={setWeight}
-                placeholder="Weight (kg)"
-                placeholderTextColor={COLORS.placeholderText}
-                keyboardType="numeric"
-              />
-            </View>
-          </View>
-        </View>
-
-        {/* Actions */}
-        <View style={styles.actionsCard}>
-          <TouchableOpacity 
-            style={styles.actionButton} 
-            onPress={() => setShowPasswordModal(true)}
-          >
-            <View style={styles.actionIcon}>
-              <Ionicons name="lock-closed-outline" size={24} color={COLORS.primary} />
-            </View>
-            <Text style={styles.actionText}>Change Password</Text>
-            <Ionicons name="chevron-forward" size={18} color={COLORS.textSecondary} />
-          </TouchableOpacity>
-        </View>
         </ScrollView>
       </KeyboardAvoidingView>
 
-      {/* Password Change Modal */}
+      {/* PASSWORD CHANGE MODAL */}
       <Modal
         visible={showPasswordModal}
         transparent={true}
@@ -482,7 +494,7 @@ export default function UpdateProfile() {
               </TouchableOpacity>
             </View>
 
-            {/* Current Password */}
+            {/* CURRENT PASSWORD */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Current Password</Text>
               <View style={styles.inputContainer}>
@@ -506,7 +518,7 @@ export default function UpdateProfile() {
               </View>
             </View>
 
-            {/* New Password */}
+            {/* NEW PASSWORD */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>New Password</Text>
               <View style={styles.inputContainer}>
@@ -530,7 +542,7 @@ export default function UpdateProfile() {
               </View>
             </View>
 
-            {/* Confirm New Password */}
+            {/* CONFIRM NEW PASSWORD */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Confirm New Password</Text>
               <View style={styles.inputContainer}>
@@ -554,7 +566,7 @@ export default function UpdateProfile() {
               </View>
             </View>
 
-            {/* Modal Button */}
+            {/* MODAL BUTTON */}
             <TouchableOpacity 
               style={[{
                 height: 48,
@@ -578,5 +590,5 @@ export default function UpdateProfile() {
         </View>
       </Modal>
     </SafeScreen>
-  )
+  );
 };

@@ -1,6 +1,6 @@
 import React from "react";
 import {ActivityIndicator, Image, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from "react-native";
-import {Link, router} from "expo-router";
+import {Link} from "expo-router";
 import {Ionicons} from "@expo/vector-icons";
 import styles from "../../assets/styles/signin.styles";
 import COLORS from "../../constants/colors";
@@ -13,7 +13,7 @@ export default function Login() {
   const [username, setUsername] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [showPassword, setShowPassword] = React.useState(false);
-  const { isLoading, login } = useAuthStore();
+  const {isLoading, login} = useAuthStore();
   const [showAlert, setShowAlert] = React.useState({
     visible: false,
     title: '',
@@ -40,7 +40,7 @@ export default function Login() {
           title: 'Missing Information',
           message: 'Please enter your email or username.',
           type: 'error',
-          buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+          buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
         });
         return;
       }
@@ -57,7 +57,6 @@ export default function Login() {
       }
 
       const result = await login(email, username, password);
-
       if (!result.success) {
         setShowAlert({
           visible: true,
@@ -77,8 +76,7 @@ export default function Login() {
         buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
       });
 
-    } catch (error: any) {
-      console.error("Login error:", error);
+    } catch (error) {
       setShowAlert({
         visible: true,
         title: 'Connection Error',
@@ -97,7 +95,7 @@ export default function Login() {
         message={showAlert.message}
         type={showAlert.type}
         buttons={showAlert.buttons}
-        onDismiss={() => setShowAlert(prev => ({ ...prev, visible: false }))}
+        onDismiss={() => setShowAlert(previous => ({ ...previous, visible: false }))}
       />
       <KeyboardAvoidingView 
         style={{flex:1}}

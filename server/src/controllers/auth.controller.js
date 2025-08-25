@@ -85,7 +85,11 @@ export const signUp = async (req, res) => {
                 username: user.username,
                 email: user.email,
                 fullname: user.fullname,
-                profilePicture: user.profilePicture
+                profilePicture: user.profilePicture,
+                gender: user.gender,
+                height: user.height,
+                weight: user.weight,
+                age: user.age
             }   
         });
     } catch (error) {
@@ -132,7 +136,11 @@ export const signIn = async (req, res) => {
                 username: existingUser.username,
                 email: existingUser.email,
                 fullname: existingUser.fullname,
-                profilePicture: existingUser.profilePicture
+                profilePicture: existingUser.profilePicture,
+                gender: existingUser.gender,
+                height: existingUser.height,
+                weight: existingUser.weight,
+                age: existingUser.age
             }
         });
     } catch (error) {
@@ -180,7 +188,11 @@ export const refreshToken = async (req, res) => {
                 username: user.username,
                 email: user.email,
                 fullname: user.fullname,
-                profilePicture: user.profilePicture
+                profilePicture: user.profilePicture,
+                gender: user.gender,
+                height: user.height,
+                weight: user.weight,
+                age: user.age
             }
         });
     } catch (error) {
