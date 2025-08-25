@@ -1,19 +1,19 @@
-import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
-import React, { useEffect, useState } from 'react';
-import { Image } from 'expo-image';
-import { router } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import {View, Text, ScrollView, TouchableOpacity} from 'react-native';
+import React from 'react';
+import {Image} from 'expo-image';
+import {router} from 'expo-router';
+import {Ionicons} from '@expo/vector-icons';
 import styles from '../../assets/styles/home.styles';
-import { useAuthStore } from '../../store/auth.store';
-import { useHabitStore } from '../../store/habit.store';
+import {useAuthStore} from '../../store/auth.store';
+import {useHabitStore} from '../../store/habit.store';
 import SafeScreen from '../../constants/SafeScreen';
 
 export default function Home() {
-  const { user, token } = useAuthStore();
-  const { habits, fetchHabits, incrementHabit, isLoading } = useHabitStore();
-  const [pressedButton, setPressedButton] = useState<string | null>(null);
+  const {user, token} = useAuthStore();
+  const {habits, fetchHabits, incrementHabit, isLoading} = useHabitStore();
+  const [pressedButton, setPressedButton] = React.useState<string | null>(null);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (token) {
       fetchHabits();
     }

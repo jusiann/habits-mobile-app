@@ -1,7 +1,9 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Modal, Dimensions } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import {View, Text, TouchableOpacity, StyleSheet, Modal, Dimensions} from 'react-native';
+import {Ionicons} from '@expo/vector-icons';
 import COLORS from './colors';
+
+const {width} = Dimensions.get('window');
 
 interface CustomAlertProps {
   visible: boolean;
@@ -15,8 +17,6 @@ interface CustomAlertProps {
   }>;
   onDismiss?: () => void;
 }
-
-const { width } = Dimensions.get('window');
 
 const CustomAlert: React.FC<CustomAlertProps> = ({
   visible,
@@ -67,30 +67,28 @@ const CustomAlert: React.FC<CustomAlertProps> = ({
           <Text style={styles.title}>{title}</Text>
           <Text style={styles.message}>{message}</Text>
           <View style={[styles.buttonContainer, buttons.length > 2 && styles.buttonColumnContainer]}>
-            {buttons.map((button, index) => (
-              <TouchableOpacity
-                key={index}
-                style={[
-                  styles.button,
-                  button.style === 'destructive' && styles.destructiveButton,
-                  button.style === 'cancel' && styles.cancelButton,
-                  buttons.length === 2 && { flex: 1 },
-                  index > 0 && buttons.length === 2 && { marginLeft: 8 },
-                  index > 0 && buttons.length > 2 && { marginTop: 8 },
-                ]}
-                onPress={button.onPress}
-              >
-                <Text
-                  style={[
-                    styles.buttonText,
-                    button.style === 'destructive' && styles.destructiveButtonText,
-                    button.style === 'cancel' && styles.cancelButtonText,
+            {
+              buttons.map((button, index) => (
+                <TouchableOpacity key={index} style={[
+                    styles.button,
+                    button.style === 'destructive' && styles.destructiveButton,
+                    button.style === 'cancel' && styles.cancelButton,
+                    buttons.length === 2 && { flex: 1 },
+                    index > 0 && buttons.length === 2 && { marginLeft: 8 },
+                    index > 0 && buttons.length > 2 && { marginTop: 8 },
                   ]}
+                onPress={button.onPress}
                 >
-                  {button.text}
-                </Text>
-              </TouchableOpacity>
-            ))}
+                  <Text style={[
+                      styles.buttonText,
+                      button.style === 'destructive' && styles.destructiveButtonText,
+                      button.style === 'cancel' && styles.cancelButtonText,
+                    ]}
+                  >
+                    {button.text}
+                  </Text>
+                </TouchableOpacity>
+              ))}
           </View>
         </View>
       </View>

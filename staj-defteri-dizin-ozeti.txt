@@ -1,0 +1,75 @@
+#client
+Temel klasör: c:\Users\adil\Desktop\habits-mobile-app\client\
+
+- c:\Users\adil\Desktop\habits-mobile-app\client\.gitignore — Git tarafından izlenmemesi gereken dosya ve klasörler.
+- c:\Users\adil\Desktop\habits-mobile-app\client\README.md — İstemci (mobil) uygulamayı çalıştırma ve geliştirme notları.
+- c:\Users\adil\Desktop\habits-mobile-app\client\app\ — Uygulama ekranları ve Expo Router sayfa yapısı.
+  - c:\Users\adil\Desktop\habits-mobile-app\client\app\_layout.tsx — Uygulamanın kök layout’u, global navigasyon/tema.
+  - c:\Users\adil\Desktop\habits-mobile-app\client\app\index.tsx — Uygulamanın açılış/karşılama ana sayfası.
+  - c:\Users\adil\Desktop\habits-mobile-app\client\app\(auth)\ — Kimlik doğrulama akışına ait sayfalar.
+    - _layout.tsx — Auth akışının layout’u (stack/tab düzeni, başlıklar vb.).
+    - index.tsx — Oturum açma (signin) ekranı.
+    - signup.tsx — Kayıt olma (signup) ekranı.
+    - forgotpassword.tsx — Şifre sıfırlama talebi ekranı.
+    - changepassword.tsx — Şifre değiştirme ekranı.
+  - c:\Users\adil\Desktop\habits-mobile-app\client\app\(tabs)\ — Giriş sonrası sekmeli ana uygulama ekranları.
+    - _layout.tsx — Sekmeli (tabs) navigasyonun layout’u.
+    - index.tsx — Ana sekme/ana ekran.
+    - create.tsx — Yeni alışkanlık oluşturma ekranı.
+    - update.tsx — Alışkanlık güncelleme ekranı.
+    - detail.tsx — Alışkanlık detay ekranı.
+    - history.tsx — Alışkanlık geçmişi/istatistik ekranı.
+    - challenge.tsx — Meydan okuma/etkinlik ekranı.
+    - profile.tsx — Kullanıcı profil ekranı.
+- c:\Users\adil\Desktop\habits-mobile-app\client\app.json — Expo uygulama yapılandırması (ad, ikon, izinler vb.).
+- c:\Users\adil\Desktop\habits-mobile-app\client\assets\ — Statik varlıklar (font, görsel, stiller).
+  - fonts\SpaceMono-Regular.ttf — Uygulamada kullanılan özel yazı tipi.
+  - images\*.png — Uygulama ikonları, splash ve örnek görseller.
+  - styles\*.js — Ekranlara ait stil dosyaları (tema/renk/yerleşim).
+- c:\Users\adil\Desktop\habits-mobile-app\client\constants\ — Uygulama genelinde paylaşılan sabitler/yardımcılar.
+  - colors.js — Renk paleti.
+  - custom.icons.js — Özel ikon tanımları.
+  - CustomAlert.tsx — Özelleştirilmiş uyarı bileşeni.
+  - SafeScreen.tsx — Güvenli alanları yöneten sarmalayıcı ekran bileşeni.
+- c:\Users\adil\Desktop\habits-mobile-app\client\store\ — Global durum yönetimi (auth ve habit durumları).
+  - auth.store.js — Kimlik doğrulama durumları/aksiyonları.
+  - habit.store.js — Alışkanlık verileri/aksiyonları.
+- c:\Users\adil\Desktop\habits-mobile-app\client\eslint.config.js — Kod kalite ve lint kuralları.
+- c:\Users\adil\Desktop\habits-mobile-app\client\package.json — İstemci bağımlılıkları ve script’ler.
+- c:\Users\adil\Desktop\habits-mobile-app\client\package-lock.json — Bağımlılıkların kilit dosyası.
+- c:\Users\adil\Desktop\habits-mobile-app\client\tsconfig.json — TypeScript yapılandırması.
+
+#server
+Temel klasör: c:\Users\adil\Desktop\habits-mobile-app\server\
+
+- c:\Users\adil\Desktop\habits-mobile-app\server\.env.example — Ortam değişkenleri için örnek dosya (anahtarlar, bağlantı adresleri vb.).
+- c:\Users\adil\Desktop\habits-mobile-app\server\.gitignore — Git tarafından izlenmemesi gereken dosya ve klasörler.
+- c:\Users\adil\Desktop\habits-mobile-app\server\app.js — Sunucu uygulamasının giriş noktası (Express uygulaması kurulumu, middleware, route bağlama).
+- c:\Users\adil\Desktop\habits-mobile-app\server\package.json — Sunucu bağımlılıkları ve script’ler.
+- c:\Users\adil\Desktop\habits-mobile-app\server\package-lock.json — Bağımlılıkların kilit dosyası.
+- c:\Users\adil\Desktop\habits-mobile-app\server\src\ — Sunucu kaynak kodları.
+  - controllers\ — İstekleri işleyen kontrolcüler.
+    - auth.controller.js — Kayıt, giriş, şifre işlemleri ve profil gibi kimlik doğrulama uçları.
+    - habit.controller.js — Alışkanlık oluşturma/güncelleme/silme ve ilişkili işlemler.
+  - lib\
+    - db.js — Veritabanı bağlantısı ve ilgili ayarlar.
+  - middlewares\ — İstek öncesi/sonrası araya giren katmanlar.
+    - auth.js — Yetkilendirme/kullanıcı doğrulama kontrolleri.
+    - cloudinary.js — Dosya yükleme/bulut depolama yapılandırması.
+  - models\ — Veri modelleri ve şemalar.
+    - user.js — Kullanıcı veri modeli.
+    - habit.js — Alışkanlık veri modeli.
+    - habit.log.js — Alışkanlık günlük/kayıt modeli.
+  - routes\ — API uç noktalarının yönlendirme tanımları.
+    - auth.routes.js — Kimlik doğrulama ile ilgili rotalar.
+    - habit.routes.js — Alışkanlık işlemleri ile ilgili rotalar.
+  - utils\ — Yardımcı araçlar.
+    - cron.js — Zamanlanmış görevler.
+    - error.js — Hata nesneleri/işleme yardımcıları.
+    - send.email.js — E-posta gönderim yardımcıları.
+
+#proje-kok
+Temel klasör: c:\Users\adil\Desktop\habits-mobile-app\
+
+- .gitignore — Depoya dahil edilmemesi gereken genel dosya/klasörler.
+- README.md — Projenin genel açıklaması ve çalışma talimatları.

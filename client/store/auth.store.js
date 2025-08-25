@@ -11,7 +11,9 @@ export const useAuthStore = create((set,get) => ({
 
     // REGISTER USER
     register: async (email, username, fullname, password) => {
-        set({ isLoading: true });
+        set({ 
+            isLoading: true 
+        });
         try {
             const response = await fetch(`https://habits-mobile-app.onrender.com/api/auth/sign-up`, {
                 method: "POST",
@@ -59,27 +61,36 @@ export const useAuthStore = create((set,get) => ({
                 success: true,
             };
         } catch (error) {
-            set({ isLoading: false });
+            set({ 
+                isLoading: false 
+            });
             return {
                 success: false,
                 message: error.message || "An error occurred during registration",
             };
         } finally {
-            set({ isLoading: false });
+            set({ 
+                isLoading: false 
+            });
         }
     },
 
     // LOGIN USER
     login: async (email, username, password) => {
+        set({ 
+            isLoading: true
+        });
         try {
-            set({ isLoading: true });
             // SEND EMAIL OR USERNAME
             let body = {};
             if (email) {
                 body = { email, password };
             } else if (username) {
                 body = { username, password };
+            } else {
+                throw new Error("Email or username is required");
             }
+
             const response = await fetch(`https://habits-mobile-app.onrender.com/api/auth/sign-in`, {
                 method: "POST",
                 headers: {
@@ -96,7 +107,8 @@ export const useAuthStore = create((set,get) => ({
                 throw new Error("Invalid server response format");
             }
 
-            if (!response.ok) throw new Error(data.message || data.error || "Login failed");
+            if (!response.ok) 
+                throw new Error(data.message || data.error || "Login failed");
 
             // SAVE TO STORAGE
             await AsyncStorage.setItem("user", JSON.stringify(data.user));
@@ -123,7 +135,9 @@ export const useAuthStore = create((set,get) => ({
                 success: true,
             };
         } catch (error) {
-            set({ isLoading: false });
+            set({ 
+                isLoading: false 
+            });
             return {
                 success: false,
                 message: error.message || "An error occurred during login",
@@ -134,11 +148,10 @@ export const useAuthStore = create((set,get) => ({
     // REFRESH TOKEN
     refreshAccessToken: async () => {
         try {
-            const { refreshToken } = get();
-            if (!refreshToken) {
+            const {refreshToken} = get();
+            if (!refreshToken)
                 throw new Error("No refresh token available");
-            }
-
+            
             const response = await fetch(`https://habits-mobile-app.onrender.com/api/auth/refresh-token`, {
                 method: "POST",
                 headers: {
@@ -155,16 +168,14 @@ export const useAuthStore = create((set,get) => ({
                 throw new Error("Invalid server response format");
             }
 
-            if (!response.ok) {
+            if (!response.ok)
                 throw new Error(data.message || data.error || "Token refresh failed");
-            }
 
             // UPDATE TOKENS AND USER IN STORAGE
             await AsyncStorage.setItem("token", data.accessToken);
             await AsyncStorage.setItem("refreshToken", data.refreshToken);
-            if (data.user) {
+            if (data.user)
                 await AsyncStorage.setItem("user", JSON.stringify(data.user));
-            }
             
             // TOKEN EXPIRES IN 15 MINUTES
             const expirationTime = Date.now() + (15 * 60 * 1000);
@@ -228,7 +239,9 @@ export const useAuthStore = create((set,get) => ({
             }
         }, timeUntilRefresh);
 
-        set({ refreshTimer: timer }); 
+        set({ 
+            refreshTimer: timer 
+        }); 
     },
 
     // STOP AUTO REFRESH TIMER
@@ -236,7 +249,10 @@ export const useAuthStore = create((set,get) => ({
         const { refreshTimer } = get();
         if (refreshTimer) {
             clearTimeout(refreshTimer);
-            set({ refreshTimer: null });
+            set({ 
+                refreshTimer: null,
+                tokenExpirationTime: null,
+            });
         }
     },
 
@@ -258,7 +274,7 @@ export const useAuthStore = create((set,get) => ({
                         },
                     });
                 } catch (serverError) {
-                    console.warn("Server logout failed, but continuing with local logout:", serverError);
+                    console.log("Server logout failed, but continuing with local logout:", serverError);
                 }
             }
 
@@ -276,7 +292,6 @@ export const useAuthStore = create((set,get) => ({
                 message: "Logged out successfully"
             };
         } catch (error) {
-            console.error("Error logging out:", error);
             return {
                 success: false,
                 message: error.message || "Logout failed"
@@ -287,15 +302,11 @@ export const useAuthStore = create((set,get) => ({
     // CHECK AUTH STATUS
     checkAuth: async () => {
         try {
-            console.log('Starting checkAuth...');
             // LOAD FROM STORAGE
             const userJson = await AsyncStorage.getItem("user");
             const token = await AsyncStorage.getItem("token");
             const refreshToken = await AsyncStorage.getItem("refreshToken");
             const tokenExpirationTimeStr = await AsyncStorage.getItem("tokenExpirationTime");
-              
-            console.log('Storage data:', { userJson, token: !!token, refreshToken: !!refreshToken });
-            
             const user = userJson ? JSON.parse(userJson) : null;
             const tokenExpirationTime = tokenExpirationTimeStr ? parseInt(tokenExpirationTimeStr) : null;
             
@@ -310,7 +321,6 @@ export const useAuthStore = create((set,get) => ({
                 
                 // FETCH LATEST USER DATA
                 try {
-                    console.log('Fetching latest user data...');
                     const response = await fetch(
                         `https://habits-mobile-app.onrender.com/api/auth/me`,
                         {
@@ -326,33 +336,23 @@ export const useAuthStore = create((set,get) => ({
                         const data = await response.json();
                         console.log('Latest user data:', data);
                         
-                        // Merge existing user data with new data
-                        const updatedUser = {
-                            ...user,
-                            ...data.user,
-                            gender: data.user?.gender || user?.gender,
-                            age: data.user?.age || user?.age,
-                            height: data.user?.height || user?.height,
-                            weight: data.user?.weight || user?.weight,
-                            profilePicture: data.user?.profilePicture || user?.profilePicture
-                        };
+                        // USE SERVER DATA DIRECTLY WITHOUT MERGING
+                        const updatedUser = data.user;
 
-                        // Remove undefined values
+                        // REMOVE UNDEFINED VALUES
                         Object.keys(updatedUser).forEach(key => {
                             if (updatedUser[key] === undefined) {
                                 delete updatedUser[key];
                             }
                         });
-
-                        console.log('Updated user data:', updatedUser);
                         await AsyncStorage.setItem("user", JSON.stringify(updatedUser));
-                        set({ user: updatedUser });
+                        set({ 
+                            user: updatedUser 
+                        });
                     } else {
-                        console.log('Failed to fetch user data:', response.status);
                         throw new Error('Failed to fetch user data');
                     }
                 } catch (error) {
-                    console.error('Error fetching user data:', error);
                     throw error;
                 }
                 
@@ -361,7 +361,6 @@ export const useAuthStore = create((set,get) => ({
                 const twoMinutes = 2 * 60 * 1000;
                 
                 if (tokenExpirationTime && (currentTime >= tokenExpirationTime - twoMinutes)) {
-                    console.log('Token needs refresh...');
                     const refreshResult = await get().refreshAccessToken();
                     if (refreshResult.success) {
                         get().startAutoRefresh();
@@ -378,16 +377,24 @@ export const useAuthStore = create((set,get) => ({
                 }
             } else {
                 // NO TOKENS FOUND
-                console.log('No tokens found');
-                set({ user: null, token: null, refreshToken: null, tokenExpirationTime: null });
+                set({ 
+                    user: null, 
+                    token: null, 
+                    refreshToken: null, 
+                    tokenExpirationTime: null 
+                });
                 return { 
                     success: false, 
                     message: "No token found" 
                 };
             }
         } catch (error) {
-            console.error('CheckAuth error:', error);
-            set({ user: null, token: null, refreshToken: null, tokenExpirationTime: null });
+            set({ 
+                user: null, 
+                token: null, 
+                refreshToken: null, 
+                tokenExpirationTime: null 
+            });
             return {
                 success: false,
                 message: error.message || "An error occurred during authentication",
@@ -397,7 +404,9 @@ export const useAuthStore = create((set,get) => ({
 
     // SEND RESET CODE
     sendResetCode: async (email) => {
-        set({ isLoading: true });
+        set({ 
+            isLoading: true 
+        });
         try {
             const response = await fetch(`https://habits-mobile-app.onrender.com/api/auth/forgot-password`, {
                 method: "POST",
@@ -415,9 +424,8 @@ export const useAuthStore = create((set,get) => ({
                 throw new Error("Invalid server response format");
             }
 
-            if (!response.ok) {
+            if (!response.ok)
                 throw new Error(data.message || data.error || "Failed to send reset code");
-            }
 
             return {
                 success: true,
@@ -429,13 +437,53 @@ export const useAuthStore = create((set,get) => ({
                 message: error.message || "Failed to send reset code"
             };
         } finally {
-            set({ isLoading: false });
+            set({ 
+                isLoading: false 
+            });
+        }
+    },
+
+    // VERIFY RESET CODE
+    verifyResetCode: async (email, resetCode) => {
+        set({ 
+            isLoading: true 
+        });
+        try {
+            const response = await fetch('https://habits-mobile-app.onrender.com/api/auth/check-reset-token', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, resetCode }),
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok && data.success) {
+                return {
+                    success: true,
+                    message: "Reset code verified successfully"
+                };
+            } else {
+                throw new Error(data.message || 'Invalid reset code');
+            }
+        } catch (error) {
+            return {
+                success: false,
+                message: error.message || "Failed to verify reset code"
+            };
+        } finally {
+            set({ 
+                isLoading: false 
+            });
         }
     },
 
     // RESET PASSWORD
     resetPassword: async (email, resetCode, newPassword) => {
-        set({ isLoading: true });
+        set({ 
+            isLoading: true 
+        });
         try {
             // CHECK RESET CODE AND GET TEMPORARY TOKEN
             const checkResponse = await fetch(`https://habits-mobile-app.onrender.com/api/auth/check-reset-token`, {
@@ -454,9 +502,8 @@ export const useAuthStore = create((set,get) => ({
                 throw new Error("Invalid server response format");
             }
 
-            if (!checkResponse.ok || !checkData.success) {
+            if (!checkResponse.ok || !checkData.success)
                 throw new Error(checkData.message || checkData.error || "Invalid reset code");
-            }
 
             // USE TEMPORARY TOKEN TO RESET PASSWORD
             const resetResponse = await fetch(`https://habits-mobile-app.onrender.com/api/auth/change-password`, {
@@ -478,9 +525,9 @@ export const useAuthStore = create((set,get) => ({
                 throw new Error("Invalid server response format");
             }
 
-            if (!resetResponse.ok || !resetData.success) {
+            if (!resetResponse.ok || !resetData.success)
                 throw new Error(resetData.message || resetData.error || "Failed to reset password");
-            }
+            
 
             return {
                 success: true,
@@ -492,36 +539,19 @@ export const useAuthStore = create((set,get) => ({
                 message: error.message || "Failed to reset password"
             };
         } finally {
-            set({ isLoading: false });
+            set({ 
+                isLoading: false 
+            });
         }
-    },
-
-    // HELPER FUNCTIONS
-    isAuthenticated: () => {
-        const { token } = get();
-        return !!token;
-    },
-
-    // CLEAR STORE
-    clearStore: () => {
-        set({
-            user: null,
-            token: null,
-            refreshToken: null,
-            tokenExpirationTime: null,
-            refreshTimer: null,
-            isLoading: false
-        });
     },
 
     // API WRAPPER WITH AUTO REFRESH
     makeAuthenticatedRequest: async (url, options = {}) => {
-        const { token, tokenExpirationTime } = get();
+        const {token, tokenExpirationTime} = get();
         
-        if (!token) {
+        if (!token) 
             throw new Error("No authentication token available");
-        }
-
+        
         // CHECK TOKEN EXPIRY
         const currentTime = Date.now();
         const twoMinutes = 2 * 60 * 1000;
@@ -547,7 +577,6 @@ export const useAuthStore = create((set,get) => ({
 
         try {
             const response = await fetch(url, requestOptions);
-
             // HANDLE 401 WITH RETRY
             if (response.status === 401) {
                 const refreshResult = await get().refreshAccessToken();
@@ -568,36 +597,31 @@ export const useAuthStore = create((set,get) => ({
             }
             return response;
         } catch (error) {
-            console.error("Network request failed:", error);
-            if (error.message.includes("Network request failed") || error.message.includes("fetch")) {
+            if (error.message.includes("Network request failed") || error.message.includes("fetch"))
                 throw new Error("Network connection failed. Please check your internet connection.");
-            }
             throw error;
         }
     },
 
     // UPDATE PROFILE
     updateProfile: async ({ fullname, gender, height, weight, age, profilePicture, currentPassword, newPassword }) => {
-        set({ isLoading: true });
+        set({ 
+            isLoading: true 
+        });
         try {
-            console.log('Updating profile with data:', { fullname, gender, height, weight, age, profilePicture });
-            
-            const response = await get().makeAuthenticatedRequest(
-                `https://habits-mobile-app.onrender.com/api/auth/update-profile`,
-                {
-                    method: "POST",
-                    body: JSON.stringify({
-                        fullname,
-                        gender,
-                        height,
-                        weight,
-                        age,
-                        profilePicture,
-                        currentPassword,
-                        newPassword
-                    }),
-                }
-            );
+            const response = await get().makeAuthenticatedRequest(`https://habits-mobile-app.onrender.com/api/auth/update-profile`, {
+                method: "POST",
+                body: JSON.stringify({
+                    fullname,
+                    gender,
+                    height,
+                    weight,
+                    age,
+                    profilePicture,
+                    currentPassword,
+                    newPassword
+                }),
+            });
 
             let data;
             try {
@@ -608,10 +632,9 @@ export const useAuthStore = create((set,get) => ({
                 throw new Error("Invalid server response format");
             }
 
-            if (!response.ok) {
+            if (!response.ok)
                 throw new Error(data.message || data.error || "Profile update failed");
-            }
-
+            
             // UPDATE USER IN STORAGE AND STATE
             const updatedUser = {
                 ...get().user,
@@ -623,14 +646,13 @@ export const useAuthStore = create((set,get) => ({
                 profilePicture
             };
 
-            // Remove undefined values
+            // DELETE UNDEFINED VALUES
             Object.keys(updatedUser).forEach(key => {
                 if (updatedUser[key] === undefined) {
                     delete updatedUser[key];
                 }
             });
 
-            console.log('Updating user data in storage:', updatedUser);
             await AsyncStorage.setItem("user", JSON.stringify(updatedUser));
             set({ 
                 user: updatedUser,
@@ -642,31 +664,33 @@ export const useAuthStore = create((set,get) => ({
                 message: data.message || "Profile updated successfully"
             };
         } catch (error) {
-            console.error("Update profile error:", error);
-            set({ isLoading: false });
+            set({ 
+                isLoading: false 
+            });
             return {
                 success: false,
                 message: error.message || "Profile update failed"
             };
         } finally {
-            set({ isLoading: false });
+            set({ 
+                isLoading: false 
+            });
         }
     },
 
     // CHANGE PASSWORD
     changePassword: async (currentPassword, newPassword) => {
-        set({ isLoading: true });
+        set({ 
+            isLoading: true 
+        });
         try {
-            const response = await get().makeAuthenticatedRequest(
-                `https://habits-mobile-app.onrender.com/api/auth/update-profile`,
-                {
-                    method: "POST",
-                    body: JSON.stringify({
-                        currentPassword,
-                        newPassword
-                    }),
-                }
-            );
+            const response = await get().makeAuthenticatedRequest(`https://habits-mobile-app.onrender.com/api/auth/update-profile`, {
+                method: "POST",
+                body: JSON.stringify({
+                    currentPassword,
+                    newPassword
+                }),
+            });
 
             let data;
             try {
@@ -676,14 +700,15 @@ export const useAuthStore = create((set,get) => ({
                 throw new Error("Invalid server response format");
             }
 
-            if (!response.ok) {
+            if (!response.ok)
                 throw new Error(data.message || data.error || "Password change failed");
-            }
-
+            
             // UPDATE USER IN STORAGE AND STATE IF USER DATA IS RETURNED
             if (data.user) {
                 await AsyncStorage.setItem("user", JSON.stringify(data.user));
-                set({ user: data.user });
+                set({ 
+                    user: data.user 
+                });
             }
 
             return {
@@ -691,14 +716,17 @@ export const useAuthStore = create((set,get) => ({
                 message: data.message || "Password changed successfully"
             };
         } catch (error) {
-            console.error("Change password error:", error);
-            set({ isLoading: false });
+            set({ 
+                isLoading: false 
+            });
             return {
                 success: false,
                 message: error.message || "Password change failed"
             };
         } finally {
-            set({ isLoading: false });
+            set({ 
+                isLoading: false 
+            });
         }
     },
 

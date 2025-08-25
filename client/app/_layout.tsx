@@ -6,7 +6,7 @@ import {useAuthStore} from "../store/auth.store";
 import {useEffect, useState} from "react";
  
 function SplashScreenController() {
-  const { checkAuth } = useAuthStore();
+  const {checkAuth} = useAuthStore();
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
@@ -26,8 +26,8 @@ function SplashScreenController() {
   };
 
   function RootNavigator() {
-    const { isAuthenticated } = useAuthStore();
-    const authenticated = isAuthenticated();
+    const {token} = useAuthStore();
+    const authenticated = !!token;
 
     return (
       <Stack screenOptions={{ headerShown: false }}>

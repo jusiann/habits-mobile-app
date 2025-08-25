@@ -1,29 +1,21 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  KeyboardAvoidingView,
-  Platform,
-  ActivityIndicator,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
-import { useAuthStore } from "../../store/auth.store";
+import React from "react";
+import {View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ActivityIndicator} from "react-native";
+import {Ionicons } from "@expo/vector-icons";
+import {router} from "expo-router";
+import {useAuthStore} from "../../store/auth.store";
 import COLORS from "../../constants/colors";
 import styles from "../../assets/styles/passwordpages.styles";
 import SafeScreen from "../../constants/SafeScreen";
 import CustomAlert from "../../constants/CustomAlert";
 
 const ForgotPassword = () => {
-  const [email, setEmail] = useState("");
-  const [resetCode, setResetCode] = useState("");
-  const [codeSent, setCodeSent] = useState(false);
-  const [sendingCode, setSendingCode] = useState(false);
-  const [verifyingCode, setVerifyingCode] = useState(false);
-  const { sendResetCode } = useAuthStore();
-  const [showAlert, setShowAlert] = useState({
+  const [email, setEmail] = React.useState("");
+  const [resetCode, setResetCode] = React.useState("");
+  const [codeSent, setCodeSent] = React.useState(false);
+  const [sendingCode, setSendingCode] = React.useState(false);
+  const [verifyingCode, setVerifyingCode] = React.useState(false);
+  const {sendResetCode, verifyResetCode} = useAuthStore();
+  const [showAlert, setShowAlert] = React.useState({
     visible: false,
     title: '',
     message: '',
@@ -44,7 +36,7 @@ const ForgotPassword = () => {
           title: "Missing Information",
           message: "Please enter your email address.",
           type: "warning",
-          buttons: [{ text: "OK", onPress: () => setShowAlert(prev => ({ ...prev, visible: false })) }]
+          buttons: [{ text: "OK", onPress: () => setShowAlert(previous => ({ ...previous, visible: false })) }]
         });
         return;
       }
@@ -55,21 +47,20 @@ const ForgotPassword = () => {
           title: "Invalid Email",
           message: "Please enter a valid email address.",
           type: "warning",
-          buttons: [{ text: "OK", onPress: () => setShowAlert(prev => ({ ...prev, visible: false })) }]
+          buttons: [{ text: "OK", onPress: () => setShowAlert(previous => ({ ...previous, visible: false })) }]
         });
         return;
       }
 
       setSendingCode(true);
       const result = await sendResetCode(email);
-      
       if (result.success) {
         setShowAlert({
           visible: true,
           title: "Reset Code Sent",
           message: result.message,
           type: "success",
-          buttons: [{ text: "OK", onPress: () => setShowAlert(prev => ({ ...prev, visible: false })) }]
+          buttons: [{ text: "OK", onPress: () => setShowAlert(previous => ({ ...previous, visible: false })) }]
         });
         setCodeSent(true);
       } else {
@@ -78,17 +69,16 @@ const ForgotPassword = () => {
           title: "Error",
           message: result.message,
           type: "error",
-          buttons: [{ text: "OK", onPress: () => setShowAlert(prev => ({ ...prev, visible: false })) }]
+          buttons: [{ text: "OK", onPress: () => setShowAlert(previous => ({ ...previous, visible: false })) }]
         });
       }
-    } catch (error: any) {
-      console.error("Send reset code error:", error);
+    } catch (error) {
       setShowAlert({
         visible: true,
         title: "Connection Error",
         message: "Failed to send reset code. Please check your internet connection and try again.",
         type: "error",
-        buttons: [{ text: "OK", onPress: () => setShowAlert(prev => ({ ...prev, visible: false })) }]
+        buttons: [{ text: "OK", onPress: () => setShowAlert(previous => ({ ...previous, visible: false })) }]
       });
     } finally {
       setSendingCode(false);
@@ -109,17 +99,9 @@ const ForgotPassword = () => {
       }
 
       setVerifyingCode(true);
-      const checkResponse = await fetch('https://habits-mobile-app.onrender.com/api/auth/check-reset-token', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, resetCode }),
-      });
+      const result = await verifyResetCode(email, resetCode);
       
-      const checkData = await checkResponse.json();
-      
-      if (checkResponse.ok && checkData.success) {
+      if (result.success) {
         router.push({
           pathname: '/(auth)/changepassword',
           params: { email, resetCode }
@@ -128,19 +110,18 @@ const ForgotPassword = () => {
         setShowAlert({
           visible: true,
           title: "Verification Failed",
-          message: checkData.message || 'Invalid reset code',
+          message: result.message || 'Invalid reset code',
           type: "error",
-          buttons: [{ text: "OK", onPress: () => setShowAlert(prev => ({ ...prev, visible: false })) }]
+          buttons: [{ text: "OK", onPress: () => setShowAlert(previous => ({ ...previous, visible: false })) }]
         });
       }
-    } catch (error: any) {
-      console.error("Verify code error:", error);
+    } catch (error) {
       setShowAlert({
         visible: true,
         title: "Connection Error",
         message: "Failed to verify reset code. Please check your internet connection.",
         type: "error",
-        buttons: [{ text: "OK", onPress: () => setShowAlert(prev => ({ ...prev, visible: false })) }]
+        buttons: [{ text: "OK", onPress: () => setShowAlert(previous => ({ ...previous, visible: false })) }]
       });
     } finally {
       setVerifyingCode(false);
@@ -149,6 +130,13 @@ const ForgotPassword = () => {
 
   return (
     <SafeScreen>
+      <CustomAlert
+        visible={showAlert.visible}
+        title={showAlert.title}
+        message={showAlert.message}
+        buttons={showAlert.buttons}
+        type={showAlert.type}
+      />
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "android" ? "padding" : "height"}
@@ -288,13 +276,6 @@ const ForgotPassword = () => {
           </View>
         </View>
       </KeyboardAvoidingView>
-      <CustomAlert
-        visible={showAlert.visible}
-        title={showAlert.title}
-        message={showAlert.message}
-        buttons={showAlert.buttons}
-        type={showAlert.type}
-      />
     </SafeScreen>
   );
 };
