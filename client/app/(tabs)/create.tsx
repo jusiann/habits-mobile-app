@@ -225,8 +225,8 @@ export default function Create() {
                 ))}
               </ScrollView>
             )
-          }, {
-            selectedHabit && (
+          }
+          {selectedHabit && (
               <>
                 <View style={styles.formGroup}>
                   <Text style={styles.label}>Unit</Text>
