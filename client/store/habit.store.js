@@ -252,6 +252,63 @@ export const useHabitStore = create((set, get) => ({
     }
   },
 
+  // GET HABIT LOGS BY DATE
+  getHabitLogsByDate: async (date) => {
+    try {
+      const response = await get().makeRequest(`https://habits-mobile-app.onrender.com/api/habits/logs-by-date?date=${date}`, {
+        method: 'GET'
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        return { 
+          success: true, 
+          data: data.data 
+        };
+      } else {
+        return { 
+          success: false, 
+          message: data.message 
+        };
+      }
+    } catch (error) {
+      return { 
+        success: false, 
+        message: 'Network error. Please try again.'
+      };
+    }
+  },
+
+  // GET HABIT PROGRESS
+  getHabitProgress: async (habitId, params = {}) => {
+    try {
+      const queryParams = new URLSearchParams(params).toString();
+      const url = `https://habits-mobile-app.onrender.com/api/habits/${habitId}/progress${queryParams ? `?${queryParams}` : ''}`;
+      
+      const response = await get().makeRequest(url, {
+        method: 'GET'
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        return { 
+          success: true, 
+          data: data.data 
+        };
+      } else {
+        return { 
+          success: false, 
+          message: data.message 
+        };
+      }
+    } catch (error) {
+      return { 
+        success: false, 
+        message: 'Network error. Please try again.'
+      };
+    }
+  },
+
   // CLEAR STORE
   clearStore: () => {
     set({

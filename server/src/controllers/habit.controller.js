@@ -473,13 +473,187 @@ export const getIncrementHabit = async (req, res) => {
 
 
 
-export const getHabitProgress = async (req, res) => {};
+export const getHabitProgress = async (req, res) => {
+    try {
+        const {habitId} = req.params;
+        const {year, month, startDate, endDate} = req.query;
+        const userId = req.user.id;
+
+        const habit = await Habit.findOne({ _id: habitId, userId, isActive: true });
+        if (!habit)
+            throw new ApiError("Habit not found.", 404);
+        
+        let dateFilter = {};
+        if (startDate && endDate) {
+            dateFilter = {
+                date: { 
+                    $gte: new Date(startDate),
+                    $lte: new Date(endDate)
+                }
+            };
+        } else if (year && month) {
+            const startOfMonth = new Date(year, month - 1, 1);
+            const endOfMonth = new Date(year, month, 0);
+            dateFilter = {
+                date: {
+                    $gte: startOfMonth,
+                    $lte: endOfMonth
+                }
+            };
+        } else {
+            const now = new Date();
+            const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+            const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+            dateFilter = {
+                date: {
+                    $gte: startOfMonth,
+                    $lte: endOfMonth
+                }
+            };
+        }
+
+        const habitLogs = await HabitLog.find({
+            habitId,
+            userId,
+            ...dateFilter
+        }).sort({ date: 1 });
+
+        const progress = habitLogs.map(log => ({
+            date: log.date,
+            value: log.value,
+            targetAmount: habit.targetAmount,
+            progress: Math.min(log.value / habit.targetAmount, 1),
+            completed: log.completed,
+            unit: habit.unit
+        }));
+
+        const completedDays = habitLogs.filter(log => log.completed).length;
+        const totalDays = habitLogs.length;
+        const completionRate = totalDays > 0 ? Math.round((completedDays / totalDays) * 100) : 0;
+
+        let currentStreak = 0;
+        const sortedLogs = [...habitLogs].reverse();
+        for (const log of sortedLogs) {
+            if (log.completed) {
+                currentStreak++;
+            } else {
+                break;
+            }
+        }
+
+        const statistics = {
+            completedDays,
+            totalDays,
+            completionRate,
+            currentStreak,
+            averageValue: totalDays > 0 ? habitLogs.reduce((sum, log) => sum + log.value, 0) / totalDays : 0
+        };
+
+        res.status(200).json({
+            success: true,
+            message: "Habit progress retrieved successfully",
+            data: {
+                habit: {
+                    id: habit._id,
+                    name: habit.name,
+                    icon: habit.icon,
+                    unit: habit.unit,
+                    targetAmount: habit.targetAmount
+                },
+                progress,
+                statistics
+            }
+        });
+    } catch (error) {
+        res.status(error.statusCode || 500).json({
+            success: false,
+            message: error.message || "Failed to get habit progress"
+        });
+    }
+};
 
 
 
-export const getHabitLogs = async (req, res) => {};
+export const getHabitLogsByDate = async (req, res) => {
+    try {
+        const {date} = req.query;
+        const userId = req.user.id;
 
-export const getHabitLogsByDate = async (req, res) => {};
+        if (!date)
+            throw new ApiError("Date parameter is required.", 400);
+        
+
+        const targetDate = new Date(date);
+        const startOfDay = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
+        const endOfDay = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate() + 1);
+
+        const habitLogs = await HabitLog.find({
+            userId,
+            date: {
+                $gte: startOfDay,
+                $lt: endOfDay
+            }
+        }).populate('habitId');
+
+        const allHabits = await Habit.find({ userId, isActive: true });
+        const logMap = new Map();
+        habitLogs.forEach(log => {
+            logMap.set(log.habitId._id.toString(), log);
+        });
+
+        const habitsWithLogs = allHabits.map(habit => {
+            const log = logMap.get(habit._id.toString());
+            
+            return {
+                habit: {
+                    id: habit._id,
+                    name: habit.name,
+                    icon: habit.icon,
+                    unit: habit.unit,
+                    targetAmount: habit.targetAmount
+                },
+                log: log ? {
+                    id: log._id,
+                    value: log.value,
+                    progress: Math.min(log.value / habit.targetAmount, 1),
+                    completed: log.completed,
+                    date: log.date
+                } : null,
+                progress: log ? Math.min(log.value / habit.targetAmount, 1) : 0,
+                completed: log ? log.completed : false
+            };
+        });
+
+        const totalHabits = allHabits.length;
+        const completedHabits = habitsWithLogs.filter(item => item.completed).length;
+        const inProgressHabits = habitsWithLogs.filter(item => item.progress > 0 && !item.completed).length;
+        const notStartedHabits = totalHabits - completedHabits - inProgressHabits;
+        const completionRate = totalHabits > 0 ? Math.round((completedHabits / totalHabits) * 100) : 0;
+
+        const summary = {
+            date: targetDate,
+            totalHabits,
+            completedHabits,
+            inProgressHabits,
+            notStartedHabits,
+            completionRate
+        };
+
+        res.status(200).json({
+            success: true,
+            message: "Daily habit logs retrieved successfully",
+            data: {
+                summary,
+                habits: habitsWithLogs
+            }
+        });
+    } catch (error) {
+        res.status(error.statusCode || 500).json({
+            success: false,
+            message: error.message || "Failed to get habit logs by date"
+        });
+    }
+};
 
 
 

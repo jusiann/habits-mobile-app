@@ -38,6 +38,7 @@ function TabIcon({ focused, iconName, title }: any) {
 }
 
 export default function TabLayout() {
+  
   const insets = useSafeAreaInsets();
   
   return (
@@ -71,7 +72,7 @@ export default function TabLayout() {
             alignItems: 'center',
             justifyContent: 'center',
             flexDirection: 'row',
-            paddingBottom: 13 +insets.bottom,
+            paddingBottom: 13 + insets.bottom,
             height: 50,
           }
       }}
