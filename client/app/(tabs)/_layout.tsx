@@ -6,6 +6,8 @@ import COLORS from '../../constants/colors'
 import {useSafeAreaInsets} from 'react-native-safe-area-context'
 
 function TabIcon({ focused, iconName, title }: any) {
+  
+  
   return (
     <View style={{
       alignItems: 'center',
