@@ -398,6 +398,52 @@ export const useHabitStore = create((set, get) => ({
     }
   },
 
+  // GET HABIT LOGS BY DATE
+  getHabitLogsByDate: async (date) => {
+    set({ 
+      isLoading: true, 
+      error: null 
+    });
+    try {
+      const response = await get().makeRequest(`https://habits-mobile-app.onrender.com/api/habits/logs-by-date?date=${date}`, {
+        method: 'GET'
+      });
+
+      let data;
+      try {
+        data = await response.json();
+      } catch (parseError) {
+        console.error("JSON parse error:", parseError);
+        throw new Error("Invalid server response format");
+      }
+
+      console.log(`API Response for date ${date}:`, data);
+
+      if (response.ok) {
+        return { 
+          success: true, 
+          data: data.data
+        };
+      } else {
+        throw new Error(data.message || data.error || "Failed to fetch habit logs");
+      }
+    } catch (error) {
+      console.error(`Error fetching logs for ${date}:`, error);
+      set({ 
+        error: error.message || 'Network error', 
+        isLoading: false 
+      });
+      return { 
+        success: false, 
+        message: error.message || 'Network error. Please try again.' 
+      };
+    } finally {
+      set({ 
+        isLoading: false 
+      });
+    }
+  },
+
   // CLEAR STORE
   clearStore: () => {
     set({
