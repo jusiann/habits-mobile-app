@@ -365,8 +365,9 @@ export default function Detail() {
           flexDirection: 'row', 
           alignItems: 'center', 
           justifyContent: 'space-between',
-          paddingHorizontal: 20, 
-          paddingVertical: 10
+          paddingHorizontal: 16,
+          paddingVertical: 4,
+          backgroundColor: COLORS.background
         }}>
 
           {/* BACK BUTTON */}
@@ -374,7 +375,7 @@ export default function Detail() {
             style={{
               flexDirection: 'row',
               alignItems: 'center',
-              gap: 8
+              gap: 4
             }}
             onPress={() => {
               if (hasChanges) {
@@ -394,7 +395,7 @@ export default function Detail() {
             }}
           >
             <Ionicons 
-              name="arrow-back" 
+              name="chevron-back" 
               size={24} 
               color={COLORS.primary} 
             />

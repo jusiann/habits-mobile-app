@@ -381,15 +381,16 @@ export default function Create() {
           flexDirection: 'row', 
           alignItems: 'center', 
           justifyContent: 'space-between',
-          paddingHorizontal: 20, 
-          paddingVertical: 10
+          paddingHorizontal: 16,
+          paddingVertical: 4,
+          backgroundColor: COLORS.background
         }}>
           {/* BACK BUTTON */}
           <TouchableOpacity 
             style={{
               flexDirection: 'row',
               alignItems: 'center',
-              gap: 8
+              gap: 4
             }}
             onPress={() => 
               setShowAlert({
@@ -405,7 +406,7 @@ export default function Create() {
             }
           >
             <Ionicons 
-              name="arrow-back" 
+              name="chevron-back" 
               size={24} 
               color={COLORS.primary} 
             />

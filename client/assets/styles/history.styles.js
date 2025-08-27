@@ -217,6 +217,16 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: COLORS.textSecondary,
   },
+  hasDataCell: {
+    borderWidth: 1,
+    borderColor: COLORS.success + '40',
+  },
+  debugText: {
+    fontSize: 8,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    marginTop: 2,
+  },
 });
 
 export default styles;

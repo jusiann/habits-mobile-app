@@ -144,14 +144,16 @@ const ForgotPassword = () => {
         {/* BACK TO SIGN IN HEADER */}
         <View style={{ 
           flexDirection: 'row', 
-          alignItems: 'center', 
-          paddingHorizontal: 20, 
+          alignItems: 'center',
+          paddingHorizontal: 16,
+          paddingVertical: 4,
+          backgroundColor: COLORS.background
         }}>
           <TouchableOpacity 
             style={{
               flexDirection: 'row',
               alignItems: 'center',
-              gap: 8
+              gap: 4
             }}
             onPress={() => {
               router.dismissAll();
@@ -159,7 +161,7 @@ const ForgotPassword = () => {
             }}
           >
             <Ionicons 
-              name="arrow-back" 
+              name="chevron-back" 
               size={24} 
               color={COLORS.primary} 
             />

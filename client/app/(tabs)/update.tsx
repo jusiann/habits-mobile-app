@@ -257,76 +257,77 @@ export default function UpdateProfile() {
         buttons={showAlert.buttons}
         onDismiss={() => setShowAlert(previous => ({ ...previous, visible: false }))}
       />
+
+      {/* HEADER WITH BACK AND SAVE BUTTONS */}
+      <View style={{ 
+        flexDirection: 'row', 
+        alignItems: 'center', 
+        justifyContent: 'space-between',
+        paddingHorizontal: 16,
+        paddingVertical: 4,
+        backgroundColor: COLORS.background
+      }}>
+        {/* BACK BUTTON */}
+        <TouchableOpacity 
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 4
+          }}
+          onPress={() => {
+            if (hasChanges) {
+              setShowAlert({
+                visible: true,
+                title: 'Unsaved Changes',
+                message: 'You have unsaved changes. Are you sure you want to leave?',
+                type: 'warning',
+                buttons: [
+                  { text: 'Stay', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'cancel' },
+                  { text: 'Leave', onPress: () => { setShowAlert(previous => ({ ...previous, visible: false })); router.push("/(tabs)/profile"); }, style: 'destructive' }
+                ]
+              })
+            } else {
+              router.push("/(tabs)/profile")
+            }
+          }}
+        >
+          <Ionicons 
+            name="chevron-back" 
+            size={24} 
+            color={COLORS.primary} 
+          />
+          <Text style={{
+            fontSize: 16,
+            fontWeight: '600',
+            color: COLORS.primary
+          }}>
+            Back
+          </Text>
+        </TouchableOpacity>
+        
+        {/* SAVE BUTTON */}
+        <TouchableOpacity
+          style={{
+            opacity: (!hasChanges || isLoading) ? 0.5 : 1
+          }}
+          onPress={updateProfileAction}
+          disabled={!hasChanges || isLoading}
+        >
+          <Text style={{
+            fontSize: 16,
+            fontWeight: '600',
+            color: COLORS.primary
+          }}>
+            {isLoading ? 'Saving...' : 'Save'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+
       <KeyboardAvoidingView 
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
-        {/* HEADER WITH BACK AND SAVE BUTTONS */}
-        <View style={{ 
-          flexDirection: 'row', 
-          alignItems: 'center', 
-          justifyContent: 'space-between',
-          paddingHorizontal: 20, 
-          paddingVertical: 10,
-          backgroundColor: COLORS.background
-        }}>
-          {/* BACK BUTTON */}
-          <TouchableOpacity 
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 8
-            }}
-            onPress={() => {
-              if (hasChanges) {
-                setShowAlert({
-                  visible: true,
-                  title: 'Unsaved Changes',
-                  message: 'You have unsaved changes. Are you sure you want to leave?',
-                  type: 'warning',
-                  buttons: [
-                    { text: 'Stay', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'cancel' },
-                    { text: 'Leave', onPress: () => { setShowAlert(previous => ({ ...previous, visible: false })); router.push("/(tabs)/profile"); }, style: 'destructive' }
-                  ]
-                })
-              } else {
-                router.push("/(tabs)/profile")
-              }
-            }}
-          >
-            <Ionicons 
-              name="arrow-back" 
-              size={24} 
-              color={COLORS.primary} 
-            />
-            <Text style={{
-              fontSize: 16,
-              fontWeight: '600',
-              color: COLORS.primary
-            }}>
-              Back
-            </Text>
-          </TouchableOpacity>
-          
-          {/* SAVE BUTTON */}
-          <TouchableOpacity
-            style={{
-              opacity: (!hasChanges || isLoading) ? 0.5 : 1
-            }}
-            onPress={updateProfileAction}
-            disabled={!hasChanges || isLoading}
-          >
-            <Text style={{
-              fontSize: 16,
-              fontWeight: '600',
-              color: COLORS.primary
-            }}>
-              {isLoading ? 'Saving...' : 'Save'}
-            </Text>
-          </TouchableOpacity>
-        </View>
-        
         {/* MAIN CONTENT SCROLL VIEW */}
         <ScrollView 
           style={styles.container} 
