@@ -149,8 +149,10 @@ export const useAuthStore = create((set,get) => ({
     refreshAccessToken: async () => {
         try {
             const {refreshToken} = get();
-            if (!refreshToken)
+            if (!refreshToken) {
+                await get().logout();
                 throw new Error("No refresh token available");
+            }
             
             const response = await fetch(`https://habits-mobile-app.onrender.com/api/auth/refresh-token`, {
                 method: "POST",
@@ -165,11 +167,17 @@ export const useAuthStore = create((set,get) => ({
                 data = await response.json();
             } catch (parseError) {
                 console.error("JSON parse error:", parseError);
+                await get().logout();
                 throw new Error("Invalid server response format");
             }
 
-            if (!response.ok)
+            if (!response.ok) {
+                // Token geçersiz veya süresi dolmuşsa logout
+                if (response.status === 401 || response.status === 403) {
+                    await get().logout();
+                }
                 throw new Error(data.message || data.error || "Token refresh failed");
+            }
 
             // UPDATE TOKENS AND USER IN STORAGE
             await AsyncStorage.setItem("token", data.accessToken);
@@ -186,7 +194,7 @@ export const useAuthStore = create((set,get) => ({
                 token: data.accessToken, 
                 refreshToken: data.refreshToken,
                 tokenExpirationTime: expirationTime,
-                user: data.user 
+                user: data.user || get().user // Eğer user gelmezse mevcut user'ı koru
             });
 
             return { 
@@ -194,6 +202,14 @@ export const useAuthStore = create((set,get) => ({
             };
         } catch (error) {
             console.error("Token refresh failed:", error);
+            
+            // Eğer refresh token geçersizse veya başka bir kritik hata varsa logout yap
+            if (error.message.includes("invalidated") || 
+                error.message.includes("expired") || 
+                error.message.includes("invalid")) {
+                await get().logout();
+            }
+            
             return { 
                 success: false, 
                 message: error.message || "Token refresh failed" 
@@ -203,41 +219,59 @@ export const useAuthStore = create((set,get) => ({
 
     // START AUTO REFRESH TIMER
     startAutoRefresh: () => {
-        const { tokenExpirationTime, refreshTimer } = get();
+        const { tokenExpirationTime, refreshTimer, token, refreshToken } = get();
         
         // CLEAR EXISTING TIMER
-        if (refreshTimer)
+        if (refreshTimer) {
             clearTimeout(refreshTimer);
+        }
         
-        if (!tokenExpirationTime) 
+        // Token veya refresh token yoksa çıkış yap
+        if (!token || !refreshToken) {
+            get().logout();
             return;
+        }
+
+        if (!tokenExpirationTime) {
+            // Token süresi yoksa varsayılan olarak 15 dakika ekle
+            const newExpirationTime = Date.now() + (15 * 60 * 1000);
+            set({ tokenExpirationTime: newExpirationTime });
+            return get().startAutoRefresh(); // Recursive call with new expiration
+        }
 
         // REFRESH 2 MINUTES BEFORE EXPIRY
         const currentTime = Date.now();
         const refreshTime = tokenExpirationTime - (2 * 60 * 1000);
         const timeUntilRefresh = refreshTime - currentTime;
 
-        // REFRESH IMMEDIATELY IF EXPIRED
-        if (timeUntilRefresh <= 0) {
+        // REFRESH IMMEDIATELY IF EXPIRED OR CLOSE TO EXPIRY
+        if (timeUntilRefresh <= 5000) { // 5 saniyeden az kaldıysa
             get().refreshAccessToken().then((result) => {
                 if (result.success) {
                     get().startAutoRefresh();
                 } else {
                     get().logout();
                 }
+            }).catch(() => {
+                get().logout();
             });
             return;
         }
 
         // SET REFRESH TIMER
         const timer = setTimeout(async () => {
-            const result = await get().refreshAccessToken();
-            if (result.success) {
-                get().startAutoRefresh();
-            } else {
+            try {
+                const result = await get().refreshAccessToken();
+                if (result.success) {
+                    get().startAutoRefresh();
+                } else {
+                    await get().logout();
+                }
+            } catch (error) {
+                console.error("Auto refresh failed:", error);
                 await get().logout();
             }
-        }, timeUntilRefresh);
+        }, Math.min(timeUntilRefresh, 15 * 60 * 1000)); // En fazla 15 dakika bekle
 
         set({ 
             refreshTimer: timer 

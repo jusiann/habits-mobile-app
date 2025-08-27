@@ -10,30 +10,38 @@ export const useHabitStore = create((set, get) => ({
 
   // MAKE AUTHENTICATED REQUEST
   makeRequest: async (url, options = {}) => {
-    return await useAuthStore.getState().makeAuthenticatedRequest(url, options);
+    try {
+      return await useAuthStore.getState().makeAuthenticatedRequest(url, options);
+    } catch (error) {
+      throw new Error(error.message || "Authentication request failed");
+    }
   },
 
   // CHECK AND RESET DAILY (UTC based)
   checkAndResetDaily: () => {
-    const now = new Date();
-    const todayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())).getTime();
-    const lastFetch = get().lastFetchDate ? new Date(get().lastFetchDate).getTime() : null;
-    
-    if (lastFetch && lastFetch < todayUTC) {
-      console.log('New UTC day detected, clearing habits cache');
-      // CLEAR HABITS FOR NEW DAY
-      set({ 
-        habits: [], 
-        lastFetchDate: now.toISOString() 
-      });
-      return true; 
-    } else if (!lastFetch) {
-      // SET INITIAL DATE
-      set({ 
-        lastFetchDate: now.toISOString() 
-      });
+    try {
+      const now = new Date();
+      const todayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())).getTime();
+      const lastFetch = get().lastFetchDate ? new Date(get().lastFetchDate).getTime() : null;
+      
+      if (lastFetch && lastFetch < todayUTC) {
+        // CLEAR HABITS FOR NEW DAY
+        set({ 
+          habits: [], 
+          lastFetchDate: now.toISOString() 
+        });
+        return true; 
+      } else if (!lastFetch) {
+        // SET INITIAL DATE
+        set({ 
+          lastFetchDate: now.toISOString() 
+        });
+      }
+      return false;
+    } catch (error) {
+      console.error("Error in checkAndResetDaily:", error);
+      return false;
     }
-    return false;
   },
 
   // FETCH PRESETS
@@ -47,7 +55,14 @@ export const useHabitStore = create((set, get) => ({
         method: 'GET'
       });
 
-      const data = await response.json();
+      let data;
+      try {
+        data = await response.json();
+      } catch (parseError) {
+        console.error("JSON parse error:", parseError);
+        throw new Error("Invalid server response format");
+      }
+
       if (response.ok) {
         const cleanPresets = data.data.presets.health || [];
         
@@ -57,27 +72,25 @@ export const useHabitStore = create((set, get) => ({
           isLoading: false 
         });
         return { 
-          success: true 
+          success: true,
+          data: cleanPresets
         };
       } else {
-        set({ 
-          error: data.message, 
-          isLoading: false 
-        });
-        return { 
-          success: false, 
-          message: data.message 
-        };
+        throw new Error(data.message || data.error || "Failed to fetch presets");
       }
-    } catch (_error) {
+    } catch (error) {
       set({ 
-        error: 'Network error', 
+        error: error.message || 'Network error', 
         isLoading: false 
       });
       return { 
         success: false, 
-        message: 'Network error. Please try again.' 
+        message: error.message || 'Network error. Please try again.' 
       };
+    } finally {
+      set({ 
+        isLoading: false 
+      });
     }
   },
 
@@ -94,7 +107,14 @@ export const useHabitStore = create((set, get) => ({
         method: 'GET'
       });
 
-      const data = await response.json();
+      let data;
+      try {
+        data = await response.json();
+      } catch (parseError) {
+        console.error("JSON parse error:", parseError);
+        throw new Error("Invalid server response format");
+      }
+
       if (response.ok) {
         const cleanHabits = data.data.habits || [];
         // UPDATE STATE WITH HABITS
@@ -103,33 +123,30 @@ export const useHabitStore = create((set, get) => ({
           isLoading: false 
         });
         
-        // remove this
-        if (isNewDay) 
+        if (isNewDay) {
           console.log('Habits refreshed for new day');
+        }
         
         return { 
           success: true, 
           data: data.data 
         };
       } else {
-        set({ 
-          error: data.message, 
-          isLoading: false 
-        });
-        return { 
-          success: false, 
-          message: data.message 
-        };
+        throw new Error(data.message || data.error || "Failed to fetch habits");
       }
-    } catch (_error) {
+    } catch (error) {
       set({ 
-        error: 'Network error', 
+        error: error.message || 'Network error', 
         isLoading: false 
       });
       return { 
         success: false, 
-        message: 'Network error. Please try again.' 
+        message: error.message || 'Network error. Please try again.' 
       };
+    } finally {
+      set({ 
+        isLoading: false 
+      });
     }
   },
 
@@ -145,47 +162,59 @@ export const useHabitStore = create((set, get) => ({
         body: JSON.stringify(habitData)
       });
 
-      const data = await response.json();
+      let data;
+      try {
+        data = await response.json();
+      } catch (parseError) {
+        console.error("JSON parse error:", parseError);
+        throw new Error("Invalid server response format");
+      }
+
       if (response.ok) {
         // REFRESH HABITS LIST
         await get().fetchHabits();
-        set({ 
-          isLoading: false 
-        });
         return { 
           success: true, 
           data: data.data 
         };
       } else {
-        set({ 
-          error: data.message, 
-          isLoading: false 
-        });
-        return { 
-          success: false, 
-          message: data.message 
-        };
+        throw new Error(data.message || data.error || "Failed to create habit");
       }
     } catch (error) {
       set({ 
-        error: 'Network error', 
+        error: error.message || 'Network error', 
         isLoading: false 
       });
       return { 
         success: false, 
-        message: `Network error: ${error.message}` 
+        message: error.message || 'Network error. Please try again.' 
       };
+    } finally {
+      set({ 
+        isLoading: false 
+      });
     }
   },
 
   // INCREMENT HABIT
   incrementHabit: async (habitId) => {
+    set({ 
+      isLoading: true, 
+      error: null 
+    });
     try {
       const response = await get().makeRequest(`https://habits-mobile-app.onrender.com/api/habits/${habitId}/increment`, {
         method: 'POST'
       });
 
-      const data = await response.json();
+      let data;
+      try {
+        data = await response.json();
+      } catch (parseError) {
+        console.error("JSON parse error:", parseError);
+        throw new Error("Invalid server response format");
+      }
+
       if (response.ok) {
         // REFRESH HABITS LIST
         await get().fetchHabits();
@@ -194,16 +223,21 @@ export const useHabitStore = create((set, get) => ({
           data: data.data 
         };
       } else {
-        return { 
-          success: false, 
-          message: data.message 
-        };
+        throw new Error(data.message || data.error || "Failed to increment habit");
       }
     } catch (error) {
+      set({ 
+        error: error.message || 'Network error', 
+        isLoading: false 
+      });
       return { 
         success: false, 
-        message: 'Network error. Please try again.'
+        message: error.message || 'Network error. Please try again.' 
       };
+    } finally {
+      set({ 
+        isLoading: false 
+      });
     }
   },
 
@@ -219,68 +253,98 @@ export const useHabitStore = create((set, get) => ({
         body: JSON.stringify(updateData)
       });
 
-      const data = await response.json();
+      let data;
+      try {
+        data = await response.json();
+      } catch (parseError) {
+        console.error("JSON parse error:", parseError);
+        throw new Error("Invalid server response format");
+      }
+
       if (response.ok) {
         // REFRESH HABITS LIST
         await get().fetchHabits();
-        set({ 
-          isLoading: false 
-        });
         return { 
           success: true, 
           data: data.data 
         };
       } else {
-        set({ 
-          error: data.message, 
-          isLoading: false 
-        });
-        return { 
-          success: false,
-          message: data.message 
-        };
+        throw new Error(data.message || data.error || "Failed to update habit");
       }
     } catch (error) {
       set({ 
-        error: 'Network error', 
+        error: error.message || 'Network error', 
         isLoading: false 
       });
       return { 
         success: false, 
-        message: `Network error: ${error.message}` 
+        message: error.message || 'Network error. Please try again.' 
       };
+    } finally {
+      set({ 
+        isLoading: false 
+      });
     }
   },
 
-  // GET HABIT LOGS BY DATE
-  getHabitLogsByDate: async (date) => {
+  // FETCH HABIT LOGS BY DATE
+  habitLogsByDate: async (date) => {
+    set({ 
+      isLoading: true, 
+      error: null 
+    });
     try {
       const response = await get().makeRequest(`https://habits-mobile-app.onrender.com/api/habits/logs-by-date?date=${date}`, {
         method: 'GET'
       });
 
-      const data = await response.json();
+      let data;
+      try {
+        data = await response.json();
+      } catch (parseError) {
+        console.error("JSON parse error:", parseError);
+        throw new Error("Invalid server response format");
+      }
+
       if (response.ok) {
+        const processedLogs = data.data.logs.map(log => ({
+          ...log,
+          formattedDate: new Date(log.date).toLocaleDateString(),
+          completionRate: (log.progress / log.target) * 100
+        }));
+
         return { 
           success: true, 
-          data: data.data 
+          data: {
+            ...data.data,
+            logs: processedLogs
+          }
         };
       } else {
-        return { 
-          success: false, 
-          message: data.message 
-        };
+        throw new Error(data.message || data.error || "Failed to fetch habit logs");
       }
     } catch (error) {
+      set({ 
+        error: error.message || 'Network error', 
+        isLoading: false 
+      });
       return { 
         success: false, 
-        message: 'Network error. Please try again.'
+        message: error.message || 'Network error. Please try again.' 
       };
+    } finally {
+      set({ 
+        isLoading: false 
+      });
     }
   },
 
-  // GET HABIT PROGRESS
-  getHabitProgress: async (habitId, params = {}) => {
+  // FETCH HABIT PROGRESS
+  habitProgress: async (habitId, params = {}) => {
+    set({ 
+      isLoading: true, 
+      error: null 
+    });
     try {
       const queryParams = new URLSearchParams(params).toString();
       const url = `https://habits-mobile-app.onrender.com/api/habits/${habitId}/progress${queryParams ? `?${queryParams}` : ''}`;
@@ -289,23 +353,48 @@ export const useHabitStore = create((set, get) => ({
         method: 'GET'
       });
 
-      const data = await response.json();
+      let data;
+      try {
+        data = await response.json();
+      } catch (parseError) {
+        console.error("JSON parse error:", parseError);
+        throw new Error("Invalid server response format");
+      }
+
       if (response.ok) {
+        const processedProgress = {
+          ...data.data,
+          dailyStats: data.data.dailyProgress?.map(day => ({
+            ...day,
+            formattedDate: new Date(day.date).toLocaleDateString(),
+            completionRate: (day.progress / day.target) * 100
+          })) || [],
+          weeklyStats: {
+            totalProgress: data.data.weeklyProgress?.reduce((sum, day) => sum + day.progress, 0) || 0,
+            averageCompletion: data.data.weeklyProgress?.reduce((sum, day) => sum + ((day.progress / day.target) * 100), 0) / 7 || 0
+          }
+        };
+
         return { 
           success: true, 
-          data: data.data 
+          data: processedProgress
         };
       } else {
-        return { 
-          success: false, 
-          message: data.message 
-        };
+        throw new Error(data.message || data.error || "Failed to fetch habit progress");
       }
     } catch (error) {
+      set({ 
+        error: error.message || 'Network error', 
+        isLoading: false 
+      });
       return { 
         success: false, 
-        message: 'Network error. Please try again.'
+        message: error.message || 'Network error. Please try again.' 
       };
+    } finally {
+      set({ 
+        isLoading: false 
+      });
     }
   },
 

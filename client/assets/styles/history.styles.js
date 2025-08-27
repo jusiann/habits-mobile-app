@@ -92,12 +92,16 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 20,
+    paddingHorizontal: 10,
+  },
+  navigationButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
   navButton: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    backgroundColor: COLORS.background,
     justifyContent: 'center',
     alignItems: 'center',
   },
