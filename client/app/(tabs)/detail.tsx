@@ -1,83 +1,85 @@
-import { View, Text, TouchableOpacity, ScrollView, TextInput, Alert, Modal } from 'react-native'
-import React, { useState, useEffect } from 'react'
-import { useRouter, useLocalSearchParams } from 'expo-router'
-import { Ionicons } from '@expo/vector-icons'
+import {View, Text, TouchableOpacity, ScrollView, TextInput, Modal, KeyboardAvoidingView, Platform} from 'react-native'
+import CustomAlert from '../../constants/CustomAlert'
+import React from 'react'
+import {useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router'
+import {Ionicons} from '@expo/vector-icons'
 import COLORS from '../../constants/colors'
 import styles from '../../assets/styles/create.styles'
-import { useHabitStore } from '@/store/habit.store'
-import { CUSTOM_ICONS } from '../../constants/customIcons'
+import {useHabitStore} from '../../store/habit.store'
+import {CUSTOM_ICONS} from '../../constants/custom.icons'
+import SafeScreen from '../../constants/SafeScreen'
 
 export default function Detail() {
   const router = useRouter()
-  const { habitId } = useLocalSearchParams()
-  const { habits, updateHabit } = useHabitStore()
-  
-  const [habit, setHabit] = useState<any>(null)
-  const [originalUnit, setOriginalUnit] = useState('')
-  const [customName, setCustomName] = useState('')
-  const [customIcon, setCustomIcon] = useState('heart-outline')
-  const [customUnit, setCustomUnit] = useState('')
-  const [targetAmount, setTargetAmount] = useState('')
-  const [incrementAmount, setIncrementAmount] = useState('')
-  const [selectedUnit, setSelectedUnit] = useState('')
-  const [showIconModal, setShowIconModal] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [hasChanges, setHasChanges] = useState(false)
+  const {habitId} = useLocalSearchParams()
+  const {habits, updateHabit} = useHabitStore()
+  const [habit, setHabit] = React.useState<any>(null)
+  const [originalUnit, setOriginalUnit] = React.useState('')
+  const [customName, setCustomName] = React.useState('')
+  const [customIcon, setCustomIcon] = React.useState('heart-outline')
+  const [customUnit, setCustomUnit] = React.useState('')
+  const [targetAmount, setTargetAmount] = React.useState('')
+  const [incrementAmount, setIncrementAmount] = React.useState('')
+  const [selectedUnit, setSelectedUnit] = React.useState('')
+  const [showIconModal, setShowIconModal] = React.useState(false)
+  const [isLoading, setIsLoading] = React.useState(false)
+  const [hasChanges, setHasChanges] = React.useState(false)
+  const [showAlert, setShowAlert] = React.useState({
+    visible: false,
+    title: '',
+    message: '',
+    type: 'info' as 'success' | 'error' | 'warning' | 'info',
+    buttons: [] as Array<{ text: string; onPress: () => void; style?: 'default' | 'cancel' | 'destructive' }>
+  });
 
-  // Habit'i bul ve state'leri doldur
-  useEffect(() => {
-    if (habitId && habits.length > 0) {
-      const foundHabit = habits.find((h: any) => h.id === habitId)
-      if (foundHabit) {
-        setHabit(foundHabit)
-        setOriginalUnit(foundHabit.unit)
-        setTargetAmount(foundHabit.targetAmount.toString())
-        setIncrementAmount(foundHabit.incrementAmount.toString())
-        setSelectedUnit(foundHabit.unit)
-        
-        if (foundHabit.type === 'other') {
-          setCustomName(foundHabit.name)
-          setCustomIcon(foundHabit.icon)
-          setCustomUnit(foundHabit.unit)
-        }
-      }
-    }
-  }, [habitId, habits])
-
-  // Değişiklikleri takip et
-  useEffect(() => {
-    if (!habit) return
+  React.useEffect(() => {
+    if (!habit) 
+      return;
     
     let changes = false
     
-    if (habit.type === 'default') {
+    if (habit.type === 'default')
       changes = selectedUnit !== habit.unit ||
                 targetAmount !== habit.targetAmount.toString() ||
                 incrementAmount !== habit.incrementAmount.toString()
-    } else {
+    else
       changes = customName !== habit.name ||
                 customIcon !== habit.icon ||
                 customUnit !== habit.unit ||
                 targetAmount !== habit.targetAmount.toString() ||
                 incrementAmount !== habit.incrementAmount.toString()
-    }
-    
     setHasChanges(changes)
-  }, [habit, customName, customIcon, customUnit, targetAmount, incrementAmount, selectedUnit])
+  }, [habit, customName, customIcon, customUnit, targetAmount, incrementAmount, selectedUnit]);
 
-  const updateHabitAction = async () => {
-    if (!habit || !hasChanges) return
+  useFocusEffect(
+    React.useCallback(() => {
+      if (habitId && habits.length > 0) {
+        const foundHabit = habits.find((h: any) => h.id === habitId)
+        if (foundHabit) {
+          setHabit(foundHabit)
+          setOriginalUnit(foundHabit.unit)
+          setTargetAmount(foundHabit.targetAmount.toString())
+          setIncrementAmount(foundHabit.incrementAmount.toString())
+          setSelectedUnit(foundHabit.unit)
+          setHasChanges(false)
+          
+          if (foundHabit.type === 'other') {
+            setCustomName(foundHabit.name)
+            setCustomIcon(foundHabit.icon)
+            setCustomUnit(foundHabit.unit)
+          }
+        }
+      }
+    }, [habitId, habits])
+  );
 
+  const detailHabitAction = async () => {
+    if (!habit || !hasChanges) 
+      return;
+
+    setIsLoading(true)
     try {
-      setIsLoading(true)
       let updateData = {}
-      
-      // Herhangi bir değişiklik var mı kontrol et (progress sıfırlama için)
-      const unitChanged = (habit.type === 'default' ? selectedUnit : customUnit) !== originalUnit
-      const targetChanged = targetAmount !== habit.targetAmount.toString()
-      const incrementChanged = incrementAmount !== habit.incrementAmount.toString()
-      const progressWillReset = unitChanged || targetChanged || incrementChanged
-      
       if (habit.type === 'default') {
         updateData = {
           unit: selectedUnit,
@@ -93,85 +95,88 @@ export default function Detail() {
           incrementAmount: parseInt(incrementAmount)
         }
       }
-
-      // Validation
+      
       if (isNaN(parseInt(targetAmount)) || parseInt(targetAmount) <= 0) {
-        Alert.alert('Invalid Input', 'Target amount must be a positive number.')
+        setShowAlert({
+          visible: true,
+          title: 'Invalid Input',
+          message: 'Target amount must be a positive number.',
+          type: 'error',
+          buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+        })
         return;
       }
 
       if (isNaN(parseInt(incrementAmount)) || parseInt(incrementAmount) <= 0) {
-        Alert.alert('Invalid Input', 'Increment amount must be a positive number.')
+        setShowAlert({
+          visible: true,
+          title: 'Invalid Input',
+          message: 'Increment amount must be a positive number.',
+          type: 'error',
+          buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+        })
         return;
       }
 
       if (habit.type === 'other') {
         if (!customName.trim()) {
-          Alert.alert('Invalid Input', 'Habit name is required.')
+          setShowAlert({
+            visible: true,
+            title: 'Invalid Input',
+            message: 'Habit name is required.',
+            type: 'error',
+            buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+          })
           return;
         }
         if (!customUnit.trim()) {
-          Alert.alert('Invalid Input', 'Unit is required.')
+          setShowAlert({
+            visible: true,
+            title: 'Invalid Input',
+            message: 'Unit is required.',
+            type: 'error',
+            buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+          })
           return;
         }
       }
 
       const result = await updateHabit(habit.id, updateData)
-
       if (result.success) {
-        let message = 'Habit updated successfully!'
-        if (progressWillReset) {
-          message += ' Your progress has been reset due to the changes.'
-        }
-        
-        Alert.alert('Success', message, [
-          { 
-            text: 'OK', 
-            onPress: () => router.back()
-          }
-        ]);
+        setShowAlert({
+          visible: true,
+          title: 'Success',
+          message: 'Habit updated successfully!',
+          type: 'success',
+          buttons: [{ text: 'OK', onPress: () => { setShowAlert(previous => ({ ...previous, visible: false })); router.back(); }, style: 'default' }]
+        });
       } else {
-        Alert.alert('Update Failed', result.message || 'Failed to update habit')
+        setShowAlert({
+          visible: true,
+          title: 'Update Failed',
+          message: result.message || 'Failed to update habit',
+          type: 'error',
+          buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+        })
       }
-    } catch (error: any) {
-      console.error('UpdateHabit error:', error);
-      Alert.alert('Connection Error', 'Failed to connect to server. Please check your internet connection and try again.')
+    } catch (error) {
+      setShowAlert({
+        visible: true,
+        title: 'Connection Error',
+        message: 'Failed to connect to server. Please check your internet connection and try again.',
+        type: 'error',
+        buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+      })
     } finally {
       setIsLoading(false)
     }
-  }
-
-  const handleCancel = () => {
-    if (hasChanges) {
-      Alert.alert(
-        'Unsaved Changes',
-        'You have unsaved changes. Are you sure you want to leave?',
-        [
-          { text: 'Stay', style: 'cancel' },
-          { text: 'Leave', onPress: () => router.back() }
-        ]
-      )
-    } else {
-      router.back()
-    }
-  }
-
-  if (!habit) {
-    return (
-      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-        <Text style={styles.title}>Habit not found</Text>
-        <TouchableOpacity style={styles.button} onPress={() => router.back()}>
-          <Text style={styles.buttonText}>Go Back</Text>
-        </TouchableOpacity>
-      </View>
-    )
-  }
+  };
 
   const renderDefaultHabitEdit = () => (
     <View>
-      {/* Habit bilgisi - değiştirilemez */}
+      {/* DEFAULT HABITS INFORMATION */}
       <View style={styles.formGroup}>
-        <View style={[styles.habitCard, styles.selectedHabitCard, { marginVertical: 10, alignSelf: 'center' }]}>
+        <View style={[styles.habitCard, styles.selectedHabitCard, { marginVertical: 10, alignSelf: 'stretch' }]}>
           <Ionicons 
             name={habit.icon as any} 
             size={32} 
@@ -181,9 +186,21 @@ export default function Detail() {
             {habit.name}
           </Text>
         </View>
+
+        {/* DEFAULT HABIT WARNING FOR CHANGES */}
+        {(selectedUnit !== originalUnit || 
+          targetAmount !== habit.targetAmount.toString() || 
+          incrementAmount !== habit.incrementAmount.toString()) && (
+          <View style={{ marginTop: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+            <Ionicons name="warning" size={16} color="orange" style={{ marginTop: -8 }}/> 
+            <Text style={[styles.label, { marginLeft: 5, color: 'orange', fontSize: 12 }]}>
+              These changes will reset your progress for today
+            </Text>
+          </View>
+        )}
       </View>
 
-      {/* Unit seçimi - sadece mevcut unitler */}
+      {/* DEFAULT HABIT UNIT SELECTION */}
       {habit.availableUnits && habit.availableUnits.length > 0 && (
         <View style={styles.formGroup}>
           <Text style={styles.label}>Unit</Text>
@@ -209,6 +226,7 @@ export default function Detail() {
         </View>
       )}
       
+      {/* DEFAULT HABIT TARGET AMOUNT */}
       <View style={styles.formGroup}>
         <Text style={styles.label}>Target Amount</Text>
         <View style={styles.inputContainer}>
@@ -223,6 +241,7 @@ export default function Detail() {
         </View>
       </View>
       
+      {/* DEFAULT HABIT INCREMENT AMOUNT */}
       <View style={styles.formGroup}>
         <Text style={styles.label}>Increment Amount</Text>
         <View style={styles.inputContainer}>
@@ -236,22 +255,12 @@ export default function Detail() {
           />
         </View>
       </View>
-
-      {/* Genel uyarı mesajı */}
-      {(selectedUnit !== originalUnit || 
-        targetAmount !== habit.targetAmount.toString() || 
-        incrementAmount !== habit.incrementAmount.toString()) && (
-        <View style={[styles.formGroup, { marginTop: 10 }]}>
-          <Text style={[styles.label, { color: 'orange', fontSize: 12, textAlign: 'center' }]}>
-            ⚠️ These changes will reset your progress for today
-          </Text>
-        </View>
-      )}
     </View>
   );
 
   const renderCustomHabitEdit = () => (
     <View>
+      {/* CUSTOM HABIT INFORMATION */}
       <View style={styles.formGroup}>
         <Text style={styles.label}>Habit Name</Text>
         <View style={styles.inputContainer}>
@@ -265,6 +274,7 @@ export default function Detail() {
         </View>
       </View>
       
+      {/* CUSTOM HABIT ICONS */}
       <View style={styles.formGroup}>
         <Text style={styles.label}>Icon</Text>
         <TouchableOpacity 
@@ -275,7 +285,8 @@ export default function Detail() {
           <Text style={styles.iconSelectorText}>Tap to change icon</Text>
         </TouchableOpacity>
       </View>
-      
+
+      {/* CUSTOM HABIT UNIT */}
       <View style={styles.formGroup}>
         <Text style={styles.label}>Unit</Text>
         <View style={styles.inputContainer}>
@@ -289,6 +300,7 @@ export default function Detail() {
         </View>
       </View>
       
+      {/* CUSTOM HABIT TARGET AMOUNT */}
       <View style={styles.formGroup}>
         <Text style={styles.label}>Target Amount</Text>
         <View style={styles.inputContainer}>
@@ -303,6 +315,7 @@ export default function Detail() {
         </View>
       </View>
       
+      {/* CUSTOM HABIT INCREMENT AMOUNT */}
       <View style={styles.formGroup}>
         <Text style={styles.label}>Increment Amount</Text>
         <View style={styles.inputContainer}>
@@ -317,13 +330,14 @@ export default function Detail() {
         </View>
       </View>
 
-      {/* Genel uyarı mesajı - sadece progress'i etkileyen değişiklikler için */}
+      {/* CUSTOM HABIT WARNING FOR CHANGES */}
       {(customUnit !== habit.unit || 
         targetAmount !== habit.targetAmount.toString() || 
         incrementAmount !== habit.incrementAmount.toString()) && (
-        <View style={[styles.formGroup, { marginTop: 10 }]}>
-          <Text style={[styles.label, { color: 'orange', fontSize: 12, textAlign: 'center' }]}>
-            ⚠️ These changes will reset your progress for today
+        <View style={{ marginTop: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+          <Ionicons name="warning" size={16} color="orange" style={{ marginTop: -8 }}/> 
+          <Text style={[styles.label, { marginLeft: 5, color: 'orange', fontSize: 12 }]}>
+            These changes will reset your progress for today
           </Text>
         </View>
       )}
@@ -331,87 +345,168 @@ export default function Detail() {
   );
 
   return (
-    <ScrollView style={styles.scrollViewStyle} contentContainerStyle={styles.container}>
-      <View style={styles.card}>
-        <View style={styles.header}>
-          <Text style={styles.title}>Edit Habit</Text>
-          <Text style={styles.subtitle}>
-            {habit.type === 'default' 
-              ? 'Edit settings for your preset habit' 
-              : 'Edit your custom habit'
-            }
-          </Text>
-        </View>
-        
-        <View style={styles.form}>
-          {habit.type === 'default' ? renderDefaultHabitEdit() : renderCustomHabitEdit()}
-        </View>
-        
-        {/* Action Buttons */}
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            style={[styles.button, { flex: 1, marginRight: 8, marginTop: 0 }]}
-            onPress={handleCancel}
+    <SafeScreen>
+      <CustomAlert
+        visible={showAlert.visible}
+        title={showAlert.title}
+        message={showAlert.message}
+        type={showAlert.type}
+        buttons={showAlert.buttons}
+        onDismiss={() => setShowAlert(previous => ({ ...previous, visible: false }))}
+      />
+      <KeyboardAvoidingView 
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+      >
+
+        {/* HEADER WITH BACK AND SAVE BUTTONS */}
+        <View style={{ 
+          flexDirection: 'row', 
+          alignItems: 'center', 
+          justifyContent: 'space-between',
+          paddingHorizontal: 16,
+          paddingVertical: 4,
+          backgroundColor: COLORS.background
+        }}>
+
+          {/* BACK BUTTON */}
+          <TouchableOpacity 
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 4
+            }}
+            onPress={() => {
+              if (hasChanges) {
+                setShowAlert({
+                  visible: true,
+                  title: 'Unsaved Changes',
+                  message: 'You have unsaved changes. Are you sure you want to leave?',
+                  type: 'warning',
+                  buttons: [
+                    { text: 'Stay', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'cancel' },
+                    { text: 'Leave', onPress: () => { setShowAlert(previous => ({ ...previous, visible: false })); router.back(); }, style: 'destructive' }
+                  ]
+                })
+              } else {
+                router.back()
+              }
+            }}
           >
-            <Text style={styles.buttonText}>Cancel</Text>
+            <Ionicons 
+              name="chevron-back" 
+              size={24} 
+              color={COLORS.primary} 
+            />
+            <Text style={{
+              fontSize: 16,
+              fontWeight: '600',
+              color: COLORS.primary
+            }}>
+              Back
+            </Text>
           </TouchableOpacity>
           
+          {/* SAVE BUTTON */}
           <TouchableOpacity
-            style={[
-              styles.button, 
-              { flex: 1, marginTop: 0 }, 
-              (!hasChanges || isLoading) && styles.disabledButton
-            ]}
-            onPress={updateHabitAction}
+            style={{
+              opacity: (!hasChanges || isLoading) ? 0.5 : 1
+            }}
+            onPress={detailHabitAction}
             disabled={!hasChanges || isLoading}
           >
-            <Text style={styles.buttonText}>
-              {isLoading ? 'Saving...' : 'Save Changes'}
+            <Text style={{
+              fontSize: 16,
+              fontWeight: '600',
+              color: COLORS.primary
+            }}>
+              {isLoading ? 'Saving...' : 'Save'}
             </Text>
           </TouchableOpacity>
         </View>
-      </View>
-      
-      {/* Icon Selection Modal */}
-      <Modal
-        visible={showIconModal}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={() => setShowIconModal(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Choose Icon</Text>
-              <TouchableOpacity onPress={() => setShowIconModal(false)}>
-                <Ionicons name="close-outline" size={24} color={COLORS.textPrimary} />
-              </TouchableOpacity>
-            </View>
-            
-            <ScrollView contentContainerStyle={styles.iconGrid}>
-              {CUSTOM_ICONS.map((icon) => (
-                <TouchableOpacity
-                  key={icon}
-                  style={[
-                    styles.iconOption,
-                    customIcon === icon && styles.selectedIconOption
-                  ]}
-                  onPress={() => {
-                    setCustomIcon(icon)
-                    setShowIconModal(false)
-                  }}
-                >
-                  <Ionicons 
-                    name={icon as any} 
-                    size={32} 
-                    color={customIcon === icon ? COLORS.white : COLORS.primary} 
-                  />
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
+        
+        {/* MAIN CONTENT SCROLL VIEW */}
+        <ScrollView 
+          style={styles.scrollViewStyle} 
+          contentContainerStyle={[styles.container, { paddingBottom: 60 }]}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+      {!habit ? (
+        <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+          <Text style={styles.title}>Habit not found</Text>
+          <TouchableOpacity style={styles.button} onPress={() => router.back()}>
+            <Text style={styles.buttonText}>Go Back</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <View style={styles.card}>
+          
+          {/* HEADER SECTION */}
+          <View style={styles.header}>
+            <Text style={styles.title}>Edit Habit</Text>
+            <Text style={styles.subtitle}>
+              {habit.type === 'default' 
+                ? 'Edit settings for your preset habit' 
+                : 'Edit your custom habit'
+              }
+            </Text>
+          </View>
+          
+          <View style={styles.form}>
+            {habit.type === 'default' ? renderDefaultHabitEdit() : renderCustomHabitEdit()}
           </View>
         </View>
-      </Modal>
-    </ScrollView>
-  )
-}
+      )}
+      
+      {/* ICON SELECTION MODAL */}
+      {habit && (
+        <Modal
+          visible={showIconModal}
+          transparent={true}
+          animationType="slide"
+          onRequestClose={() => setShowIconModal(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+
+              {/* MODAL HEADER */}
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Choose Icon</Text>
+                <TouchableOpacity onPress={() => setShowIconModal(false)}>
+                  <Ionicons name="close-outline" size={24} color={COLORS.textPrimary} />
+                </TouchableOpacity>
+              </View>
+              
+              {/* ICON GRID */}
+              <ScrollView contentContainerStyle={styles.iconGrid}>
+                {CUSTOM_ICONS.map((icon) => (
+                  <TouchableOpacity
+                    key={icon}
+                    style={[
+                      styles.iconOption,
+                      customIcon === icon && styles.selectedIconOption
+                    ]}
+                    onPress={() => {
+                      setCustomIcon(icon)
+                      setShowIconModal(false)
+                    }}
+                  >
+                    <Ionicons 
+                      name={icon as any} 
+                      size={32} 
+                      color={customIcon === icon ? COLORS.white : COLORS.primary} 
+                    />
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+          </View>
+        </Modal>
+      )}
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeScreen>
+  );
+};

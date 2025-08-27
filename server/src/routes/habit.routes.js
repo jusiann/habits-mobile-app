@@ -7,7 +7,6 @@ import {
     getIncrementHabit,
     getHabitProgress,
     getDashboard,
-    getHabitLogs,
     getHabitLogsByDate,
     getHabitPresets,
     getHabitPresetsByCategory
@@ -22,6 +21,7 @@ router.get('/presets', verifyToken, getHabitPresets);
 router.get('/presets/:category', verifyToken, getHabitPresetsByCategory);
 
 router.get('/dashboard', verifyToken, getDashboard);
+router.get('/logs-by-date', getHabitLogsByDate);
 
 router.post('/add', verifyToken, addHabit);
 router.get('/:id', verifyToken, detailHabit);
@@ -30,8 +30,5 @@ router.delete('/:id', verifyToken, deleteHabit);
 
 router.post('/:id/increment', getIncrementHabit);
 router.get('/:id/progress', getHabitProgress);
-
-router.get('/:id/logs', getHabitLogs);
-router.get('/:id/logs/:date', getHabitLogsByDate);
 
 export default router;

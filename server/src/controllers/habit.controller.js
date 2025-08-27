@@ -288,35 +288,28 @@ export const updateHabit = async (req, res) => {
             if (targetAmount <= 0)
                 throw new ApiError("Target amount must be greater than 0.", 400);
             
-            // Target amount değişti mi kontrol et
-            if (habit.targetAmount !== targetAmount) {
+            if (habit.targetAmount !== targetAmount)
                 shouldResetProgress = true;
-            }
             updateData.targetAmount = targetAmount;
         }
         
         if (incrementAmount !== undefined) {
             if (incrementAmount <= 0)
                 throw new ApiError("Increment amount must be greater than 0.", 400);
-            
-            // Increment amount değişti mi kontrol et  
-            if (habit.incrementAmount !== incrementAmount) {
+            if (habit.incrementAmount !== incrementAmount)
                 shouldResetProgress = true;
-            }
             updateData.incrementAmount = incrementAmount;
         }
         
         if (unit !== undefined) {
             if (habit.type === 'default' && habit.availableUnits && habit.availableUnits.length > 0) {
-                if (!habit.availableUnits.includes(unit)) {
+                if (!habit.availableUnits.includes(unit)) 
                     throw new ApiError(`Invalid unit '${unit}' for this preset habit. Available units: ${habit.availableUnits.join(', ')}`, 400);
-                }
+                
             }
-            
-            // Unit değişti mi kontrol et
-            if (habit.unit !== unit) {
+            if (habit.unit !== unit)
                 shouldResetProgress = true;
-            }
+
             updateData.unit = unit;
         }
 
@@ -331,9 +324,8 @@ export const updateHabit = async (req, res) => {
         }
 
         if (name !== undefined) {
-            if (habit.type === 'default') {
+            if (habit.type === 'default')
                 throw new ApiError("Name cannot be changed for preset habits.", 400);
-            }
             
             const existingHabit = await Habit.findOne({ 
                 userId, 
@@ -341,24 +333,24 @@ export const updateHabit = async (req, res) => {
                 isActive: true,
                 _id: { $ne: habitId }
             });
+
             if (existingHabit)
                 throw new ApiError("A habit with this name already exists.", 400);
-            
             updateData.name = name;
         }
 
-        // Eğer unit, targetAmount veya incrementAmount değiştiyse progress'i sıfırla
         if (shouldResetProgress) {
             const today = new Date();
             today.setHours(0, 0, 0, 0);
-            const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
+            const todayEnd = new Date(today);
+            todayEnd.setHours(23, 59, 59, 999);
             
             await HabitLog.deleteMany({
                 habitId: habitId,
                 userId: userId,
                 date: {
                     $gte: today,
-                    $lt: tomorrow
+                    $lte: todayEnd
                 }
             });
         }
@@ -402,7 +394,7 @@ export const deleteHabit = async (req, res) => {
 
 
         await Habit.deleteOne({ _id: habitId, userId });
-        //opsiyonel
+        //opsiyonel  
         await HabitLog.deleteMany({ habitId, userId });
 
         res.status(200).json({
@@ -481,15 +473,193 @@ export const getIncrementHabit = async (req, res) => {
 
 
 
-export const getHabitProgress = async (req, res) => {};
+export const getHabitProgress = async (req, res) => {
+    try {
+        const {habitId} = req.params;
+        const {year, month, startDate, endDate} = req.query;
+        const userId = req.user.id;
+
+        const habit = await Habit.findOne({ _id: habitId, userId, isActive: true });
+        if (!habit)
+            throw new ApiError("Habit not found.", 404);
+        
+        let dateFilter = {};
+        if (startDate && endDate) {
+            dateFilter = {
+                date: { 
+                    $gte: new Date(startDate),
+                    $lte: new Date(endDate)
+                }
+            };
+        } else if (year && month) {
+            const startOfMonth = new Date(year, month - 1, 1);
+            const endOfMonth = new Date(year, month, 0);
+            dateFilter = {
+                date: {
+                    $gte: startOfMonth,
+                    $lte: endOfMonth
+                }
+            };
+        } else {
+            const now = new Date();
+            const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+            const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+            dateFilter = {
+                date: {
+                    $gte: startOfMonth,
+                    $lte: endOfMonth
+                }
+            };
+        }
+
+        const habitLogs = await HabitLog.find({
+            habitId,
+            userId,
+            ...dateFilter
+        }).sort({ date: 1 });
+
+        const progress = habitLogs.map(log => ({
+            date: log.date,
+            value: log.value,
+            targetAmount: habit.targetAmount,
+            progress: Math.min(log.value / habit.targetAmount, 1),
+            completed: log.completed,
+            unit: habit.unit
+        }));
+
+        const completedDays = habitLogs.filter(log => log.completed).length;
+        const totalDays = habitLogs.length;
+        const completionRate = totalDays > 0 ? Math.round((completedDays / totalDays) * 100) : 0;
+
+        let currentStreak = 0;
+        const sortedLogs = [...habitLogs].reverse();
+        for (const log of sortedLogs) {
+            if (log.completed) {
+                currentStreak++;
+            } else {
+                break;
+            }
+        }
+
+        const statistics = {
+            completedDays,
+            totalDays,
+            completionRate,
+            currentStreak,
+            averageValue: totalDays > 0 ? habitLogs.reduce((sum, log) => sum + log.value, 0) / totalDays : 0
+        };
+
+        res.status(200).json({
+            success: true,
+            message: "Habit progress retrieved successfully",
+            data: {
+                habit: {
+                    id: habit._id,
+                    name: habit.name,
+                    icon: habit.icon,
+                    unit: habit.unit,
+                    targetAmount: habit.targetAmount
+                },
+                progress,
+                statistics
+            }
+        });
+    } catch (error) {
+        res.status(error.statusCode || 500).json({
+            success: false,
+            message: error.message || "Failed to get habit progress"
+        });
+    }
+};
 
 
 
-export const getHabitLogs = async (req, res) => {};
+export const getHabitLogsByDate = async (req, res) => {
+    try {
+        const {date} = req.query;
+        const userId = req.user.id;
 
-export const getHabitLogsByDate = async (req, res) => {};
+        if (!date)
+            throw new ApiError("Date parameter is required.", 400);
+        
 
+        const targetDate = new Date(date);
+        const startOfDay = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
+        const endOfDay = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate() + 1);
 
+        const habitLogs = await HabitLog.find({
+            userId,
+            date: {
+                $gte: startOfDay,
+                $lt: endOfDay
+            }
+        }).populate('habitId');
+
+        const allHabits = await Habit.find({ userId, isActive: true });
+        const logMap = new Map();
+        
+        // Check if habitLogs exists and is an array before using forEach
+        if (habitLogs && Array.isArray(habitLogs)) {
+            habitLogs.forEach(log => {
+                if (log && log.habitId && log.habitId._id) {
+                    logMap.set(log.habitId._id.toString(), log);
+                }
+            });
+        }
+
+        const habitsWithLogs = allHabits.map(habit => {
+            const log = logMap.get(habit._id.toString());
+            
+            return {
+                habit: {
+                    id: habit._id,
+                    name: habit.name,
+                    icon: habit.icon,
+                    unit: habit.unit,
+                    targetAmount: habit.targetAmount
+                },
+                log: log ? {
+                    id: log._id,
+                    value: log.value,
+                    progress: Math.min(log.value / habit.targetAmount, 1),
+                    completed: log.completed,
+                    date: log.date
+                } : null,
+                progress: log ? Math.min(log.value / habit.targetAmount, 1) : 0,
+                completed: log ? log.completed : false
+            };
+        });
+
+        const totalHabits = allHabits.length;
+        const completedHabits = habitsWithLogs.filter(item => item.completed).length;
+        const inProgressHabits = habitsWithLogs.filter(item => item.progress > 0 && !item.completed).length;
+        const notStartedHabits = totalHabits - completedHabits - inProgressHabits;
+        const completionRate = totalHabits > 0 ? Math.round((completedHabits / totalHabits) * 100) : 0;
+
+        const summary = {
+            date: targetDate,
+            totalHabits,
+            completedHabits,
+            inProgressHabits,
+            notStartedHabits,
+            completionRate
+        };
+
+        res.status(200).json({
+            success: true,
+            message: "Daily habit logs retrieved successfully",
+            data: {
+                summary,
+                habits: habitsWithLogs
+            }
+        });
+    } catch (error) {
+        res.status(error.statusCode || 500).json({
+            success: false,
+            message: error.message || "Failed to get habit logs by date"
+        });
+    }
+};
 
 export const getHabitPresets = async (req, res) => {
     try {

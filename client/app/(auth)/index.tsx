@@ -1,10 +1,12 @@
 import React from "react";
-import { ActivityIndicator, Alert, Image, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from "react-native";
-import { Link } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import {ActivityIndicator, Image, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from "react-native";
+import {Link} from "expo-router";
+import {Ionicons} from "@expo/vector-icons";
 import styles from "../../assets/styles/signin.styles";
-import COLORS from "@/constants/colors";
-import { useAuthStore } from "@/store/auth.store";
+import COLORS from "../../constants/colors";
+import {useAuthStore} from "../../store/auth.store";
+import SafeScreen from "../../constants/SafeScreen";
+import CustomAlert from "../../constants/CustomAlert";
 
 export default function Login() {
   const [email, setEmail] = React.useState("");
@@ -12,70 +14,94 @@ export default function Login() {
   const [password, setPassword] = React.useState("");
   const [showPassword, setShowPassword] = React.useState(false);
   const {isLoading, login} = useAuthStore();
+  const [showAlert, setShowAlert] = React.useState({
+    visible: false,
+    title: '',
+    message: '',
+    type: 'info' as 'success' | 'error' | 'warning' | 'info',
+    buttons: [] as Array<{ text: string; onPress: () => void; style?: 'default' | 'cancel' | 'destructive' }>
+  });
 
-  // (optional) email validation can be reintroduced if needed
-
-  // Input handler with validation
   const handleEmailUsernameChange = (text: string) => {
     if (text.includes("@")) {
       setEmail(text);
       setUsername("");
     } else {
       setUsername(text);
-      setEmail("");
+      setEmail(""); 
     }
   };
 
   const signinAction = async () => {
-    // Form validation
-    if (!email && !username) {
-      Alert.alert(
-        "Missing Information",
-        "Please enter your email or username.",
-        [{ text: "OK" }]
-      );
-      return;
-    }
-
-    if (!password) {
-      Alert.alert(
-        "Missing Information", 
-        "Please enter your password.",
-        [{ text: "OK" }]
-      );
-      return;
-    }
-
     try {
-      const result = await login(username, email, password);
-      
-      if (!result.success) {
-        Alert.alert(
-          "Sign In Failed",
-          result.message || "Login failed",
-          [{ text: "OK" }]
-        );
+      if (!email && !username) {
+        setShowAlert({
+          visible: true,
+          title: 'Missing Information',
+          message: 'Please enter your email or username.',
+          type: 'error',
+          buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+        });
         return;
       }
 
-      // Başarılı giriş - alert göstermeden direkt yönlendir
-      // Router otomatik olarak yönlendirecek
-      
-    } catch (error: any) {
-      console.error("Login error:", error);
-      Alert.alert(
-        "Connection Error",
-        "Failed to connect to server. Please check your internet connection and try again.",
-        [{ text: "OK" }]
-      );
+      if (!password) {
+        setShowAlert({
+          visible: true,
+          title: 'Missing Information',
+          message: 'Please enter your password.',
+          type: 'error',
+          buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+        });
+        return;
+      }
+
+      const result = await login(email, username, password);
+      if (!result.success) {
+        setShowAlert({
+          visible: true,
+          title: 'Sign In Failed',
+          message: result.message || 'Login failed',
+          type: 'error',
+          buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+        });
+        return;
+      }
+
+      setShowAlert({
+        visible: true,
+        title: 'Sign In Successful',
+        message: 'You have successfully signed in.',
+        type: 'success',
+        buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+      });
+
+    } catch (error) {
+      setShowAlert({
+        visible: true,
+        title: 'Connection Error',
+        message: 'Failed to connect to server. Please check your internet connection and try again.',
+        type: 'error',
+        buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+      });
     }
   };
+  
   return (
-    <KeyboardAvoidingView 
-      style={{flex:1}}
-      behavior={Platform.OS === "android" ? "padding" : "height"}
-    >
-      <View style={styles.container}>
+    <SafeScreen>
+      <CustomAlert
+        visible={showAlert.visible}
+        title={showAlert.title}
+        message={showAlert.message}
+        type={showAlert.type}
+        buttons={showAlert.buttons}
+        onDismiss={() => setShowAlert(previous => ({ ...previous, visible: false }))}
+      />
+      <KeyboardAvoidingView 
+        style={{flex:1}}
+        behavior={Platform.OS === "android" ? "padding" : "height"}
+      >
+        <View style={styles.container}>
         <View style={styles.topIllustration}>
           {/* PICTURE */}
           <Image
@@ -141,8 +167,18 @@ export default function Login() {
                 </TouchableOpacity>
               </View>
             </View>
+            
+            {/* FORGOT PASSWORD */}
+            <View style={[styles.footer, { marginTop: 0 }]}>
+              <Text style={styles.footerText}>Forgot your password?</Text>
+              <Link href="/(auth)/forgotpassword" asChild>
+                <TouchableOpacity>
+                  <Text style={styles.link}>Reset Password</Text>
+                </TouchableOpacity>
+              </Link>
+            </View>
             {/* LOGIN BUTTON */}
-            <TouchableOpacity style={styles.button} onPress={signinAction} disabled={isLoading}>
+            <TouchableOpacity style={[styles.button, {marginTop: 60}]} onPress={signinAction} disabled={isLoading}>
               {
                 isLoading ? (
                   <ActivityIndicator color="#fff" />
@@ -162,8 +198,9 @@ export default function Login() {
             </View>
           </View>
         </View>
-      </View>
-    </KeyboardAvoidingView>
+        </View>
+      </KeyboardAvoidingView>
+    </SafeScreen>
   );
 };
 

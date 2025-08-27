@@ -1,17 +1,19 @@
-import { Text, TouchableOpacity, View } from "react-native";
-import { Image } from "expo-image";
-import { useRouter } from "expo-router";
+import {Text, TouchableOpacity, View} from "react-native";
+import {Image} from "expo-image";
+import {useRouter} from "expo-router";
 import styles from "../assets/styles/main.styles";
+import SafeScreen from '../constants/SafeScreen'
 
 export default function Index() {
   const router = useRouter();
 
   return (
-    <View style={styles.container}>
-      {/* Title Section */}
+    <SafeScreen>
+      <View style={styles.container}>
+      {/* TITLE SELECTION */}
       <View style={styles.card}>
         
-        {/* Logo Section */}
+        {/* LOGO SECTION */}
         <View style={styles.topIllustration}>
           <Image 
             source={require("../assets/images/react-logo.png")} 
@@ -28,7 +30,7 @@ export default function Index() {
           </Text>
         </View>
 
-        {/* Button Section */}
+        {/* BUTTON SECTION */}
         <View style={styles.formContainer}>
           <TouchableOpacity 
             style={styles.button} 
@@ -44,6 +46,7 @@ export default function Index() {
           </TouchableOpacity>
         </View>
       </View>
-    </View>
+      </View>
+    </SafeScreen>
   );
 };

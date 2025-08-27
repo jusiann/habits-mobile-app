@@ -4,6 +4,7 @@ import { createToken } from '../middlewares/auth.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
+import sendEmail from '../utils/send.email.js';
 
 // const validateEmail = (email) => {
 //     const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
@@ -48,10 +49,10 @@ export const signUp = async (req, res) => {
         
         const existingUser = await User.findOne({
             $or: [{ 
-                email: email 
+                email: email ? email.toLowerCase() : undefined 
             }, { 
-                username: username
-            }]
+                username: username ? username.toLowerCase() : undefined
+            }].filter(condition => Object.values(condition).some(value => value !== undefined))
         });
         
         if (existingUser)
@@ -84,7 +85,11 @@ export const signUp = async (req, res) => {
                 username: user.username,
                 email: user.email,
                 fullname: user.fullname,
-                profilePicture: user.profilePicture
+                profilePicture: user.profilePicture,
+                gender: user.gender,
+                height: user.height,
+                weight: user.weight,
+                age: user.age
             }   
         });
     } catch (error) {
@@ -100,12 +105,16 @@ export const signIn = async (req, res) => {
         if (!password || (!username && !email))
             throw new ApiError("Either username or email, and password are required.", 400);
         
+        const searchCriteria = [];
+        if (email) {
+            searchCriteria.push({ email: email.toLowerCase() });
+        }
+        if (username) {
+            searchCriteria.push({ username: username.toLowerCase() });
+        }
+        
         const existingUser = await User.findOne({
-            $or: [{ 
-                email: email 
-            }, { 
-                username: username
-            }]
+            $or: searchCriteria
         });
 
         if (!existingUser)
@@ -127,7 +136,11 @@ export const signIn = async (req, res) => {
                 username: existingUser.username,
                 email: existingUser.email,
                 fullname: existingUser.fullname,
-                profilePicture: existingUser.profilePicture
+                profilePicture: existingUser.profilePicture,
+                gender: existingUser.gender,
+                height: existingUser.height,
+                weight: existingUser.weight,
+                age: existingUser.age
             }
         });
     } catch (error) {
@@ -175,7 +188,11 @@ export const refreshToken = async (req, res) => {
                 username: user.username,
                 email: user.email,
                 fullname: user.fullname,
-                profilePicture: user.profilePicture
+                profilePicture: user.profilePicture,
+                gender: user.gender,
+                height: user.height,
+                weight: user.weight,
+                age: user.age
             }
         });
     } catch (error) {
@@ -203,7 +220,7 @@ export const forgotPassword = async (req, res) => {
         if (!email)
             throw new ApiError("Email is required.", 400);
 
-        const user = await User.findOne({ email });
+        const user = await User.findOne({ email: email.toLowerCase() });
         if (!user)
             throw new ApiError("User with this email does not exist.", 404);
 
@@ -214,12 +231,28 @@ export const forgotPassword = async (req, res) => {
         user.resetCodeExpires = resetCodeExpires;
         await user.save();
 
-        console.log(`Reset code for ${email}: ${resetCode}`);
+        // SEND RESET CODE VIA EMAIL
+        const emailSubject = "Password Reset Code";
+        const emailText = `Your password reset code is: ${resetCode}\n\nThis code will expire in 15 minutes.\n\nIf you didn't request this, please ignore this email.`;
+        const emailHtml = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h2 style="color: #333;">Password Reset Code</h2>
+                <p>Your password reset code is:</p>
+                <div style="background-color: #f5f5f5; padding: 20px; text-align: center; margin: 20px 0;">
+                    <h1 style="color: #007bff; font-size: 32px; margin: 0; letter-spacing: 5px;">${resetCode}</h1>
+                </div>
+                <p style="color: #666;">This code will expire in <strong>15 minutes</strong>.</p>
+                <p style="color: #666;">If you didn't request this password reset, please ignore this email.</p>
+            </div>
+        `;
+
+        await sendEmail(email, emailSubject, emailText, emailHtml);
+
+        console.log(`Reset code sent to ${email}: ${resetCode}`);
 
         res.status(200).json({
             success: true,
-            message: "Reset code sent to your email",
-            resetCode: resetCode
+            message: "Reset code sent to your email"
         });
     } catch (error) {
         res.status(error.statusCode || 500).json({
@@ -308,53 +341,23 @@ export const changePassword = async (req, res) => {
     }
 };
 
-export const changePasswordAuth = async (req, res) => {
+export const updateProfile = async (req, res) => {
     try {
-        const {currentPassword, newPassword} = req.body;
+        const { fullname, gender, height, weight, age, profilePicture, currentPassword, newPassword } = req.body;
         const userId = req.user._id;
         
-        if (!currentPassword || !newPassword)
-            throw new ApiError("Current password and new password are required.", 400);
-
+        if (!fullname && !gender && !height && !weight && !age && !profilePicture && !currentPassword && !newPassword)
+            throw new ApiError("At least one field (fullname, gender, height, weight, age, profilePicture, currentPassword, newPassword) is required.", 400);
+        
         const user = await User.findById(userId);
         if (!user)
             throw new ApiError("User not found.", 404);
-
-        const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
-        if (!isCurrentPasswordValid)
-            throw new ApiError("Current password is incorrect.", 401);
-
-        const salt = await bcrypt.genSalt(10);
-        const hashedNewPassword = await bcrypt.hash(newPassword, salt);
-
-        user.password = hashedNewPassword;
-        await user.save();
-
-        res.status(200).json({
-            success: true,
-            message: "Password changed successfully"
-        });
-    } catch (error) {
-        res.status(error.statusCode || 500).json({
-            success: false,
-            message: error.message || "Password change failed"
-        });
-    }
-};
-
-export const editProfile = async (req, res) => {
-    try {
-        const {fullname, gender, height, weight, profilePicture} = req.body;
-        const userId = req.user._id;
         
-        if (!fullname && !gender && !height && !weight && !profilePicture)
-            throw new ApiError("At least one field (fullname, gender, height, weight, profilePicture) is required.", 400);
-
-        const user = await User.findById(userId);
-        if (!user)
-            throw new ApiError("User not found.", 404);
+        if ((currentPassword && !newPassword) || (!currentPassword && newPassword))
+            throw new ApiError("Both current password and new password are required for password change.", 400);
 
         let updateData = {};
+        let passwordChanged = false;
         
         if (fullname) {
             if (fullname.length < 2)
@@ -380,8 +383,25 @@ export const editProfile = async (req, res) => {
             updateData.weight = weight;
         }
         
+        if (age !== undefined) {
+            if (age < 0 || age > 150)
+                throw new ApiError("Age must be between 0 and 150 years.", 400);
+            updateData.age = age;
+        }
+        
         if (profilePicture)
             updateData.profilePicture = profilePicture;
+
+        if (currentPassword && newPassword) {
+            const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
+            if (!isCurrentPasswordValid)
+                throw new ApiError("Current password is incorrect.", 401);
+
+            const salt = await bcrypt.genSalt(10);
+            const hashedNewPassword = await bcrypt.hash(newPassword, salt);
+            updateData.password = hashedNewPassword;
+            passwordChanged = true;
+        }
         
         const updatedUser = await User.findByIdAndUpdate(
             userId,
@@ -389,9 +409,16 @@ export const editProfile = async (req, res) => {
             { new: true, runValidators: true }
         );
 
+        let message;
+        if (passwordChanged)
+            message = "Password updated successfully";
+        else
+            message = "Profile updated successfully";
+        
+
         res.status(200).json({
             success: true,
-            message: "Profile updated successfully",
+            message: message,
             user: {
                 _id: updatedUser._id,
                 username: updatedUser.username,
@@ -400,6 +427,7 @@ export const editProfile = async (req, res) => {
                 gender: updatedUser.gender,
                 height: updatedUser.height,
                 weight: updatedUser.weight,
+                age: updatedUser.age,
                 profilePicture: updatedUser.profilePicture
             }
         });
@@ -407,6 +435,36 @@ export const editProfile = async (req, res) => {
         res.status(error.statusCode || 500).json({
             success: false,
             message: error.message || "Profile update failed"
+        });
+    }
+};
+
+export const getMe = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const user = await User.findById(userId);
+        
+        if (!user)
+            throw new ApiError("User not found.", 404);
+
+        res.status(200).json({
+            success: true,
+            user: {
+                _id: user._id,
+                username: user.username,
+                email: user.email,
+                fullname: user.fullname,
+                gender: user.gender,
+                height: user.height,
+                weight: user.weight,
+                age: user.age,
+                profilePicture: user.profilePicture
+            }
+        });
+    } catch (error) {
+        res.status(error.statusCode || 500).json({
+            success: false,
+            message: error.message || "Failed to get user data"
         });
     }
 };

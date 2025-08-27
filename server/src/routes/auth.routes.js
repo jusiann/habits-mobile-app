@@ -7,9 +7,9 @@ import {
     checkResetToken,
     forgotPassword,
     changePassword,
-    changePasswordAuth,
-    editProfile,
-    logout
+    updateProfile,
+    logout,
+    getMe
 } from '../controllers/auth.controller.js';
 
 const router = express.Router();
@@ -21,8 +21,8 @@ router.post('/forgot-password', forgotPassword);
 router.post('/check-reset-token', checkResetToken);
 router.post('/change-password', changePassword);
 
-router.post('/change-password-auth', verifyToken, changePasswordAuth);
-router.post('/edit-profile', verifyToken, editProfile);
+router.post('/update-profile', verifyToken, updateProfile);
 router.post('/logout', verifyToken, logout);
+router.get('/me', verifyToken, getMe);
 
-export default router; 
+export default router;

@@ -1,65 +1,151 @@
 import React from 'react'
 import {Tabs} from 'expo-router'
+import {View, Text} from 'react-native'
 import {Ionicons} from '@expo/vector-icons'
 import COLORS from '../../constants/colors'
 import {useSafeAreaInsets} from 'react-native-safe-area-context'
 
+function TabIcon({ focused, iconName, title }: any) {
+  return (
+    <View style={{
+      alignItems: 'center',
+      justifyContent: 'center',
+      flexDirection: 'column',
+      backgroundColor: focused ? COLORS.primary : 'transparent',
+      height: 50,
+      width: focused ? 110 : 50,
+      borderRadius: 25,
+    }}>
+      <View style={{ height: 30, justifyContent: 'center', alignItems: 'center' }}>
+        <Ionicons 
+          name={iconName} 
+          size={24} 
+          color={focused ? COLORS.white : COLORS.textSecondary} 
+        />
+      </View>
+      {focused && (
+        <Text style={{
+          color: COLORS.white,
+          fontSize: 12,
+          fontWeight: '600',
+          marginTop: 0
+        }}>
+          {title}
+        </Text>
+      )}
+    </View>
+  );
+}
+
 export default function TabLayout() {
-    const insets = useSafeAreaInsets();
-    
-    return (
-        <Tabs
-            screenOptions={{
-                headerShown: false,
-                tabBarActiveTintColor: COLORS.primary,
-                headerTitleStyle: {
-                    color: COLORS.textPrimary,
-                    fontWeight: '600'
-                },
-                headerShadowVisible: false,
-                tabBarStyle: {
-                    backgroundColor: COLORS.background,
-                    borderTopColor: COLORS.border,
-                    borderTopWidth: 1,
-                    paddingTop: 5,
-                    paddingBottom: insets.bottom,
-                    height: 60 + insets.bottom,
-                }
+  
+  const insets = useSafeAreaInsets();
+  
+  return (
+    <Tabs
+      screenOptions={{
+        headerShown: false,
+        tabBarShowLabel: false,
+        tabBarActiveTintColor: COLORS.primary,
+        tabBarInactiveTintColor: COLORS.textSecondary,
+        headerShadowVisible: false,
+        tabBarStyle: {
+            backgroundColor: COLORS.background,
+            borderRadius: 25,
+            marginHorizontal: 20,
+            marginBottom: 20,
+            paddingHorizontal: 10,
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            borderWidth: 1,
+            borderColor: COLORS.border,
+            shadowColor: COLORS.black,
+            shadowOffset: {
+              width: 0,
+              height: 4,
+            },
+            shadowOpacity: 0.15,
+            shadowRadius: 10,
+            elevation: 5,
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexDirection: 'row',
+            paddingBottom: 13 + insets.bottom,
+            height: 50,
+          }
       }}
     >
-        <Tabs.Screen name="index" 
-            options={{ 
-                title: 'Home',
-                tabBarIcon: ({color,size}) => (<Ionicons name="home-outline" color={color} size={size} />)
-            }}
+        <Tabs.Screen
+          name="index"
+          options={{
+            title: "Home",
+            tabBarIcon: ({ focused }) => (
+              <TabIcon
+                focused={focused}
+                iconName="home-outline"
+                title="Home"
+              />
+            ),
+          }}
         />
-        <Tabs.Screen name="create" 
-            options={{ 
-                href: null
-            }}
+        <Tabs.Screen
+          name="create"
+          options={{
+            href: null
+          }}
         />
-        <Tabs.Screen name="detail" 
-            options={{ 
-                href: null
-            }}
+        <Tabs.Screen
+          name="detail"
+          options={{
+            href: null
+          }}
         />
-        <Tabs.Screen name="history" 
-            options={{ 
-                title: 'History',
-                tabBarIcon: ({color,size}) => (<Ionicons name="time-outline" color={color} size={size} />)
-            }}
+        <Tabs.Screen
+          name="update"
+          options={{
+            href: null
+          }}
         />
-        <Tabs.Screen name="challenge" 
-            options={{ 
-                title: 'Challenge',
-                tabBarIcon: ({color,size}) => (<Ionicons name="trophy-outline" color={color} size={size} />)
-            }}
+        <Tabs.Screen
+          name="history"
+          options={{
+            title: "History",
+            tabBarIcon: ({ focused }) => (
+              <TabIcon
+                focused={focused}
+                iconName="time-outline"
+                title="History"
+              />
+            ),
+          }}
         />
-        <Tabs.Screen name="profile" 
-            options={{ 
-                title: 'Profile',
-                tabBarIcon: ({color,size}) => (<Ionicons name="person-outline" color={color} size={size} />)
-            }}
+        <Tabs.Screen
+          name="challenge"
+          options={{
+            title: "Challenge",
+            tabBarIcon: ({ focused }) => (
+              <TabIcon
+                focused={focused}
+                iconName="trophy-outline"
+                title="Challenge"
+              />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="profile"
+          options={{
+            title: "Profile",
+            tabBarIcon: ({ focused }) => (
+              <TabIcon
+                focused={focused}
+                iconName="person-outline"
+                title="Profile"
+              />
+            ),
+          }}
         />
     </Tabs>
   )

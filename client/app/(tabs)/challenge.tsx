@@ -1,10 +1,13 @@
-import { View, Text } from 'react-native'
+import {View, Text } from 'react-native'
 import React from 'react'
+import SafeScreen from '../../constants/SafeScreen'
 
 export default function Challenge() {
   return (
-    <View>
-      <Text>Challenge</Text>
-    </View>
+    <SafeScreen>
+      <View>
+        <Text>Challenge</Text>
+      </View>
+    </SafeScreen>
   )
 }
