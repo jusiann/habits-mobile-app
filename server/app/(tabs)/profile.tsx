@@ -1,7 +1,7 @@
 import {View, Text, TouchableOpacity, Image, ScrollView} from 'react-native';
 import React from 'react'
-import {useAuthStore} from '../../store/auth.store'
-import {useHabitStore} from '../../store/habit.store'
+import {useAuthStore} from '@/store/auth.store'
+import {useHabitStore} from '@/store/habit.store'
 import {useRouter} from 'expo-router'
 import {Ionicons} from '@expo/vector-icons'
 import CustomAlert from '../../constants/CustomAlert'
@@ -15,13 +15,13 @@ export default function Profile() {
   const router = useRouter();
 
   //Log user data
-  // React.useEffect(() => {
-  //   console.log('Current user data:', user);
-  //   console.log('gender', user?.gender);
-  //   console.log('height', user?.height);
-  //   console.log('weight', user?.weight);
-  //   console.log('age', user?.age);
-  // }, [user]);
+  React.useEffect(() => {
+    console.log('Current user data:', user);
+    console.log('gender', user?.gender);
+    console.log('height', user?.height);
+    console.log('weight', user?.weight);
+    console.log('age', user?.age);
+  }, [user]);
 
   const [showAlert, setShowAlert] = React.useState({
     visible: false,

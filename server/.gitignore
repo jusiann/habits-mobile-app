@@ -4,12 +4,55 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# ENVIRONMENT VARIABLES
+# EXPO
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+.expo-shared/
+
+# NATIVE
+.kotlin/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.keystore
+
+# METRO
+.metro-health-check*
+.metro-cache/
+
+# DEBUG
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# MACOS
+.DS_Store
+*.pem
+
+# LOCAL ENV FILES
 .env
-.env.local
+.env*.local
 .env.development.local
 .env.test.local
 .env.production.local
+
+# TYPESCRIPT
+*.tsbuildinfo
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+Thumbs.db
+ehthumbs.db
 
 # LOGS
 logs/
@@ -27,38 +70,48 @@ coverage/
 
 # BUILD OUTPUTS
 build/
-dist/
 out/
 
-# CACHE
+# CACHE DIRECTORIES
 .cache/
+.parcel-cache/
 
 # TEMPORARY FOLDERS
 tmp/
 temp/
 
-# IDE
-.vscode/
-.idea/
+# REACT NATIVE
+# IOS
+ios/build/
+ios/Pods/
+ios/*.xcworkspace
+ios/*.xcuserdata
 
-# OS
-.DS_Store
-Thumbs.db
+# ANDROID
+android/build/
+android/app/build/
+android/.gradle/
+android/local.properties
+android/app/release/
 
-# DATABASE FILES (IF USED FOR LOCAL DEVELOPMENT)
-*.sqlite
-*.db
+# FLIPPER
+android/app/src/debug/java/com/*/ReactNativeFlipper.java
 
-# UPLOADS (IF FILE UPLOAD EXISTS)
-uploads/
+# BUNDLE ARTIFACTS
+*.jsbundle
 
-# SSL CERTIFICATES
-*.pem
-*.key
-*.crt
+# COCOAPODS
+ios/Pods/
 
-# PM2
-ecosystem.config.js
+# FASTLANE
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
 
-# SESSION STORE
-sessions/
+# EXAMPLE APP
+app-example
+
+# BACKUP FILES
+*.bak
+*.backup

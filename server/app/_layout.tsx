@@ -1,4 +1,4 @@
-import SafeScreen from "../constants/SafeScreen";
+import SafeScreen from "@/constants/SafeScreen";
 import {StatusBar} from "expo-status-bar";
 import {SafeAreaProvider} from "react-native-safe-area-context";
 import {Stack, SplashScreen} from "expo-router";

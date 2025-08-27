@@ -597,15 +597,9 @@ export const getHabitLogsByDate = async (req, res) => {
 
         const allHabits = await Habit.find({ userId, isActive: true });
         const logMap = new Map();
-        
-        // Check if habitLogs exists and is an array before using forEach
-        if (habitLogs && Array.isArray(habitLogs)) {
-            habitLogs.forEach(log => {
-                if (log && log.habitId && log.habitId._id) {
-                    logMap.set(log.habitId._id.toString(), log);
-                }
-            });
-        }
+        habitLogs.forEach(log => {
+            logMap.set(log.habitId._id.toString(), log);
+        });
 
         const habitsWithLogs = allHabits.map(habit => {
             const log = logMap.get(habit._id.toString());
@@ -660,6 +654,8 @@ export const getHabitLogsByDate = async (req, res) => {
         });
     }
 };
+
+
 
 export const getHabitPresets = async (req, res) => {
     try {
