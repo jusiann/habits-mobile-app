@@ -483,7 +483,7 @@ export const useAuthStore = create((set,get) => ({
             isLoading: true 
         });
         try {
-            const response = await fetch('https://habits-mobile-app.onrender.com/api/auth/check-reset-token', {
+            const response = await fetch(`https://habits-mobile-app.onrender.com/api/auth/check-reset-token`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -1,4 +1,4 @@
-import {View, Text, TouchableOpacity, ScrollView, TextInput, Modal, KeyboardAvoidingView, Platform} from 'react-native'
+import {View, Text, TouchableOpacity, ScrollView, TextInput, Modal, KeyboardAvoidingView, Platform, ActivityIndicator} from 'react-native'
 import React from 'react'
 import {useRouter, useFocusEffect} from 'expo-router'
 import {Ionicons} from '@expo/vector-icons'
@@ -427,13 +427,17 @@ export default function Create() {
             onPress={createHabitAction}
             disabled={isLoading}
           >
-            <Text style={{
-              fontSize: 16,
-              fontWeight: '600',
-              color: COLORS.primary
-            }}>
-              {isLoading ? 'Creating...' : 'Create'}
-            </Text>
+            {isLoading ? (
+              <ActivityIndicator size={25} color={COLORS.primary} />
+            ) : (
+              <Text style={{
+                fontSize: 16,
+                fontWeight: '600',
+                color: COLORS.primary
+              }}>
+                Create
+              </Text>
+            )}
           </TouchableOpacity>
         </View>
         

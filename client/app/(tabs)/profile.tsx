@@ -1,4 +1,4 @@
-import {View, Text, TouchableOpacity, Image, ScrollView} from 'react-native';
+import {View, Text, TouchableOpacity, Image, ScrollView, ActivityIndicator} from 'react-native';
 import React from 'react'
 import {useAuthStore} from '../../store/auth.store'
 import {useHabitStore} from '../../store/habit.store'
@@ -10,7 +10,7 @@ import COLORS from '../../constants/colors'
 import styles from '../../assets/styles/profile.styles'
 
 export default function Profile() {
-  const {user, logout} = useAuthStore();
+  const {user, logout, isLoading} = useAuthStore();
   const {clearStore} = useHabitStore();
   const router = useRouter();
 
@@ -70,11 +70,16 @@ export default function Profile() {
       />
       
       {/* SCROLLABLE CONTENT */}
-      <ScrollView 
-        style={styles.container} 
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 90 }}
-      >
+      {isLoading ? (
+        <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+        </View>
+      ) : (
+        <ScrollView 
+          style={styles.container} 
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 90 }}
+        >
         {/* PROFILE HEADER SECTION */}
         <View style={styles.profileHeader}>
           {/* PROFILE PICTURE */}
@@ -178,6 +183,7 @@ export default function Profile() {
           </TouchableOpacity>
         </View>
       </ScrollView>
+      )}
     </SafeScreen>
   );
 }

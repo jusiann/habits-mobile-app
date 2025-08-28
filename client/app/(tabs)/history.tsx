@@ -1,5 +1,6 @@
-import {View, Text, ScrollView, TouchableOpacity} from 'react-native';
-import React, {useState, useEffect} from 'react';
+import {View, Text, ScrollView, TouchableOpacity, ActivityIndicator} from 'react-native';
+import React, { useState } from 'react';
+import { useNavigation } from '@react-navigation/native';
 import {Ionicons} from '@expo/vector-icons';
 import {Image} from 'expo-image';
 import SafeScreen from '../../constants/SafeScreen';
@@ -17,126 +18,149 @@ import {
 } from '../../constants/habit.constant';
 
 export default function History() {
-  // HOOKS
   const {habitLogsByDate} = useHabitStore();
   const {user} = useAuthStore();
-
-  // STATES
-  const [currentDate, setCurrentDate] = useState<Date>(new Date());
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [monthData, setMonthData] = useState<{[key: number]: typeof DAY_DATA_STRUCTURE}>({});
-  const [loading, setLoading] = useState<boolean>(false);
-  const [stats, setStats] = useState<typeof STATS_STRUCTURE>(DEFAULT_STATS);
-
-  // ACTIONS
-  const historyActions = {
-    // Get days in month
-    getDaysInMonth: (date: Date): (Date | null)[] => {
-      const year = date.getFullYear();
-      const month = date.getMonth();
-      const firstDay = new Date(year, month, 1);
-      const lastDay = new Date(year, month + 1, 0);
-      const daysInMonth = lastDay.getDate();
-      const startingDayOfWeek = firstDay.getDay();
-
-      const days: (Date | null)[] = [];
-      
-      // Add empty cells for days before month starts
-      for (let i = 0; i < startingDayOfWeek; i++) {
-        days.push(null);
-      }
-      
-      // Add days of the month
-      for (let day = 1; day <= daysInMonth; day++) {
-        days.push(new Date(year, month, day));
-      }
-      
-      // Add empty cells to complete the grid
-      while (days.length < CALENDAR_CONFIG.TOTAL_GRID_DAYS) {
-        days.push(null);
-      }
-      
-      return days;
-    },
-
-    // Load month data
-    loadMonthData: async (date: Date): Promise<void> => {
-      try {
-        setLoading(true);
+  const navigation = useNavigation();
+  const [currentDate, setCurrentDate] = React.useState<Date>(new Date());
+  const [selectedDate, setSelectedDate] = React.useState<Date>(new Date());
+  const [monthData, setMonthData] = React.useState<{[key: number]: typeof DAY_DATA_STRUCTURE}>({});
+  const [loading, setLoading] = React.useState<boolean>(false);
+  const [stats, setStats] = React.useState<typeof STATS_STRUCTURE>(DEFAULT_STATS); 
+  
+  const historyAction = async () => {  
+    try {
+      const getDaysInMonth = (date: Date): (Date | null)[] => {
         const year = date.getFullYear();
         const month = date.getMonth();
-        const daysInMonth = new Date(year, month + 1, 0).getDate();
-        const newMonthData: {[key: number]: typeof DAY_DATA_STRUCTURE} = {};
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
+        const daysInMonth = lastDay.getDate();
+        const startingDayOfWeek = firstDay.getDay();
+
+        const days: (Date | null)[] = [];
         
-        let totalDays = 0;
-        let completedDays = 0;
-        let currentStreakCount = 0;
-        let streakBroken = false;
-        
-        // Load data for each day in the month
+        for (let i = 0; i < startingDayOfWeek; i++) {
+          days.push(null);
+        }
+
         for (let day = 1; day <= daysInMonth; day++) {
-          const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+          days.push(new Date(year, month, day));
+        }
+        
+        while (days.length < CALENDAR_CONFIG.TOTAL_GRID_DAYS) {
+          days.push(null);
+        }   
+        return days;
+      };
+
+      const loadMonthData = async (date: Date): Promise<void> => {
+        try {
+          setLoading(true);
+          const year = date.getFullYear();
+          const month = date.getMonth();
+          const daysInMonth = new Date(year, month + 1, 0).getDate();
+          const newMonthData: {[key: number]: typeof DAY_DATA_STRUCTURE} = {};
           
-          const result = await habitLogsByDate(dateStr);
-          console.log('API Response for date ' + dateStr + ':', result);
+          let totalDays = 0;
+          let completedDays = 0;
+          let currentStreakCount = 0;
+          let streakBroken = false;
           
-          if (result.success && result.data) {
-            console.log('Summary for date ' + dateStr + ':', result.data.summary);
+          for (let day = 1; day <= daysInMonth; day++) {
+            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
             
-            newMonthData[day] = {
-              summary: {
-                completionRate: result.data.summary?.completionRate || 0,
-                totalHabits: result.data.summary?.totalHabits || 0,
-                completedHabits: result.data.summary?.completedHabits || 0,
-                inProgressHabits: result.data.summary?.inProgressHabits || 0,
-                notStartedHabits: result.data.summary?.notStartedHabits || 0
-              }
-            };
+            const result = await habitLogsByDate(dateStr);
             
-            totalDays++;
-            if (result.data.summary.totalHabits > 0) {
-              if (result.data.summary.completedHabits === result.data.summary.totalHabits) {
-                completedDays++;
-                if (!streakBroken) currentStreakCount++;
-              } else {
-                streakBroken = true;
+            if (result.success && result.data) {
+              newMonthData[day] = {
+                summary: result.data.summary
+              };
+              
+              totalDays++;
+              if (result.data.summary.totalHabits > 0) {
+                if (result.data.summary.completedHabits === result.data.summary.totalHabits) {
+                  completedDays++;
+                  if (!streakBroken) currentStreakCount++;
+                } else {
+                  streakBroken = true;
+                }
               }
             }
           }
+          
+          setMonthData(newMonthData);
+          setStats({
+            currentStreak: currentStreakCount,
+            completionRate: totalDays > 0 ? Math.round((completedDays / totalDays) * 100) : 0,
+            totalCompletedDays: completedDays,
+            totalCompleted: completedDays
+          });
+        } catch (error) {
+          console.error('Error loading month data:', error);
+          throw error;
+        } finally {
+          setLoading(false);
         }
-        
-        setMonthData(newMonthData);
-        setStats({
-          currentStreak: currentStreakCount,
-          completionRate: totalDays > 0 ? Math.round((completedDays / totalDays) * 100) : 0,
-          totalCompletedDays: completedDays,
-          totalCompleted: completedDays
-        });
-      } catch (error) {
-        console.error('Error loading month data:', error);
-      } finally {
-        setLoading(false);
-      }
-    },
+      };
 
-    // Get progress for a specific day
-    getDayProgress: (day: number): number => {
-      const dayData = monthData[day];
-      if (!dayData || !dayData.summary.totalHabits) return 0;
-      return dayData.summary.completedHabits / dayData.summary.totalHabits;
+      const getDayProgress = (day: number): number => {
+        const dayData = monthData[day];
+        if (!dayData || !dayData.summary.totalHabits) return 0;
+        return dayData.summary.completionRate;
+      };
+
+      return Promise.resolve({
+        getDaysInMonth,
+        loadMonthData,
+        getDayProgress
+      });
+    } catch (error) {
+      console.error('Error in historyAction:', error);
+      throw error;
     }
   };
 
-  // EFFECTS
-  useEffect(() => {
-    historyActions.loadMonthData(currentDate);
-  }, [currentDate]);
+  const [days, setDays] = React.useState<(Date | null)[]>([]);
+  const [actions, setActions] = React.useState<any>(null);
 
-  const days = historyActions.getDaysInMonth(currentDate);
+  React.useEffect(() => {
+    const initActions = async () => {
+      const result = await historyAction();
+      setActions(result);
+    };
+    initActions();
+  }, []);
+
+  React.useEffect(() => {
+    if (!actions) return;
+
+    const loadHistoryData = async () => {
+      try {
+        setLoading(true);
+        await actions.loadMonthData(currentDate);
+        const daysInMonth = actions.getDaysInMonth(currentDate);
+        setDays(daysInMonth);
+      } catch (error) {
+        console.error('Error loading history data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadHistoryData();
+
+    const navigationListener = navigation.addListener('focus', loadHistoryData);
+    return () => navigationListener();
+  }, [navigation, currentDate, actions]);
 
   return (
     <SafeScreen>
-      <ScrollView style={styles.container} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 60 }}>
+      {loading ? (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+        </View>
+      ) : (
+        <ScrollView style={styles.container} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 60 }}>
 
         {/* HEADER */}
         <View style={styles.header}>
@@ -152,26 +176,78 @@ export default function History() {
           </View>
         </View>
 
-        {/* STATISTICS */}
-        <View style={styles.statsContainer}>
-          <View style={styles.statCard}>
-            <Ionicons name="flame" size={18} color={COLORS.primary} style={{ marginBottom: 4 }} />
-            <Text style={styles.statValue}>{stats.currentStreak}</Text>
-            <Text style={styles.statLabel}>Current Streak</Text>
+        {/* SELECTED DATE DETAILS */}
+        {selectedDate && monthData[selectedDate.getDate()] && (
+          <View style={styles.selectedDateContainer}>
+            <Text style={styles.selectedDateTitle}>
+              {selectedDate.toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              })}
+            </Text>
+                        
+            <View style={[styles.selectedDateStats, { flexDirection: 'row', width: '100%', paddingHorizontal: 12, gap: 8 }]}>
+              <View style={[styles.selectedStat, { 
+                width: '30%',
+                alignItems: 'center',
+                paddingHorizontal: 16,
+                paddingVertical: 12,
+                backgroundColor: '#fff',
+                borderRadius: 16,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.15,
+                shadowRadius: 6,
+                elevation: 4
+              }]}>
+                <Ionicons name="checkmark-circle" size={24} color={COLORS.primary} style={{ marginBottom: 4 }} />
+                <Text style={[styles.selectedStatNumber, { color: COLORS.primary, fontSize: 20 }]}>
+                  {monthData[selectedDate.getDate()].summary.completedHabits}
+                </Text>
+              </View>
+            
+            <View style={[styles.selectedStat, { 
+              width: '30%',
+              alignItems: 'center',
+              paddingHorizontal: 16,
+              paddingVertical: 12,
+              backgroundColor: '#fff',
+              borderRadius: 16,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.15,
+              shadowRadius: 6,
+              elevation: 4
+            }]}>
+              <Ionicons name="time" size={24} color={COLORS.primary} style={{ marginBottom: 4 }} />
+              <Text style={[styles.selectedStatNumber, { color: COLORS.primary, fontSize: 20 }]}>
+                {monthData[selectedDate.getDate()].summary.inProgressHabits}
+              </Text>
+            </View>
+            
+            <View style={[styles.selectedStat, { 
+              width: '30%',
+              alignItems: 'center',
+              paddingHorizontal: 16,
+              paddingVertical: 12,
+              backgroundColor: '#fff',
+              borderRadius: 16,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.15,
+              shadowRadius: 6,
+              elevation: 4
+            }]}>
+              <Ionicons name="pie-chart" size={24} color={COLORS.primary} style={{ marginBottom: 4 }} />
+              <Text style={[styles.selectedStatNumber, { color: COLORS.primary, fontSize: 20 }]}>
+                {Math.round(monthData[selectedDate.getDate()].summary.completionRate * 100)}%
+              </Text>
+            </View>
           </View>
-
-          <View style={styles.statCard}>
-            <Ionicons name="pie-chart" size={18} color={COLORS.primary} style={{ marginBottom: 4 }} />
-            <Text style={styles.statValue}>{stats.completionRate}%</Text>
-            <Text style={styles.statLabel}>Completion Rate</Text>
           </View>
-
-          <View style={styles.statCard}>
-            <Ionicons name="checkmark-done" size={18} color={COLORS.primary} style={{ marginBottom: 4 }} />
-            <Text style={styles.statValue}>{stats.totalCompleted}</Text>
-            <Text style={styles.statLabel}>Total Completed</Text>
-          </View>
-        </View>
+        )}
 
         {/* CALENDAR */}
         <View style={styles.calendarContainer}>
@@ -223,9 +299,9 @@ export default function History() {
               }
               
               const dayNumber = day.getDate();
-              const progress = historyActions.getDayProgress(dayNumber);
               const today = day.toDateString() === new Date().toDateString();
               const selected = day.toDateString() === selectedDate.toDateString();
+              const progress = monthData[dayNumber]?.summary?.completionRate || 0;
               
               return (
                 <TouchableOpacity
@@ -262,43 +338,28 @@ export default function History() {
           </View>
         </View>
 
-        {/* SELECTED DATE DETAILS */}
-        {selectedDate && monthData[selectedDate.getDate()] && (
-          <View style={styles.selectedDateContainer}>
-            <Text style={styles.selectedDateTitle}>
-              {selectedDate.toLocaleDateString('en-US', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-              })}
-            </Text>
-            
-            <View style={styles.selectedDateStats}>
-              <View style={styles.selectedStat}>
-                <Text style={styles.selectedStatNumber}>
-                  {monthData[selectedDate.getDate()].summary.completedHabits}
-                </Text>
-                <Text style={styles.selectedStatLabel}>Completed</Text>
-              </View>
-
-              <View style={styles.selectedStat}>
-                <Text style={styles.selectedStatNumber}>
-                  {monthData[selectedDate.getDate()].summary.inProgressHabits}
-                </Text>
-                <Text style={styles.selectedStatLabel}>In Progress</Text>
-              </View>
-
-              <View style={styles.selectedStat}>
-                <Text style={styles.selectedStatNumber}>
-                  {Math.round(monthData[selectedDate.getDate()].summary.completionRate * 100)}%
-                </Text>
-                <Text style={styles.selectedStatLabel}>Rate</Text>
-              </View>
-            </View>
+        {/* STATISTICS */}
+        <View style={styles.statsContainer}>
+          <View style={styles.statCard}>
+            <Ionicons name="flame" size={18} color={COLORS.primary} style={{ marginBottom: 4 }} />
+            <Text style={styles.statValue}>{stats.currentStreak}</Text>
+            <Text style={styles.statLabel}>Current Streak</Text>
           </View>
-        )}
+
+          <View style={styles.statCard}>
+            <Ionicons name="pie-chart" size={18} color={COLORS.primary} style={{ marginBottom: 4 }} />
+            <Text style={styles.statValue}>{stats.completionRate}%</Text>
+            <Text style={styles.statLabel}>Completion Rate</Text>
+          </View>
+
+          <View style={styles.statCard}>
+            <Ionicons name="checkmark-done" size={18} color={COLORS.primary} style={{ marginBottom: 4 }} />
+            <Text style={styles.statValue}>{stats.totalCompleted}</Text>
+            <Text style={styles.statLabel}>Total Completed</Text>
+          </View>
+        </View>
       </ScrollView>
+      )}
     </SafeScreen>
   );
 }

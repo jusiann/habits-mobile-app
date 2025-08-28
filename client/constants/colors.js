@@ -16,24 +16,23 @@
 // };
 
 // LIGHTNING
-const COLORS = {
-  primary: "#8E44AD",        
-  textPrimary: "#5D2E6B",    
-  textSecondary: "#A569BD",  
-  textDark: "#4A1B5C",       
-  placeholderText: "#767676",
-  background: "#F4F1F8",
-  cardBackground: "#FDFCFE", 
-  inputBackground: "#F9F7FC", 
-  border: "#D5BDEC",         
-  white: "#ffffff",
-  black: "#000000",
-  success: "#9B59B6",
-  successLight: "#F3E5F5",
-};
+// const COLORS = {
+//   primary: "#8E44AD",        
+//   textPrimary: "#5D2E6B",    
+//   textSecondary: "#A569BD",  
+//   textDark: "#4A1B5C",       
+//   placeholderText: "#767676",
+//   background: "#F4F1F8",
+//   cardBackground: "#FDFCFE", 
+//   inputBackground: "#F9F7FC", 
+//   border: "#D5BDEC",         
+//   white: "#ffffff",
+//   black: "#000000",
+//   success: "#9B59B6",
+//   successLight: "#F3E5F5",
+// };
 
 // RETRO
-
 // const COLORS = {
 //   primary: "#e17055",
 //   textPrimary: "#784e2d",
@@ -69,21 +68,21 @@ const COLORS = {
 // };
 
 // BLOSSOM
-// const COLORS = {
-//   primary: "#EC407A", 
-//   textPrimary: "#7d2150", 
-//   textSecondary: "#b06a8f", 
-//   textDark: "#5a1836", 
-//   placeholderText: "#767676",
-//   background: "#fce4ec", 
-//   cardBackground: "#fff5f8", 
-//   inputBackground: "#fef8fa", 
-//   border: "#f8bbd0",
-//   white: "#ffffff",
-//   black: "#000000",
-//   success: "#AD1457",
-//   successLight: "#FCE4EC",
-// };
+const COLORS = {
+  primary: "#EC407A", 
+  textPrimary: "#7d2150", 
+  textSecondary: "#b06a8f", 
+  textDark: "#5a1836", 
+  placeholderText: "#767676",
+  background: "#fce4ec", 
+  cardBackground: "#fff5f8", 
+  inputBackground: "#fef8fa", 
+  border: "#f8bbd0",
+  white: "#ffffff",
+  black: "#000000",
+  success: "#AD1457",
+  successLight: "#FCE4EC",
+};
 
 // ORANGE
 // const COLORS = {

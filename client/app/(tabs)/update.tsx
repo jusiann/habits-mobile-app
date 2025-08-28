@@ -313,13 +313,17 @@ export default function UpdateProfile() {
           onPress={updateProfileAction}
           disabled={!hasChanges || isLoading}
         >
-          <Text style={{
-            fontSize: 16,
-            fontWeight: '600',
-            color: COLORS.primary
-          }}>
-            {isLoading ? 'Saving...' : 'Save'}
-          </Text>
+          {isLoading ? (
+            <ActivityIndicator size={25} color={COLORS.primary} />
+          ) : (
+            <Text style={{
+              fontSize: 16,
+              fontWeight: '600',
+              color: COLORS.primary
+            }}>
+              Save
+            </Text>
+          )}
         </TouchableOpacity>
       </View>
 

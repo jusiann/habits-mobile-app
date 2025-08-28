@@ -1,5 +1,5 @@
 import {Text, TouchableOpacity, View} from "react-native";
-import {Image} from "expo-image";
+import {Image} from "react-native";
 import {useRouter} from "expo-router";
 import styles from "../assets/styles/main.styles";
 import SafeScreen from '../constants/SafeScreen'

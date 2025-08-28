@@ -1,4 +1,4 @@
-import {View, Text, TouchableOpacity, ScrollView, TextInput, Modal, KeyboardAvoidingView, Platform} from 'react-native'
+import {View, Text, TouchableOpacity, ScrollView, TextInput, Modal, KeyboardAvoidingView, Platform, ActivityIndicator} from 'react-native'
 import CustomAlert from '../../constants/CustomAlert'
 import React from 'react'
 import {useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router'
@@ -416,13 +416,17 @@ export default function Detail() {
             onPress={detailHabitAction}
             disabled={!hasChanges || isLoading}
           >
-            <Text style={{
-              fontSize: 16,
-              fontWeight: '600',
-              color: COLORS.primary
-            }}>
-              {isLoading ? 'Saving...' : 'Save'}
-            </Text>
+            {isLoading ? (
+              <ActivityIndicator size={25} color={COLORS.primary} />
+            ) : (
+              <Text style={{
+                fontSize: 16,
+                fontWeight: '600',
+                color: COLORS.primary
+              }}>
+                Save
+              </Text>
+            )}
           </TouchableOpacity>
         </View>
         

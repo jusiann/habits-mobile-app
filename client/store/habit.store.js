@@ -16,7 +16,7 @@ export const useHabitStore = create((set, get) => ({
       throw new Error(error.message || "Authentication request failed");
     }
   },
-
+  
   // CHECK AND RESET DAILY (UTC based)
   checkAndResetDaily: () => {
     try {
@@ -306,24 +306,41 @@ export const useHabitStore = create((set, get) => ({
         throw new Error("Invalid server response format");
       }
 
-      if (response.ok) {
-        const processedLogs = data.data.logs.map(log => ({
-          ...log,
-          formattedDate: new Date(log.date).toLocaleDateString(),
-          completionRate: (log.progress / log.target) * 100
-        }));
+      console.log(`API Response for date ${date}:`, data);
 
-        return { 
-          success: true, 
-          data: {
-            ...data.data,
-            logs: processedLogs
-          }
-        };
+      if (response.ok) {
+          // O güne ait aktif alışkanlıkları filtrele
+          const activeHabits = data.data.habits.filter(habit => 
+            habit.status !== 'never_started' && // Hiç başlamamış olanları hariç tut
+            new Date(habit.createdAt).toDateString() <= new Date(date).toDateString() // O günden önce veya o gün oluşturulmuş olanları al
+          );
+
+          // API'den gelen özet verileri kullan
+          const summary = data.data.summary;
+          
+          // Tamamlanma oranını hesapla
+          const completedHabits = summary.completedHabits;
+          const inProgressHabits = summary.inProgressHabits;
+          const totalActiveHabits = completedHabits + inProgressHabits;
+          const completionRate = totalActiveHabits > 0 ? (completedHabits / totalActiveHabits) : 0;
+
+          const normalizedSummary = {
+            ...summary,
+            completionRate
+          };
+
+          return { 
+            success: true, 
+            data: {
+              summary: normalizedSummary,
+              habits: activeHabits
+            }
+          };
       } else {
         throw new Error(data.message || data.error || "Failed to fetch habit logs");
       }
     } catch (error) {
+      console.error(`Error fetching logs for ${date}:`, error);
       set({ 
         error: error.message || 'Network error', 
         isLoading: false 
@@ -383,52 +400,6 @@ export const useHabitStore = create((set, get) => ({
         throw new Error(data.message || data.error || "Failed to fetch habit progress");
       }
     } catch (error) {
-      set({ 
-        error: error.message || 'Network error', 
-        isLoading: false 
-      });
-      return { 
-        success: false, 
-        message: error.message || 'Network error. Please try again.' 
-      };
-    } finally {
-      set({ 
-        isLoading: false 
-      });
-    }
-  },
-
-  // GET HABIT LOGS BY DATE
-  getHabitLogsByDate: async (date) => {
-    set({ 
-      isLoading: true, 
-      error: null 
-    });
-    try {
-      const response = await get().makeRequest(`https://habits-mobile-app.onrender.com/api/habits/logs-by-date?date=${date}`, {
-        method: 'GET'
-      });
-
-      let data;
-      try {
-        data = await response.json();
-      } catch (parseError) {
-        console.error("JSON parse error:", parseError);
-        throw new Error("Invalid server response format");
-      }
-
-      console.log(`API Response for date ${date}:`, data);
-
-      if (response.ok) {
-        return { 
-          success: true, 
-          data: data.data
-        };
-      } else {
-        throw new Error(data.message || data.error || "Failed to fetch habit logs");
-      }
-    } catch (error) {
-      console.error(`Error fetching logs for ${date}:`, error);
       set({ 
         error: error.message || 'Network error', 
         isLoading: false 

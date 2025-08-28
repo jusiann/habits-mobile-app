@@ -279,7 +279,7 @@ export default function Signup() {
             <TouchableOpacity style={styles.button} onPress={signupAction} disabled={isLoading}>
               {
                 isLoading ? (
-                  <ActivityIndicator color="#fff" />
+                  <ActivityIndicator size={25} color="#fff" />
                 ) : (
                   <Text style={styles.buttonText}>Sign Up</Text>
                 )

@@ -1,4 +1,4 @@
-import {View, Text, ScrollView, TouchableOpacity} from 'react-native';
+import {View, Text, ScrollView, TouchableOpacity, ActivityIndicator} from 'react-native';
 import React from 'react';
 import {Image} from 'expo-image';
 import {router} from 'expo-router';
@@ -7,6 +7,7 @@ import styles from '../../assets/styles/home.styles';
 import {useAuthStore} from '../../store/auth.store';
 import {useHabitStore} from '../../store/habit.store';
 import SafeScreen from '../../constants/SafeScreen';
+import COLORS from '../../constants/colors';
 
 export default function Home() {
   const {user, token} = useAuthStore();
@@ -72,8 +73,8 @@ export default function Home() {
       >
         {
           isLoading ? (
-            <View style={styles.habitCard}>
-              <Text style={styles.emptyText}>Loading Habits...</Text>
+            <View style={[styles.habitCard, { justifyContent: 'center', alignItems: 'center', paddingVertical: 20 }]}>
+              <ActivityIndicator size="large" color={COLORS.primary} />
             </View>
           ) : habits.length === 0 ? (
             <View style={styles.habitCard}>
