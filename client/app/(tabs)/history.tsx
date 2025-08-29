@@ -66,9 +66,9 @@ export default function History() {
           let currentStreakCount = 0;
           let streakBroken = false;
           
+          // Günleri sırayla yükle
           for (let day = 1; day <= daysInMonth; day++) {
             const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-            
             const result = await habitLogsByDate(dateStr);
             
             if (result.success && result.data) {
@@ -166,9 +166,20 @@ export default function History() {
         <View style={styles.header}>
           <View style={styles.userInfo}>
             <Image 
-              source={{ uri: user?.profilePicture || 'https://via.placeholder.com/40' }} 
-              style={styles.avatar}
-            />
+            source={
+              user?.profilePicture === '01' ? require('../../assets/images/avatars/01.png')
+              : user?.profilePicture === '02' ? require('../../assets/images/avatars/02.png')
+              : user?.profilePicture === '03' ? require('../../assets/images/avatars/03.png')
+              : user?.profilePicture === '04' ? require('../../assets/images/avatars/04.png')
+              : user?.profilePicture === '05' ? require('../../assets/images/avatars/05.png')
+              : user?.profilePicture === '06' ? require('../../assets/images/avatars/06.png')
+              : user?.profilePicture === '07' ? require('../../assets/images/avatars/07.png')
+              : user?.profilePicture === '08' ? require('../../assets/images/avatars/08.png')
+              : user?.profilePicture === '09' ? require('../../assets/images/avatars/09.png')
+              : `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.fullname || 'Guest')}&background=random&color=fff&size=256`
+            } 
+            style={styles.avatar}
+          />
             <View style={{ marginTop: 10 }}>
               <Text style={styles.headerSubtitle}>History</Text>
               <Text style={styles.headerTitle}>{user?.username || 'Guest'}</Text>

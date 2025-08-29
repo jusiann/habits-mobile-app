@@ -15,12 +15,12 @@ export default function Create() {
   const {token} = useAuthStore();
   const {presets, fetchPresets, createHabit, isLoading: storeLoading, error: storeError} = useHabitStore();
   const [habitType, setHabitType] = React.useState('default');
-  const [selectedHabit, setSelectedHabit] = React.useState<any>(null) ;
+  const [selectedHabit, setSelectedHabit] = React.useState<any>(null);
   const [customName, setCustomName] = React.useState('');
-  const [customIcon, setCustomIcon] = React.useState('heart-outline') 
-  const [customUnit, setCustomUnit] = React.useState('') 
+  const [customIcon, setCustomIcon] = React.useState('heart-outline');
+  const [customUnit, setCustomUnit] = React.useState('');
   const [targetAmount, setTargetAmount] = React.useState('');
-  const [incrementAmount, setIncrementAmount] = React.useState(''); 
+  const [incrementAmount, setIncrementAmount] = React.useState('');
   const [selectedUnit, setSelectedUnit] = React.useState('');
   const [showIconModal, setShowIconModal] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
@@ -31,7 +31,6 @@ export default function Create() {
     type: 'info' as 'success' | 'error' | 'warning' | 'info',
     buttons: [] as Array<{ text: string; onPress: () => void; style?: 'default' | 'cancel' | 'destructive' }>
   });
-
 
   React.useEffect(() => {
     if (token && presets.length === 0) {
@@ -178,111 +177,112 @@ export default function Create() {
       {/* DEFAULT HABIT INFORMATION */}
       <View style={styles.formGroup}>
         <Text style={styles.label}>Choose a Default Habit</Text>
-          {
-            storeLoading ? (
-              <Text style={styles.label}>Loading presets...</Text>
-            ) : storeError ? (
-              <View>
-                {/* ERROR MESSAGE AND RETRY BUTTON */}
-                <Text style={[styles.label, { color: 'red' }]}>Failed to load presets: {storeError}</Text>
-                <TouchableOpacity 
-                  style={styles.button}
-                  onPress={() => token && fetchPresets()}
+        {
+          storeLoading ? (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 20 }}>
+              <ActivityIndicator size="large" color={COLORS.primary} />
+            </View>
+          ) : storeError ? (
+            <View>
+              {/* ERROR MESSAGE AND RETRY BUTTON */}
+              <Text style={[styles.label, { color: 'red' }]}>Failed to load presets: {storeError}</Text>
+              <TouchableOpacity 
+                style={styles.button}
+                onPress={() => token && fetchPresets()}
+              >
+                <Text style={styles.buttonText}>Retry</Text>
+              </TouchableOpacity>
+            </View>
+          ) : presets.length === 0 ? (
+            <Text style={styles.label}>No presets available</Text>
+          ) : (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{marginVertical: 10}}>
+              {presets.map((habit: any, index: number) => (
+    
+                <TouchableOpacity
+                  key={index}
+                  style={[
+                    styles.habitCard,
+                    selectedHabit?.name === habit.name && styles.selectedHabitCard
+                  ]}
+                  onPress={() => setSelectedHabit(habit)}
                 >
-                  <Text style={styles.buttonText}>Retry</Text>
+    
+                  {/* HABIT ICON */}
+                  <Ionicons 
+                    name={(habit.icon || "heart-outline") as any} 
+                    size={32} 
+                    color={selectedHabit?.name === habit.name ? COLORS.white : COLORS.primary} 
+                  />
+    
+                  {/* HABIT NAME */}
+                  <Text style={[
+                    styles.habitCardText,
+                    selectedHabit?.name === habit.name && styles.selectedHabitCardText
+                  ]}>
+                    {habit.name}
+                  </Text>
                 </TouchableOpacity>
+              ))}
+            </ScrollView>
+          )
+        }
+        {selectedHabit && (
+            <>
+              <View style={styles.formGroup}>
+                <Text style={styles.label}>Unit</Text>
+                <View style={styles.unitContainer}>
+                  {selectedHabit.availableUnits.map((unit: string) => (
+                    <TouchableOpacity
+                      key={unit}
+                      style={[
+                        styles.unitButton,
+                        selectedUnit === unit && styles.selectedUnitButton
+                      ]}
+                      onPress={() => setSelectedUnit(unit)}
+                    >
+                      <Text style={[
+                        styles.unitButtonText,
+                        selectedUnit === unit && styles.selectedUnitButtonText
+                      ]}>
+                        {unit}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
               </View>
-            ) : presets.length === 0 ? (
-              <Text style={styles.label}>No presets available</Text>
-            ) : (
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{marginVertical: 10}}>
-                {presets.map((habit: any, index: number) => (
-
-                  <TouchableOpacity
-                    key={index}
-                    style={[
-                      styles.habitCard,
-                      selectedHabit?.name === habit.name && styles.selectedHabitCard
-                    ]}
-                    onPress={() => setSelectedHabit(habit)}
-                  >
-
-                    {/* HABIT ICON */}
-                    <Ionicons 
-                      name={(habit.icon || "heart-outline") as any} 
-                      size={32} 
-                      color={selectedHabit?.name === habit.name ? COLORS.white : COLORS.primary} 
-                    />
-
-                    {/* HABIT NAME */}
-                    <Text style={[
-                      styles.habitCardText,
-                      selectedHabit?.name === habit.name && styles.selectedHabitCardText
-                    ]}>
-                      {habit.name}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            )
-          }
-          {selectedHabit && (
-              <>
-                <View style={styles.formGroup}>
-                  <Text style={styles.label}>Unit</Text>
-                  <View style={styles.unitContainer}>
-                    {selectedHabit.availableUnits.map((unit: string) => (
-                      <TouchableOpacity
-                        key={unit}
-                        style={[
-                          styles.unitButton,
-                          selectedUnit === unit && styles.selectedUnitButton
-                        ]}
-                        onPress={() => setSelectedUnit(unit)}
-                      >
-                        <Text style={[
-                          styles.unitButtonText,
-                          selectedUnit === unit && styles.selectedUnitButtonText
-                        ]}>
-                          {unit}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                </View>
-                  
-                {/* TARGET AMOUNT INPUT */}
-                <View style={styles.formGroup}>
-                  <Text style={styles.label}>Target Amount</Text>
-                  <View style={styles.inputContainer}>
-                    <TextInput
-                      style={styles.input}
-                      value={targetAmount}
-                      onChangeText={setTargetAmount}
-                      keyboardType="numeric"
-                      placeholder="Enter target amount"
-                      placeholderTextColor={COLORS.textSecondary}
-                    />
-                  </View>
-                </View>
                 
-                {/* INCREMENT AMOUNT INPUT */}
-                <View style={styles.formGroup}>
-                  <Text style={styles.label}>Increment Amount</Text>
-                  <View style={styles.inputContainer}>
-                    <TextInput
-                      style={styles.input}
-                      value={incrementAmount}
-                      onChangeText={setIncrementAmount}
-                      keyboardType="numeric"
-                      placeholder="Enter increment amount"
-                      placeholderTextColor={COLORS.textSecondary}
-                    />
-                  </View>
-                </View>
-              </>
-            )
-          }
+            {/* TARGET AMOUNT INPUT */}
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>Target Amount</Text>
+              <View style={styles.inputContainer}>
+                <TextInput
+                  style={styles.input}
+                  value={targetAmount}
+                  onChangeText={setTargetAmount}
+                  keyboardType="numeric"
+                  placeholder="Enter target amount"
+                  placeholderTextColor={COLORS.textSecondary}
+                />
+              </View>
+            </View>
+            
+            {/* INCREMENT AMOUNT INPUT */}
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>Increment Amount</Text>
+              <View style={styles.inputContainer}>
+                <TextInput
+                  style={styles.input}
+                  value={incrementAmount}
+                  onChangeText={setIncrementAmount}
+                  keyboardType="numeric"
+                  placeholder="Enter increment amount"
+                  placeholderTextColor={COLORS.textSecondary}
+                />
+              </View>
+            </View>
+          </>
+        )}
       </View>
     </View>
   );

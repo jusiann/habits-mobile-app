@@ -33,21 +33,21 @@
 // };
 
 // RETRO
-// const COLORS = {
-//   primary: "#e17055",
-//   textPrimary: "#784e2d",
-//   textSecondary: "#a58e7c",
-//   textDark: "#50372a",
-//   placeholderText: "#767676",
-//   background: "#ede1d1",
-//   cardBackground: "#faf5eb",
-//   inputBackground: "#f7f2ea",
-//   border: "#e2d6c1",
-//   white: "#ffffff",
-//   black: "#000000",
-//   success: "#D35400",
-//   successLight: "#FDF2E9",
-// };
+const COLORS = {
+  primary: "#e17055",
+  textPrimary: "#784e2d",
+  textSecondary: "#a58e7c",
+  textDark: "#50372a",
+  placeholderText: "#767676",
+  background: "#ede1d1",
+  cardBackground: "#faf5eb",
+  inputBackground: "#f7f2ea",
+  border: "#e2d6c1",
+  white: "#ffffff",
+  black: "#000000",
+  success: "#D35400",
+  successLight: "#FDF2E9",
+};
 
 // OCEAN
 
@@ -68,21 +68,21 @@
 // };
 
 // BLOSSOM
-const COLORS = {
-  primary: "#EC407A", 
-  textPrimary: "#7d2150", 
-  textSecondary: "#b06a8f", 
-  textDark: "#5a1836", 
-  placeholderText: "#767676",
-  background: "#fce4ec", 
-  cardBackground: "#fff5f8", 
-  inputBackground: "#fef8fa", 
-  border: "#f8bbd0",
-  white: "#ffffff",
-  black: "#000000",
-  success: "#AD1457",
-  successLight: "#FCE4EC",
-};
+// const COLORS = {
+//   primary: "#EC407A", 
+//   textPrimary: "#7d2150", 
+//   textSecondary: "#b06a8f", 
+//   textDark: "#5a1836", 
+//   placeholderText: "#767676",
+//   background: "#fce4ec", 
+//   cardBackground: "#fff5f8", 
+//   inputBackground: "#fef8fa", 
+//   border: "#f8bbd0",
+//   white: "#ffffff",
+//   black: "#000000",
+//   success: "#AD1457",
+//   successLight: "#FCE4EC",
+// };
 
 // ORANGE
 // const COLORS = {

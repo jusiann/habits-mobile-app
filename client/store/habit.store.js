@@ -17,22 +17,47 @@ export const useHabitStore = create((set, get) => ({
     }
   },
   
-  // CHECK AND RESET DAILY (UTC based)
-  checkAndResetDaily: () => {
+  // CHECK AND RESET DAILY (UTC based version - commented out)
+  /*
+  checkAndResetDailyUTC: () => {
     try {
       const now = new Date();
-      const todayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())).getTime();
+      const todayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), norw.getUTCDate())).getTime();
       const lastFetch = get().lastFetchDate ? new Date(get().lastFetchDate).getTime() : null;
       
       if (lastFetch && lastFetch < todayUTC) {
-        // CLEAR HABITS FOR NEW DAY
         set({ 
           habits: [], 
           lastFetchDate: now.toISOString() 
         });
         return true; 
       } else if (!lastFetch) {
-        // SET INITIAL DATE
+        set({ 
+          lastFetchDate: now.toISOString() 
+        });
+      }
+      return false;
+    } catch (error) {
+      console.error("Error in checkAndResetDailyUTC:", error);
+      return false;
+    }
+  },
+  */
+
+  // CHECK AND RESET DAILY (Local time based version - active)
+  checkAndResetDaily: () => {
+    try {
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+      const lastFetch = get().lastFetchDate ? new Date(get().lastFetchDate).getTime() : null;
+      
+      if (lastFetch && lastFetch < today) {
+        set({ 
+          habits: [], 
+          lastFetchDate: now.toISOString() 
+        });
+        return true;
+      } else if (!lastFetch) {
         set({ 
           lastFetchDate: now.toISOString() 
         });
@@ -287,17 +312,35 @@ export const useHabitStore = create((set, get) => ({
     }
   },
 
+  monthlyCache: {},
+
   // FETCH HABIT LOGS BY DATE
   habitLogsByDate: async (date) => {
+    // Helper function to check if two dates are the same day
+    const isSameDay = (date1, date2) => {
+      return date1.toDateString() === date2.toDateString();
+    };
     set({ 
       isLoading: true, 
       error: null 
     });
+  
+    const requestDate = new Date(date);
+    const today = new Date();
+    const cacheKey = `${requestDate.getFullYear()}-${requestDate.getMonth()}`;
+  
+    if (!isSameDay(requestDate, today) && get().monthlyCache[cacheKey]?.[requestDate.getDate()]) {
+      set({ 
+        isLoading: false 
+      });
+      return get().monthlyCache[cacheKey][requestDate.getDate()];
+    }
+  
     try {
       const response = await get().makeRequest(`https://habits-mobile-app.onrender.com/api/habits/logs-by-date?date=${date}`, {
         method: 'GET'
       });
-
+  
       let data;
       try {
         data = await response.json();
@@ -309,33 +352,39 @@ export const useHabitStore = create((set, get) => ({
       console.log(`API Response for date ${date}:`, data);
 
       if (response.ok) {
-          // O güne ait aktif alışkanlıkları filtrele
-          const activeHabits = data.data.habits.filter(habit => 
-            habit.status !== 'never_started' && // Hiç başlamamış olanları hariç tut
-            new Date(habit.createdAt).toDateString() <= new Date(date).toDateString() // O günden önce veya o gün oluşturulmuş olanları al
-          );
-
-          // API'den gelen özet verileri kullan
-          const summary = data.data.summary;
-          
-          // Tamamlanma oranını hesapla
-          const completedHabits = summary.completedHabits;
-          const inProgressHabits = summary.inProgressHabits;
-          const totalActiveHabits = completedHabits + inProgressHabits;
-          const completionRate = totalActiveHabits > 0 ? (completedHabits / totalActiveHabits) : 0;
-
-          const normalizedSummary = {
-            ...summary,
-            completionRate
-          };
-
-          return { 
-            success: true, 
-            data: {
-              summary: normalizedSummary,
-              habits: activeHabits
-            }
-          };
+        const activeHabits = data.data.habits.filter(habit => 
+          habit.status !== 'never_started' && 
+          new Date(habit.createdAt).toDateString() <= new Date(date).toDateString()
+        );
+  
+        const summary = data.data.summary;
+        const completedHabits = summary.completedHabits;
+        const inProgressHabits = summary.inProgressHabits;
+        const totalActiveHabits = completedHabits + inProgressHabits;
+        const completionRate = totalActiveHabits > 0 ? (completedHabits / totalActiveHabits) : 0;
+  
+        const result = { 
+          success: true, 
+          data: {
+            summary: {
+              ...summary,
+              completionRate
+            },
+            habits: activeHabits
+          }
+        };
+  
+        // Bugünün verisi değilse cache'e ekle
+        if (!isSameDay(requestDate, today)) {
+          const currentCache = { ...get().monthlyCache };
+          if (!currentCache[cacheKey]) {
+            currentCache[cacheKey] = {};
+          }
+          currentCache[cacheKey][requestDate.getDate()] = result;
+          set({ monthlyCache: currentCache });
+        }
+  
+        return result;
       } else {
         throw new Error(data.message || data.error || "Failed to fetch habit logs");
       }

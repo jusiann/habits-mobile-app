@@ -105,7 +105,7 @@ export default function Login() {
         <View style={styles.topIllustration}>
           {/* PICTURE */}
           <Image
-            source={require("../../assets/images/react-logo.png")}
+            source={require("../../assets/images/logos/retro-theme-logo.png")} 
             style={styles.illustrationImage}
             resizeMode="contain"
           />

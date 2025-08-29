@@ -2,6 +2,32 @@ import { StyleSheet } from "react-native";
 import COLORS from "../../constants/colors";
 
 const styles = StyleSheet.create({
+  // Avatar grid styles
+  avatarGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    padding: 16,
+    gap: 12,
+  },
+  avatarItem: {
+    width: '30%',
+    aspectRatio: 1,
+    borderRadius: 999,
+    borderWidth: 2,
+    borderColor: COLORS.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  selectedAvatarItem: {
+    borderColor: COLORS.primary,
+    backgroundColor: COLORS.inputBackground,
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 999,
+  },
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
@@ -34,7 +60,7 @@ const styles = StyleSheet.create({
   profileImage: {
     width: 120,
     height: 120,
-    borderRadius: 60,
+    borderRadius: 999,
     borderWidth: 3,
     borderColor: COLORS.primary,
   },

@@ -180,6 +180,7 @@ export default function Signup() {
                   autoCapitalize="none"
                   value={email}
                   onChangeText={setEmail}
+                  keyboardType='email-address'
                 />
               </View>
             </View>

@@ -1,4 +1,5 @@
-import {View, Text, TouchableOpacity, Image, ScrollView, TextInput, Modal, ActivityIndicator, KeyboardAvoidingView, Platform} from 'react-native'
+import {View, Text, TouchableOpacity, ScrollView, TextInput, Modal, ActivityIndicator, KeyboardAvoidingView, Platform} from 'react-native'
+import {Image} from 'expo-image'
 import React from 'react'
 import {useAuthStore } from '../../store/auth.store'
 import {useRouter, useFocusEffect } from 'expo-router'
@@ -16,8 +17,20 @@ export default function UpdateProfile() {
   const [age, setAge] = React.useState(user?.age?.toString() || '');
   const [height, setHeight] = React.useState(user?.height?.toString() || '');
   const [weight, setWeight] = React.useState(user?.weight?.toString() || '');
-  const [profilePicture, setProfilePicture] = React.useState(user?.profilePicture || '');
+  const [profilePicture, setProfilePicture] = React.useState(user?.profilePicture || '01');
   const [showPasswordModal, setShowPasswordModal] = React.useState(false);
+  const [showAvatarModal, setShowAvatarModal] = React.useState(false);
+  const [selectedAvatar, setSelectedAvatar] = React.useState('');
+  const [tempProfilePicture, setTempProfilePicture] = React.useState('');
+  const [isAvatarSaving, setIsAvatarSaving] = React.useState(false);
+
+
+
+  const generateNewProfilePicture = (avatarNumber) => {
+    const formattedNumber = avatarNumber < 10 ? `0${avatarNumber}` : avatarNumber;
+    setTempProfilePicture(formattedNumber);
+    setSelectedAvatar(`avatar${formattedNumber}`);
+  };
   const [currentPassword, setCurrentPassword] = React.useState('');
   const [newPassword, setNewPassword] = React.useState('');
   const [confirmNewPassword, setConfirmNewPassword] = React.useState('');
@@ -55,7 +68,7 @@ export default function UpdateProfile() {
         setAge(user.age?.toString() || '');
         setHeight(user.height?.toString() || '');
         setWeight(user.weight?.toString() || '');
-        setProfilePicture(user.profilePicture || '');
+        setProfilePicture(user.profilePicture || '01');
         setShowPasswordModal(false);
         setCurrentPassword('');
         setNewPassword('');
@@ -240,11 +253,38 @@ export default function UpdateProfile() {
     }
   };
 
-  // remove it
-  const generateNewProfilePicture = () => {
-    const name = fullname || user?.fullname || 'User';
-    const newUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random&color=fff&size=256&${Date.now()}`;
-    setProfilePicture(newUrl);
+  const renderProfilePictureChange = async () => {
+    try {
+      if (selectedAvatar && tempProfilePicture) {
+        setIsAvatarSaving(true);
+        try {
+          setProfilePicture(tempProfilePicture);
+          setShowAvatarModal(false);
+          setTempProfilePicture('');
+          setSelectedAvatar('');
+        } catch (error) {
+          console.error('Error saving avatar:', error);
+          setShowAlert({
+            visible: true,
+            title: 'Error',
+            message: 'An error occurred while saving the avatar.',
+            type: 'error',
+            buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+          });
+        } finally {
+          setIsAvatarSaving(false);
+        }
+      }
+    } catch (error) {
+      console.error('Profile picture change error:', error);
+      setShowAlert({
+        visible: true,
+        title: 'Error',
+        message: 'An unexpected error occurred.',
+        type: 'error',
+        buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+      });
+    }
   };
 
   return (
@@ -343,11 +383,22 @@ export default function UpdateProfile() {
           <View style={styles.profileSection}>
             <View style={styles.profileImageContainer}>
               <Image 
-                source={{ uri: profilePicture || user?.profilePicture || 'https://ui-avatars.com/api/?name=User&background=random&color=fff&size=256' }}
-                style={styles.profileImage}
-              />
+            source={
+              profilePicture === '01' ? require('../../assets/images/avatars/01.png')
+              : profilePicture === '02' ? require('../../assets/images/avatars/02.png')
+              : profilePicture === '03' ? require('../../assets/images/avatars/03.png')
+              : profilePicture === '04' ? require('../../assets/images/avatars/04.png')
+              : profilePicture === '05' ? require('../../assets/images/avatars/05.png')
+              : profilePicture === '06' ? require('../../assets/images/avatars/06.png')
+              : profilePicture === '07' ? require('../../assets/images/avatars/07.png')
+              : profilePicture === '08' ? require('../../assets/images/avatars/08.png')
+              : profilePicture === '09' ? require('../../assets/images/avatars/09.png')
+              : `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.fullname || 'Guest')}&background=random&color=fff&size=256`
+            } 
+            style={styles.profileImage}
+          />
             </View>
-            <TouchableOpacity style={styles.changePictureButton} onPress={generateNewProfilePicture}>
+            <TouchableOpacity style={styles.changePictureButton} onPress={() => setShowAvatarModal(true)}>
               <Ionicons name="camera" size={18} color={COLORS.white} />
               <Text style={styles.changePictureText}>Change Picture</Text>
             </TouchableOpacity>
@@ -482,6 +533,79 @@ export default function UpdateProfile() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {/* AVATAR SELECTION MODAL */}
+      <Modal
+        visible={showAvatarModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowAvatarModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { margin: 20 }]}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Choose Avatar</Text>
+              <TouchableOpacity onPress={() => {
+                setShowAvatarModal(false);
+                setTempProfilePicture('');
+                setSelectedAvatar('');
+              }}>
+                <Ionicons name="close" size={26} color={COLORS.textPrimary} />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.avatarGrid}>
+              {Array.from({ length: 9 }, (_, i) => i + 1).map((num) => (
+                <TouchableOpacity
+                  key={num}
+                  style={styles.avatarItem}
+                  onPress={() => generateNewProfilePicture(num)}
+                >
+                  <Image
+                    source={
+                      num === 1 ? require('../../assets/images/avatars/01.png')
+                      : num === 2 ? require('../../assets/images/avatars/02.png')
+                      : num === 3 ? require('../../assets/images/avatars/03.png')
+                      : num === 4 ? require('../../assets/images/avatars/04.png')
+                      : num === 5 ? require('../../assets/images/avatars/05.png')
+                      : num === 6 ? require('../../assets/images/avatars/06.png')
+                      : num === 7 ? require('../../assets/images/avatars/07.png')
+                      : num === 8 ? require('../../assets/images/avatars/08.png')
+                      : num === 9 ? require('../../assets/images/avatars/09.png')
+                      : `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.fullname || 'Guest')}&background=random&color=fff&size=256`
+                    }
+                    style={styles.avatarImage}
+                  />
+                  {selectedAvatar === `avatar${num < 10 ? '0' + num : num}` && (
+                    <View style={{
+                      position: 'absolute',
+                      top: 0,
+                      right: 0,
+                      backgroundColor: COLORS.primary,
+                      borderRadius: 60,
+                      padding: 4
+                    }}>
+                      <Ionicons name="checkmark" size={15} color={COLORS.white} />
+                    </View>
+                  )}
+                  </TouchableOpacity>
+              ))}
+            </View>
+
+            <TouchableOpacity
+              style={[styles.saveButton, !selectedAvatar && styles.saveButtonDisabled]}
+              onPress={renderProfilePictureChange}
+              disabled={!selectedAvatar}
+            >
+              {isAvatarSaving ? (
+                <ActivityIndicator color={COLORS.white} size="small" />
+              ) : (
+                <Text style={styles.saveButtonText}>Choose Avatar</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
 
       {/* PASSWORD CHANGE MODAL */}
       <Modal

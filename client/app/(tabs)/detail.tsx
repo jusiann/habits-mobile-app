@@ -490,8 +490,8 @@ export default function Detail() {
                  buttons: [
                    { text: 'Cancel', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'cancel' },
                    { 
-                     text: 'Delete', 
-                     onPress: async () => {
+                      text: 'Delete', 
+                      onPress: async () => {
                       setShowAlert(previous => ({ ...previous, visible: false }));
                       setIsDeleteLoading(true);
                       try {

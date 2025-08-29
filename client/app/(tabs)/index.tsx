@@ -11,14 +11,37 @@ import COLORS from '../../constants/colors';
 
 export default function Home() {
   const {user, token} = useAuthStore();
-  const {habits, fetchHabits, incrementHabit, isLoading} = useHabitStore();
+  const {habits, fetchHabits, incrementHabit, isLoading, habitLogsByDate} = useHabitStore();
   const [pressedButton, setPressedButton] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     if (token) {
       fetchHabits();
+      loadHistoryData();
     }
   }, [token, fetchHabits]);
+
+  const loadHistoryData = async () => {
+    try {
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = today.getMonth();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+      // Tüm günlerin verilerini paralel olarak yükle
+      const loadPromises = [];
+      for (let day = 1; day <= daysInMonth; day++) {
+        const date = new Date(year, month, day);
+        loadPromises.push(habitLogsByDate(date));
+      }
+
+      // Tüm yükleme işlemlerinin tamamlanmasını bekle
+      await Promise.all(loadPromises);
+      console.log('History data loaded successfully');
+    } catch (error) {
+      console.error('Error loading history data:', error);
+    }
+  };
 
   const getGreeting = () => {
     const currentHour = new Date().getHours();
@@ -40,7 +63,18 @@ export default function Home() {
       <View style={styles.header}>
         <View style={styles.userInfo}>
           <Image 
-            source={{ uri: user?.profilePicture || 'https://via.placeholder.com/40' }} 
+            source={
+              user?.profilePicture === '01' ? require('../../assets/images/avatars/01.png')
+              : user?.profilePicture === '02' ? require('../../assets/images/avatars/02.png')
+              : user?.profilePicture === '03' ? require('../../assets/images/avatars/03.png')
+              : user?.profilePicture === '04' ? require('../../assets/images/avatars/04.png')
+              : user?.profilePicture === '05' ? require('../../assets/images/avatars/05.png')
+              : user?.profilePicture === '06' ? require('../../assets/images/avatars/06.png')
+              : user?.profilePicture === '07' ? require('../../assets/images/avatars/07.png')
+              : user?.profilePicture === '08' ? require('../../assets/images/avatars/08.png')
+              : user?.profilePicture === '09' ? require('../../assets/images/avatars/09.png')
+              : `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.fullname || 'Guest')}&background=random&color=fff&size=256`
+            } 
             style={styles.avatar}
           />
           <View style={{ marginTop: 10 }}>

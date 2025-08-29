@@ -16,7 +16,7 @@ export default function Index() {
         {/* LOGO SECTION */}
         <View style={styles.topIllustration}>
           <Image 
-            source={require("../assets/images/react-logo.png")} 
+            source={require("../assets/images/logos/retro-theme-logo.png")} 
             style={styles.illustrationImage}
           />
         </View>
