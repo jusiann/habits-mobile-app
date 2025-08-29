@@ -12,7 +12,7 @@ import SafeScreen from '../../constants/SafeScreen'
 export default function Detail() {
   const router = useRouter()
   const {habitId} = useLocalSearchParams()
-  const {habits, updateHabit} = useHabitStore()
+  const {habits, updateHabit, deleteHabit} = useHabitStore()
   const [habit, setHabit] = React.useState<any>(null)
   const [originalUnit, setOriginalUnit] = React.useState('')
   const [customName, setCustomName] = React.useState('')
@@ -22,7 +22,8 @@ export default function Detail() {
   const [incrementAmount, setIncrementAmount] = React.useState('')
   const [selectedUnit, setSelectedUnit] = React.useState('')
   const [showIconModal, setShowIconModal] = React.useState(false)
-  const [isLoading, setIsLoading] = React.useState(false)
+  const [isSaveLoading, setIsSaveLoading] = React.useState(false)
+  const [isDeleteLoading, setIsDeleteLoading] = React.useState(false)
   const [hasChanges, setHasChanges] = React.useState(false)
   const [showAlert, setShowAlert] = React.useState({
     visible: false,
@@ -77,7 +78,7 @@ export default function Detail() {
     if (!habit || !hasChanges) 
       return;
 
-    setIsLoading(true)
+    setIsSaveLoading(true)  
     try {
       let updateData = {}
       if (habit.type === 'default') {
@@ -168,7 +169,7 @@ export default function Detail() {
         buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
       })
     } finally {
-      setIsLoading(false)
+      setIsSaveLoading(false)
     }
   };
 
@@ -411,12 +412,12 @@ export default function Detail() {
           {/* SAVE BUTTON */}
           <TouchableOpacity
             style={{
-              opacity: (!hasChanges || isLoading) ? 0.5 : 1
+              opacity: (!hasChanges || isSaveLoading) ? 0.5 : 1
             }}
             onPress={detailHabitAction}
-            disabled={!hasChanges || isLoading}
+            disabled={!hasChanges || isSaveLoading}
           >
-            {isLoading ? (
+            {isSaveLoading ? (
               <ActivityIndicator size={25} color={COLORS.primary} />
             ) : (
               <Text style={{
@@ -461,6 +462,86 @@ export default function Detail() {
           <View style={styles.form}>
             {habit.type === 'default' ? renderDefaultHabitEdit() : renderCustomHabitEdit()}
           </View>
+          <TouchableOpacity 
+            style={[{
+              marginTop: 20,
+              backgroundColor: '#FF3B30',
+              padding: 12,
+              borderRadius: 8,
+              alignItems: 'center',
+              flexDirection: 'row',
+              justifyContent: 'center',
+              gap: 8,
+              opacity: isDeleteLoading ? 0.5 : 1,
+              width: '100%',
+              elevation: 2,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.25,
+              shadowRadius: 3.84
+            }]}
+            disabled={isDeleteLoading}
+            onPress={() => {
+              setShowAlert({
+                visible: true,
+                title: 'Delete Habit',
+                 message: 'Are you sure you want to delete this habit? This action cannot be undone.',
+                 type: 'warning',
+                 buttons: [
+                   { text: 'Cancel', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'cancel' },
+                   { 
+                     text: 'Delete', 
+                     onPress: async () => {
+                      setShowAlert(previous => ({ ...previous, visible: false }));
+                      setIsDeleteLoading(true);
+                      try {
+                        const result = await deleteHabit(habit.id);
+                        if (result.success) {
+                          setShowAlert({
+                            visible: true,
+                            title: 'Success',
+                             message: 'Habit deleted successfully!',
+                             type: 'success',
+                             buttons: [{ text: 'OK', onPress: () => { setShowAlert(previous => ({ ...previous, visible: false })); router.back(); }, style: 'default' }]
+                          });
+                        } else {
+                          setShowAlert({
+                            visible: true,
+                            title: 'Delete Failed',
+                            message: result.message || 'Failed to delete habit',
+                            type: 'error',
+                            buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+                          });
+                        }
+                      } catch (error) {
+                        setShowAlert({
+                          visible: true,
+                          title: 'Connection Error',
+                           message: 'Failed to connect to server. Please check your internet connection and try again.',
+                           type: 'error',
+                           buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+                        });
+                      } finally {
+                        setIsDeleteLoading(false);
+                      }
+                    }, 
+                    style: 'destructive' 
+                  }
+                ]
+              });
+            }}
+          >
+            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 8 }}>
+              {isDeleteLoading ? (
+                <ActivityIndicator size={25} color={COLORS.white} />
+              ) : (
+                <>
+                  <Ionicons name="trash-outline" size={20} color={COLORS.white} />
+                  <Text style={{ color: COLORS.white, fontWeight: '600' }}>Delete Habit</Text>
+                </>
+              )}
+            </View>
+          </TouchableOpacity>
         </View>
       )}
       

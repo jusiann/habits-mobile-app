@@ -415,6 +415,51 @@ export const useHabitStore = create((set, get) => ({
     }
   },
 
+  // DELETE HABIT
+  deleteHabit: async (habitId) => {
+    set({ 
+      isLoading: true, 
+      error: null 
+    });
+    try {
+      const response = await get().makeRequest(`https://habits-mobile-app.onrender.com/api/habits/${habitId}`, {
+        method: 'DELETE'
+      });
+
+      let data;
+      try {
+        data = await response.json();
+      } catch (parseError) {
+        console.error("JSON parse error:", parseError);
+        throw new Error("Invalid server response format");
+      }
+
+      if (response.ok) {
+        // REFRESH HABITS LIST
+        await get().fetchHabits();
+        return { 
+          success: true, 
+          data: data.data 
+        };
+      } else {
+        throw new Error(data.message || data.error || "Failed to delete habit");
+      }
+    } catch (error) {
+      set({ 
+        error: error.message || 'Network error', 
+        isLoading: false 
+      });
+      return { 
+        success: false, 
+        message: error.message || 'Network error. Please try again.' 
+      };
+    } finally {
+      set({ 
+        isLoading: false 
+      });
+    }
+  },
+
   // CLEAR STORE
   clearStore: () => {
     set({
