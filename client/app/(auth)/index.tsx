@@ -7,6 +7,7 @@ import COLORS from "../../constants/colors";
 import {useAuthStore} from "../../store/auth.store";
 import SafeScreen from "../../constants/SafeScreen";
 import CustomAlert from "../../constants/CustomAlert";
+import {showConnectionError} from "../../constants/alert.utils";
 
 export default function Login() {
   const [email, setEmail] = React.useState("");
@@ -57,33 +58,32 @@ export default function Login() {
       }
 
       const result = await login(email, username, password);
-      if (!result.success) {
+      if (result.success) {
+        setShowAlert({
+          visible: true,
+          title: 'Sign In Successful',
+          message: 'You have successfully signed in.',
+          type: 'success',
+          buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+        });
+      } else {
+        // Show error alert for failed login
         setShowAlert({
           visible: true,
           title: 'Sign In Failed',
-          message: result.message || 'Login failed',
+          message: result.message || 'Invalid username or password.',
           type: 'error',
           buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
         });
-        return;
       }
 
-      setShowAlert({
-        visible: true,
-        title: 'Sign In Successful',
-        message: 'You have successfully signed in.',
-        type: 'success',
-        buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
-      });
-
     } catch (error) {
-      setShowAlert({
-        visible: true,
-        title: 'Connection Error',
-        message: 'Failed to connect to server. Please check your internet connection and try again.',
-        type: 'error',
-        buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
-      });
+      // Only show connection error if it's a network issue
+      if (error.message.includes("Failed to fetch") || error.message.includes("Network request failed")) {
+        showConnectionError(() => {
+          setShowAlert(prev => ({ ...prev, visible: false }));
+        });
+      }
     }
   };
   

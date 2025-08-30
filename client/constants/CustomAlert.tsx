@@ -23,7 +23,7 @@ const CustomAlert: React.FC<CustomAlertProps> = ({
   title,
   message,
   type = 'info',
-  buttons = [{ text: 'OK', onPress: () => {}, style: 'default' }],
+  buttons = [{ text: 'OK', onPress: () => onDismiss?.(), style: 'default' }],
   onDismiss,
 }) => {
   const getIconName = () => {
@@ -77,7 +77,13 @@ const CustomAlert: React.FC<CustomAlertProps> = ({
                     index > 0 && buttons.length === 2 && { marginLeft: 8 },
                     index > 0 && buttons.length > 2 && { marginTop: 8 },
                   ]}
-                onPress={button.onPress}
+                onPress={() => {
+                  if (button.onPress && typeof button.onPress === 'function') {
+                    button.onPress();
+                  } else if (onDismiss && typeof onDismiss === 'function') {
+                    onDismiss();
+                  }
+                }}
                 >
                   <Text style={[
                       styles.buttonText,

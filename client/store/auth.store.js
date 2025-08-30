@@ -1,5 +1,8 @@
 import {create} from "zustand";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import {useHabitStore} from "./habit.store";
+import {API_ENDPOINTS} from "../constants/api.config";
+import { handleAuthError, handleNetworkError, handleApiError, handleParseError } from "../utils/error.utils";
 
 export const useAuthStore = create((set,get) => ({
     user: null,
@@ -15,7 +18,7 @@ export const useAuthStore = create((set,get) => ({
             isLoading: true 
         });
         try {
-            const response = await fetch(`https://habits-mobile-app.onrender.com/api/auth/sign-up`, {
+            const response = await fetch(API_ENDPOINTS.AUTH.SIGN_UP, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -32,7 +35,7 @@ export const useAuthStore = create((set,get) => ({
             try {
                 data = await response.json();
             } catch (parseError) {
-                console.error("JSON parse error:", parseError);
+                handleParseError("AuthStore.register", parseError);
                 throw new Error("Invalid server response format");
             }
 
@@ -91,7 +94,7 @@ export const useAuthStore = create((set,get) => ({
                 throw new Error("Email or username is required");
             }
 
-            const response = await fetch(`https://habits-mobile-app.onrender.com/api/auth/sign-in`, {
+            const response = await fetch(API_ENDPOINTS.AUTH.SIGN_IN, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -103,7 +106,7 @@ export const useAuthStore = create((set,get) => ({
             try {
                 data = await response.json();
             } catch (parseError) {
-                console.error("JSON parse error:", parseError);
+                handleParseError("AuthStore.login", parseError);
                 throw new Error("Invalid server response format");
             }
 
@@ -154,7 +157,7 @@ export const useAuthStore = create((set,get) => ({
                 throw new Error("No refresh token available");
             }
             
-            const response = await fetch(`https://habits-mobile-app.onrender.com/api/auth/refresh-token`, {
+            const response = await fetch(API_ENDPOINTS.AUTH.REFRESH_TOKEN, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -166,7 +169,7 @@ export const useAuthStore = create((set,get) => ({
             try {
                 data = await response.json();
             } catch (parseError) {
-                console.error("JSON parse error:", parseError);
+                handleParseError("AuthStore.refreshAccessToken", parseError);
                 await get().logout();
                 throw new Error("Invalid server response format");
             }
@@ -201,7 +204,7 @@ export const useAuthStore = create((set,get) => ({
                 success: true 
             };
         } catch (error) {
-            console.error("Token refresh failed:", error);
+            handleAuthError("AuthStore.refreshAccessToken", error);
             
             // Eğer refresh token geçersizse veya başka bir kritik hata varsa logout yap
             if (error.message.includes("invalidated") || 
@@ -268,7 +271,7 @@ export const useAuthStore = create((set,get) => ({
                     await get().logout();
                 }
             } catch (error) {
-                console.error("Auto refresh failed:", error);
+                handleAuthError("AuthStore.autoRefresh", error);
                 await get().logout();
             }
         }, Math.min(timeUntilRefresh, 15 * 60 * 1000)); // En fazla 15 dakika bekle
@@ -300,7 +303,7 @@ export const useAuthStore = create((set,get) => ({
             if (token) {
                 try {
                     // BLACKLIST TOKEN ON SERVER
-                    await fetch(`https://habits-mobile-app.onrender.com/api/auth/logout`, {
+                    await fetch(API_ENDPOINTS.AUTH.LOGOUT, {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
@@ -314,6 +317,9 @@ export const useAuthStore = create((set,get) => ({
 
             // CLEAR STORE STATE FIRST
             get().clearStore();
+            
+            // CLEAR HABIT STORE CACHE
+            useHabitStore.getState().clearStore();
 
             // THEN CLEAR LOCAL STORAGE
             await AsyncStorage.removeItem("user");
@@ -356,7 +362,7 @@ export const useAuthStore = create((set,get) => ({
                 // FETCH LATEST USER DATA
                 try {
                     const response = await fetch(
-                        `https://habits-mobile-app.onrender.com/api/auth/me`,
+                        API_ENDPOINTS.AUTH.ME,
                         {
                             method: 'GET',
                             headers: {
@@ -368,7 +374,7 @@ export const useAuthStore = create((set,get) => ({
                     
                     if (response.ok) {
                         const data = await response.json();
-                        console.log('Latest user data:', data);
+                        // Latest user data fetched successfully
                         
                         // USE SERVER DATA DIRECTLY WITHOUT MERGING
                         const updatedUser = data.user;
@@ -423,6 +429,7 @@ export const useAuthStore = create((set,get) => ({
                 };
             }
         } catch (error) {
+            handleAuthError("AuthStore.checkAuth", error);
             set({ 
                 user: null, 
                 token: null, 
@@ -442,7 +449,7 @@ export const useAuthStore = create((set,get) => ({
             isLoading: true 
         });
         try {
-            const response = await fetch(`https://habits-mobile-app.onrender.com/api/auth/forgot-password`, {
+            const response = await fetch(API_ENDPOINTS.AUTH.FORGOT_PASSWORD, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -454,7 +461,7 @@ export const useAuthStore = create((set,get) => ({
             try {
                 data = await response.json();
             } catch (parseError) {
-                console.error("JSON parse error:", parseError);
+                handleParseError("AuthStore.sendResetCode", parseError);
                 throw new Error("Invalid server response format");
             }
 
@@ -466,6 +473,7 @@ export const useAuthStore = create((set,get) => ({
                 message: "Reset code sent to your email"
             };
         } catch (error) {
+            handleAuthError("AuthStore.sendResetCode", error);
             return {
                 success: false,
                 message: error.message || "Failed to send reset code"
@@ -483,7 +491,7 @@ export const useAuthStore = create((set,get) => ({
             isLoading: true 
         });
         try {
-            const response = await fetch(`https://habits-mobile-app.onrender.com/api/auth/check-reset-token`, {
+            const response = await fetch(API_ENDPOINTS.AUTH.CHECK_RESET_TOKEN, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -502,6 +510,7 @@ export const useAuthStore = create((set,get) => ({
                 throw new Error(data.message || 'Invalid reset code');
             }
         } catch (error) {
+            handleAuthError("AuthStore.verifyResetCode", error);
             return {
                 success: false,
                 message: error.message || "Failed to verify reset code"
@@ -520,7 +529,7 @@ export const useAuthStore = create((set,get) => ({
         });
         try {
             // CHECK RESET CODE AND GET TEMPORARY TOKEN
-            const checkResponse = await fetch(`https://habits-mobile-app.onrender.com/api/auth/check-reset-token`, {
+            const checkResponse = await fetch(API_ENDPOINTS.AUTH.CHECK_RESET_TOKEN, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -532,7 +541,7 @@ export const useAuthStore = create((set,get) => ({
             try {
                 checkData = await checkResponse.json();
             } catch (parseError) {
-                console.error("JSON parse error:", parseError);
+                handleParseError("AuthStore.resetPassword", parseError);
                 throw new Error("Invalid server response format");
             }
 
@@ -540,7 +549,7 @@ export const useAuthStore = create((set,get) => ({
                 throw new Error(checkData.message || checkData.error || "Invalid reset code");
 
             // USE TEMPORARY TOKEN TO RESET PASSWORD
-            const resetResponse = await fetch(`https://habits-mobile-app.onrender.com/api/auth/change-password`, {
+            const resetResponse = await fetch(API_ENDPOINTS.AUTH.CHANGE_PASSWORD, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -555,7 +564,7 @@ export const useAuthStore = create((set,get) => ({
             try {
                 resetData = await resetResponse.json();
             } catch (parseError) {
-                console.error("JSON parse error:", parseError);
+                handleParseError("AuthStore.resetPassword", parseError);
                 throw new Error("Invalid server response format");
             }
 
@@ -568,6 +577,7 @@ export const useAuthStore = create((set,get) => ({
                 message: "Password reset successfully"
             };
         } catch (error) {
+            handleAuthError("AuthStore.resetPassword", error);
             return {
                 success: false,
                 message: error.message || "Failed to reset password"
@@ -643,7 +653,7 @@ export const useAuthStore = create((set,get) => ({
             isLoading: true 
         });
         try {
-            const response = await get().makeAuthenticatedRequest(`https://habits-mobile-app.onrender.com/api/auth/update-profile`, {
+            const response = await get().makeAuthenticatedRequest(API_ENDPOINTS.AUTH.UPDATE_PROFILE, {
                 method: "POST",
                 body: JSON.stringify({
                     fullname,
@@ -660,9 +670,9 @@ export const useAuthStore = create((set,get) => ({
             let data;
             try {
                 data = await response.json();
-                console.log('Update profile response:', data);
+                // Update profile response received successfully
             } catch (parseError) {
-                console.error("JSON parse error:", parseError);
+                handleParseError("AuthStore.updateProfile", parseError);
                 throw new Error("Invalid server response format");
             }
 
@@ -701,6 +711,7 @@ export const useAuthStore = create((set,get) => ({
             set({ 
                 isLoading: false 
             });
+            handleAuthError("AuthStore.updateProfile", error);
             return {
                 success: false,
                 message: error.message || "Profile update failed"
@@ -718,7 +729,7 @@ export const useAuthStore = create((set,get) => ({
             isLoading: true 
         });
         try {
-            const response = await get().makeAuthenticatedRequest(`https://habits-mobile-app.onrender.com/api/auth/update-profile`, {
+            const response = await get().makeAuthenticatedRequest(API_ENDPOINTS.AUTH.UPDATE_PROFILE, {
                 method: "POST",
                 body: JSON.stringify({
                     currentPassword,
@@ -730,7 +741,7 @@ export const useAuthStore = create((set,get) => ({
             try {
                 data = await response.json();
             } catch (parseError) {
-                console.error("JSON parse error:", parseError);
+                handleParseError("AuthStore.changePassword", parseError);
                 throw new Error("Invalid server response format");
             }
 
@@ -753,6 +764,7 @@ export const useAuthStore = create((set,get) => ({
             set({ 
                 isLoading: false 
             });
+            handleAuthError("AuthStore.changePassword", error);
             return {
                 success: false,
                 message: error.message || "Password change failed"

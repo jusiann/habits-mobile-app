@@ -9,6 +9,7 @@ import {useHabitStore} from '../../store/habit.store'
 import {CUSTOM_ICONS} from '../../constants/custom.icons'
 import CustomAlert from '../../constants/CustomAlert'
 import SafeScreen from '../../constants/SafeScreen'
+import {showConnectionError} from '../../constants/alert.utils'
 
 export default function Create() {
   const router = useRouter();
@@ -160,13 +161,9 @@ export default function Create() {
         })
       }
     } catch (error: any) {
-      setShowAlert({
-        visible: true,
-        title: 'Connection Error',
-        message: 'Failed to connect to server. Please check your internet connection and try again.',
-        type: 'error',
-        buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
-      })
+      showConnectionError(() => {
+        setIsLoading(false);
+      });
     } finally {
       setIsLoading(false)
     }

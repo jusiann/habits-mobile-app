@@ -33,21 +33,21 @@
 // };
 
 // RETRO
-const COLORS = {
-  primary: "#e17055",
-  textPrimary: "#784e2d",
-  textSecondary: "#a58e7c",
-  textDark: "#50372a",
-  placeholderText: "#767676",
-  background: "#ede1d1",
-  cardBackground: "#faf5eb",
-  inputBackground: "#f7f2ea",
-  border: "#e2d6c1",
-  white: "#ffffff",
-  black: "#000000",
-  success: "#D35400",
-  successLight: "#FDF2E9",
-};
+// const COLORS = {
+//   primary: "#e17055",
+//   textPrimary: "#784e2d",
+//   textSecondary: "#a58e7c",
+//   textDark: "#50372a",
+//   placeholderText: "#767676",
+//   background: "#ede1d1",
+//   cardBackground: "#faf5eb",
+//   inputBackground: "#f7f2ea",
+//   border: "#e2d6c1",
+//   white: "#ffffff",
+//   black: "#000000",
+//   success: "#D35400",
+//   successLight: "#FDF2E9",
+// };
 
 // OCEAN
 
@@ -85,21 +85,21 @@ const COLORS = {
 // };
 
 // ORANGE
-// const COLORS = {
-//   primary: "#FF8A65",        // Açık turuncu ana renk
-//   textPrimary: "#BF4226",    // Koyu turuncu metin
-//   textSecondary: "#FF7043",  // Orta ton turuncu
-//   textDark: "#8D2F1A",       // En koyu turuncu
-//   placeholderText: "#767676",
-//   background: "#FFF3E0",     // Çok açık turuncu arka plan
-//   cardBackground: "#FFFBF7", // Beyaza yakın turuncu
-//   inputBackground: "#FFF8F1", // Input için açık turuncu
-//   border: "#FFCC9C",         // Açık turuncu border
-//   white: "#ffffff",
-//   black: "#000000",
-//   success: "#F57C00",
-//   successLight: "#FFF3E0",
-// };
+const COLORS = {
+  primary: "#FF8A65",    
+  textPrimary: "#BF4226",   
+  textSecondary: "#FF7043", 
+  textDark: "#8D2F1A",       
+  placeholderText: "#767676",
+  background: "#FFF3E0",     
+  cardBackground: "#FFFBF7", 
+  inputBackground: "#FFF8F1", 
+  border: "#FFCC9C",         
+  white: "#ffffff",
+  black: "#000000",
+  success: "#F57C00",
+  successLight: "#FFF3E0",
+};
 
 
 export default COLORS;

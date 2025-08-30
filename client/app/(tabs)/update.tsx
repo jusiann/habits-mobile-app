@@ -1,13 +1,14 @@
 import {View, Text, TouchableOpacity, ScrollView, TextInput, Modal, ActivityIndicator, KeyboardAvoidingView, Platform} from 'react-native'
 import {Image} from 'expo-image'
 import React from 'react'
-import {useAuthStore } from '../../store/auth.store'
+import {useAuthStore} from '../../store/auth.store'
 import {useRouter, useFocusEffect } from 'expo-router'
 import {Ionicons} from '@expo/vector-icons'
 import CustomAlert from '../../constants/CustomAlert'
 import SafeScreen from '../../constants/SafeScreen'
 import COLORS from '../../constants/colors'
 import styles from '../../assets/styles/profile.styles'
+import {getAvatarSource} from '../../constants/avatar.utils'
 
 export default function UpdateProfile() {
   const {user, updateProfile, changePassword, isLoading} = useAuthStore();
@@ -161,7 +162,7 @@ export default function UpdateProfile() {
           title: 'Success',
           message: result.message || 'Profile updated successfully.',
           type: 'success',
-          buttons: [{ text: 'OK', onPress: () => { setShowAlert(previous => ({ ...previous, visible: false })); router.back(); }, style: 'default' }]
+          buttons: [{ text: 'OK', onPress: () => { setShowAlert(previous => ({ ...previous, visible: false })); router.push("/(tabs)/profile"); }, style: 'default' }]
         });
       } else {
         setShowAlert({
@@ -383,18 +384,7 @@ export default function UpdateProfile() {
           <View style={styles.profileSection}>
             <View style={styles.profileImageContainer}>
               <Image 
-            source={
-              profilePicture === '01' ? require('../../assets/images/avatars/01.png')
-              : profilePicture === '02' ? require('../../assets/images/avatars/02.png')
-              : profilePicture === '03' ? require('../../assets/images/avatars/03.png')
-              : profilePicture === '04' ? require('../../assets/images/avatars/04.png')
-              : profilePicture === '05' ? require('../../assets/images/avatars/05.png')
-              : profilePicture === '06' ? require('../../assets/images/avatars/06.png')
-              : profilePicture === '07' ? require('../../assets/images/avatars/07.png')
-              : profilePicture === '08' ? require('../../assets/images/avatars/08.png')
-              : profilePicture === '09' ? require('../../assets/images/avatars/09.png')
-              : `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.fullname || 'Guest')}&background=random&color=fff&size=256`
-            } 
+            source={getAvatarSource(profilePicture, user?.fullname || 'Guest')} 
             style={styles.profileImage}
           />
             </View>
@@ -562,18 +552,7 @@ export default function UpdateProfile() {
                   onPress={() => generateNewProfilePicture(num)}
                 >
                   <Image
-                    source={
-                      num === 1 ? require('../../assets/images/avatars/01.png')
-                      : num === 2 ? require('../../assets/images/avatars/02.png')
-                      : num === 3 ? require('../../assets/images/avatars/03.png')
-                      : num === 4 ? require('../../assets/images/avatars/04.png')
-                      : num === 5 ? require('../../assets/images/avatars/05.png')
-                      : num === 6 ? require('../../assets/images/avatars/06.png')
-                      : num === 7 ? require('../../assets/images/avatars/07.png')
-                      : num === 8 ? require('../../assets/images/avatars/08.png')
-                      : num === 9 ? require('../../assets/images/avatars/09.png')
-                      : `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.fullname || 'Guest')}&background=random&color=fff&size=256`
-                    }
+                    source={getAvatarSource(num < 10 ? `0${num}` : `${num}`, user?.fullname || 'Guest')}
                     style={styles.avatarImage}
                   />
                   {selectedAvatar === `avatar${num < 10 ? '0' + num : num}` && (

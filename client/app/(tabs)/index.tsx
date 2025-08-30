@@ -8,6 +8,7 @@ import {useAuthStore} from '../../store/auth.store';
 import {useHabitStore} from '../../store/habit.store';
 import SafeScreen from '../../constants/SafeScreen';
 import COLORS from '../../constants/colors';
+import {getAvatarSource} from '../../constants/avatar.utils';
 
 export default function Home() {
   const {user, token} = useAuthStore();
@@ -63,18 +64,7 @@ export default function Home() {
       <View style={styles.header}>
         <View style={styles.userInfo}>
           <Image 
-            source={
-              user?.profilePicture === '01' ? require('../../assets/images/avatars/01.png')
-              : user?.profilePicture === '02' ? require('../../assets/images/avatars/02.png')
-              : user?.profilePicture === '03' ? require('../../assets/images/avatars/03.png')
-              : user?.profilePicture === '04' ? require('../../assets/images/avatars/04.png')
-              : user?.profilePicture === '05' ? require('../../assets/images/avatars/05.png')
-              : user?.profilePicture === '06' ? require('../../assets/images/avatars/06.png')
-              : user?.profilePicture === '07' ? require('../../assets/images/avatars/07.png')
-              : user?.profilePicture === '08' ? require('../../assets/images/avatars/08.png')
-              : user?.profilePicture === '09' ? require('../../assets/images/avatars/09.png')
-              : `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.fullname || 'Guest')}&background=random&color=fff&size=256`
-            } 
+            source={getAvatarSource(user, 'Guest')} 
             style={styles.avatar}
           />
           <View style={{ marginTop: 10 }}>

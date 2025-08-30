@@ -628,7 +628,8 @@ export const getHabitLogsByDate = async (req, res) => {
         const completedHabits = habitsWithLogs.filter(item => item.completed).length;
         const inProgressHabits = habitsWithLogs.filter(item => item.progress > 0 && !item.completed).length;
         const notStartedHabits = totalHabits - completedHabits - inProgressHabits;
-        const completionRate = totalHabits > 0 ? Math.round((completedHabits / totalHabits) * 100) : 0;
+        const activeHabits = completedHabits + inProgressHabits;
+        const completionRate = activeHabits > 0 ? Math.round((completedHabits / activeHabits) * 100) : 0;
 
         const summary = {
             date: targetDate,

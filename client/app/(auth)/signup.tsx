@@ -7,6 +7,7 @@ import {Link} from "expo-router";
 import {useAuthStore} from '../../store/auth.store';
 import CustomAlert from '../../constants/CustomAlert'
 import SafeScreen from '../../constants/SafeScreen'
+import {showConnectionError} from '../../constants/alert.utils'
 
 export default function Signup() {
   const [username, setUsername] = React.useState("");
@@ -27,7 +28,7 @@ export default function Signup() {
 
   const signupAction = async () => {
     try {
-      const result = await register(email, username, fullName, password);
+      // Validation checks before API call
       if (!username || !email || !fullName || !password) {
         setShowAlert({
           visible: true,
@@ -73,46 +74,34 @@ export default function Signup() {
         return;
       }
       
-      if (!result.success) {
-        let alertTitle = "Sign Up Failed";
-        let alertMessage = result.message || "Registration failed";
-        
-        if (result.message?.toLowerCase().includes("email")) {
-          alertTitle = "Email Already Exists";
-          alertMessage = "This email address is already registered.";
-        }
-        
-        if (result.message?.toLowerCase().includes("username")) {
-          alertTitle = "Username Already Exists";
-          alertMessage = "This username is already taken.";
-        }
-        
+      const result = await register(email, username, fullName, password);
+      
+      if (result.success) {
         setShowAlert({
           visible: true,
-          title: alertTitle,
-          message: alertMessage,
+          title: 'Sign Up Successful',
+          message: 'Account created successfully!',
+          type: 'success',
+          buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+        });
+      } else {
+        // Show error alert for failed registration
+        setShowAlert({
+          visible: true,
+          title: 'Sign Up Failed',
+          message: result.message || 'Registration failed. Please try again.',
           type: 'error',
           buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
         });
-        return;
       }
-
-      setShowAlert({
-        visible: true,
-        title: 'Sign Up Successful',
-        message: 'Account created successfully!',
-        type: 'success',
-        buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
-      });
       
     } catch (error) {
-      setShowAlert({
-        visible: true,
-        title: 'Connection Error',
-        message: 'Failed to connect to server. Please check your internet connection and try again.',
-        type: 'error',
-        buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
-      });
+      // Only show connection error if it's a network issue
+      if (error.message.includes("Failed to fetch") || error.message.includes("Network request failed")) {
+        showConnectionError(() => {
+          setShowAlert(previous => ({ ...previous, visible: false }));
+        });
+      }
     }
   };
 
