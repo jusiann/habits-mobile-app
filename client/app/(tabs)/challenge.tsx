@@ -1,6 +1,6 @@
-import {View, Text } from 'react-native'
-import React from 'react'
-import SafeScreen from '../../constants/SafeScreen'
+import React from 'react';
+import {View, Text} from 'react-native';
+import SafeScreen from '../../constants/SafeScreen';
 
 export default function Challenge() {
   return (
@@ -9,5 +9,5 @@ export default function Challenge() {
         <Text>Challenge</Text>
       </View>
     </SafeScreen>
-  )
+  );
 }

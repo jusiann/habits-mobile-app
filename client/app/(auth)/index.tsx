@@ -1,13 +1,13 @@
-import React from "react";
-import {ActivityIndicator, Image, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from "react-native";
-import {Link} from "expo-router";
-import {Ionicons} from "@expo/vector-icons";
-import styles from "../../assets/styles/signin.styles";
-import COLORS from "../../constants/colors";
-import {useAuthStore} from "../../store/auth.store";
-import SafeScreen from "../../constants/SafeScreen";
-import CustomAlert from "../../constants/CustomAlert";
-import {showConnectionError} from "../../constants/alert.utils";
+import React from 'react';
+import {ActivityIndicator, Image, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import {Link} from 'expo-router';
+import {Ionicons} from '@expo/vector-icons';
+import styles from '../../assets/styles/signin.styles';
+import COLORS from '../../constants/colors';
+import {useAuthStore} from '../../store/auth.store';
+import SafeScreen from '../../constants/SafeScreen';
+import CustomAlert from '../../constants/CustomAlert';
+import {showConnectionError} from '../../constants/alert.utils';
 
 export default function Login() {
   const [email, setEmail] = React.useState("");

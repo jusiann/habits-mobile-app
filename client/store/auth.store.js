@@ -1,8 +1,8 @@
 import {create} from "zustand";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {useHabitStore} from "./habit.store";
-import {API_ENDPOINTS} from "../constants/api.config";
-import { handleAuthError, handleNetworkError, handleApiError, handleParseError } from "../utils/error.utils";
+import {API_ENDPOINTS, makeAuthenticatedRequest} from "../constants/api.utils";
+import {StorageUtils} from "../constants/storage.utils";
 
 export const useAuthStore = create((set,get) => ({
     user: null,
@@ -35,7 +35,7 @@ export const useAuthStore = create((set,get) => ({
             try {
                 data = await response.json();
             } catch (parseError) {
-                handleParseError("AuthStore.register", parseError);
+                console.error("JSON parse error:", parseError);
                 throw new Error("Invalid server response format");
             }
 
@@ -44,12 +44,7 @@ export const useAuthStore = create((set,get) => ({
                 throw new Error(errorMessage);
             }
             // SAVE TO STORAGE
-            await AsyncStorage.setItem("user", JSON.stringify(data.user));
-            await AsyncStorage.setItem("token", data.accessToken);
-            await AsyncStorage.setItem("refreshToken", data.refreshToken);
-            // TOKEN EXPIRES IN 15 MINUTES
-            const expirationTime = Date.now() + (15 * 60 * 1000);
-            await AsyncStorage.setItem("tokenExpirationTime", expirationTime.toString());
+            const expirationTime = await StorageUtils.saveAuthData(data.user, data.accessToken, data.refreshToken);
             // UPDATE STATE
             set({ 
                 user: data.user, 
@@ -106,7 +101,7 @@ export const useAuthStore = create((set,get) => ({
             try {
                 data = await response.json();
             } catch (parseError) {
-                handleParseError("AuthStore.login", parseError);
+                console.error("JSON parse error:", parseError);
                 throw new Error("Invalid server response format");
             }
 
@@ -114,13 +109,7 @@ export const useAuthStore = create((set,get) => ({
                 throw new Error(data.message || data.error || "Login failed");
 
             // SAVE TO STORAGE
-            await AsyncStorage.setItem("user", JSON.stringify(data.user));
-            await AsyncStorage.setItem("token", data.accessToken);
-            await AsyncStorage.setItem("refreshToken", data.refreshToken);
-            
-            // TOKEN EXPIRES IN 15 MINUTES
-            const expirationTime = Date.now() + (15 * 60 * 1000);
-            await AsyncStorage.setItem("tokenExpirationTime", expirationTime.toString());
+            const expirationTime = await StorageUtils.saveAuthData(data.user, data.accessToken, data.refreshToken);
             
             // UPDATE STATE
             set({ 
@@ -152,7 +141,10 @@ export const useAuthStore = create((set,get) => ({
     refreshAccessToken: async () => {
         try {
             const {refreshToken} = get();
+            console.log('Refresh token attempt - Current refresh token:', refreshToken ? 'Available' : 'Not available');
+            
             if (!refreshToken) {
+                console.error('No refresh token available, logging out');
                 await get().logout();
                 throw new Error("No refresh token available");
             }
@@ -169,7 +161,7 @@ export const useAuthStore = create((set,get) => ({
             try {
                 data = await response.json();
             } catch (parseError) {
-                handleParseError("AuthStore.refreshAccessToken", parseError);
+                console.error("JSON parse error:", parseError);
                 await get().logout();
                 throw new Error("Invalid server response format");
             }
@@ -183,14 +175,9 @@ export const useAuthStore = create((set,get) => ({
             }
 
             // UPDATE TOKENS AND USER IN STORAGE
-            await AsyncStorage.setItem("token", data.accessToken);
-            await AsyncStorage.setItem("refreshToken", data.refreshToken);
+            const expirationTime = await StorageUtils.updateTokens(data.accessToken, data.refreshToken);
             if (data.user)
-                await AsyncStorage.setItem("user", JSON.stringify(data.user));
-            
-            // TOKEN EXPIRES IN 15 MINUTES
-            const expirationTime = Date.now() + (15 * 60 * 1000);
-            await AsyncStorage.setItem("tokenExpirationTime", expirationTime.toString());
+                await StorageUtils.updateUser(data.user);
 
             // UPDATE STATE
             set({ 
@@ -204,7 +191,7 @@ export const useAuthStore = create((set,get) => ({
                 success: true 
             };
         } catch (error) {
-            handleAuthError("AuthStore.refreshAccessToken", error);
+            console.error("Token refresh failed:", error);
             
             // Eğer refresh token geçersizse veya başka bir kritik hata varsa logout yap
             if (error.message.includes("invalidated") || 
@@ -224,6 +211,10 @@ export const useAuthStore = create((set,get) => ({
     startAutoRefresh: () => {
         const { tokenExpirationTime, refreshTimer, token, refreshToken } = get();
         
+        console.log('Starting auto refresh - Token:', token ? 'Available' : 'Not available', 
+                   'Refresh Token:', refreshToken ? 'Available' : 'Not available',
+                   'Expiration Time:', tokenExpirationTime ? new Date(tokenExpirationTime).toISOString() : 'Not set');
+        
         // CLEAR EXISTING TIMER
         if (refreshTimer) {
             clearTimeout(refreshTimer);
@@ -231,6 +222,7 @@ export const useAuthStore = create((set,get) => ({
         
         // Token veya refresh token yoksa çıkış yap
         if (!token || !refreshToken) {
+            console.error('Missing token or refresh token, logging out');
             get().logout();
             return;
         }
@@ -271,7 +263,7 @@ export const useAuthStore = create((set,get) => ({
                     await get().logout();
                 }
             } catch (error) {
-                handleAuthError("AuthStore.autoRefresh", error);
+                console.error("Auto refresh failed:", error);
                 await get().logout();
             }
         }, Math.min(timeUntilRefresh, 15 * 60 * 1000)); // En fazla 15 dakika bekle
@@ -322,10 +314,7 @@ export const useAuthStore = create((set,get) => ({
             useHabitStore.getState().clearStore();
 
             // THEN CLEAR LOCAL STORAGE
-            await AsyncStorage.removeItem("user");
-            await AsyncStorage.removeItem("token");
-            await AsyncStorage.removeItem("refreshToken");
-            await AsyncStorage.removeItem("tokenExpirationTime");
+            await StorageUtils.clearAuthData();
             
             return {
                 success: true,
@@ -343,12 +332,14 @@ export const useAuthStore = create((set,get) => ({
     checkAuth: async () => {
         try {
             // LOAD FROM STORAGE
-            const userJson = await AsyncStorage.getItem("user");
-            const token = await AsyncStorage.getItem("token");
-            const refreshToken = await AsyncStorage.getItem("refreshToken");
-            const tokenExpirationTimeStr = await AsyncStorage.getItem("tokenExpirationTime");
-            const user = userJson ? JSON.parse(userJson) : null;
-            const tokenExpirationTime = tokenExpirationTimeStr ? parseInt(tokenExpirationTimeStr) : null;
+            const {user, token, refreshToken, tokenExpirationTime} = await StorageUtils.loadAuthData();
+            
+            console.log('CheckAuth - Loaded from storage:', {
+                hasUser: !!user,
+                hasToken: !!token,
+                hasRefreshToken: !!refreshToken,
+                tokenExpiration: tokenExpirationTime ? new Date(tokenExpirationTime).toISOString() : 'Not set'
+            });
             
             if (token && refreshToken) {
                 // RESTORE STATE
@@ -374,7 +365,7 @@ export const useAuthStore = create((set,get) => ({
                     
                     if (response.ok) {
                         const data = await response.json();
-                        // Latest user data fetched successfully
+                        console.log('Latest user data:', data);
                         
                         // USE SERVER DATA DIRECTLY WITHOUT MERGING
                         const updatedUser = data.user;
@@ -385,7 +376,7 @@ export const useAuthStore = create((set,get) => ({
                                 delete updatedUser[key];
                             }
                         });
-                        await AsyncStorage.setItem("user", JSON.stringify(updatedUser));
+                        await StorageUtils.updateUser(updatedUser);
                         set({ 
                             user: updatedUser 
                         });
@@ -429,7 +420,6 @@ export const useAuthStore = create((set,get) => ({
                 };
             }
         } catch (error) {
-            handleAuthError("AuthStore.checkAuth", error);
             set({ 
                 user: null, 
                 token: null, 
@@ -461,7 +451,7 @@ export const useAuthStore = create((set,get) => ({
             try {
                 data = await response.json();
             } catch (parseError) {
-                handleParseError("AuthStore.sendResetCode", parseError);
+                console.error("JSON parse error:", parseError);
                 throw new Error("Invalid server response format");
             }
 
@@ -473,7 +463,6 @@ export const useAuthStore = create((set,get) => ({
                 message: "Reset code sent to your email"
             };
         } catch (error) {
-            handleAuthError("AuthStore.sendResetCode", error);
             return {
                 success: false,
                 message: error.message || "Failed to send reset code"
@@ -510,7 +499,6 @@ export const useAuthStore = create((set,get) => ({
                 throw new Error(data.message || 'Invalid reset code');
             }
         } catch (error) {
-            handleAuthError("AuthStore.verifyResetCode", error);
             return {
                 success: false,
                 message: error.message || "Failed to verify reset code"
@@ -541,7 +529,7 @@ export const useAuthStore = create((set,get) => ({
             try {
                 checkData = await checkResponse.json();
             } catch (parseError) {
-                handleParseError("AuthStore.resetPassword", parseError);
+                console.error("JSON parse error:", parseError);
                 throw new Error("Invalid server response format");
             }
 
@@ -564,7 +552,7 @@ export const useAuthStore = create((set,get) => ({
             try {
                 resetData = await resetResponse.json();
             } catch (parseError) {
-                handleParseError("AuthStore.resetPassword", parseError);
+                console.error("JSON parse error:", parseError);
                 throw new Error("Invalid server response format");
             }
 
@@ -577,7 +565,6 @@ export const useAuthStore = create((set,get) => ({
                 message: "Password reset successfully"
             };
         } catch (error) {
-            handleAuthError("AuthStore.resetPassword", error);
             return {
                 success: false,
                 message: error.message || "Failed to reset password"
@@ -591,59 +578,10 @@ export const useAuthStore = create((set,get) => ({
 
     // API WRAPPER WITH AUTO REFRESH
     makeAuthenticatedRequest: async (url, options = {}) => {
-        const {token, tokenExpirationTime} = get();
-        
-        if (!token) 
-            throw new Error("No authentication token available");
-        
-        // CHECK TOKEN EXPIRY
-        const currentTime = Date.now();
-        const twoMinutes = 2 * 60 * 1000;
-        
-        if (tokenExpirationTime && (currentTime >= tokenExpirationTime - twoMinutes)) {
-            const refreshResult = await get().refreshAccessToken();
-            if (!refreshResult.success) {
-                await get().logout();
-                throw new Error("Session expired. Please log in again.");
-            }
-        }
-
-        // PREPARE REQUEST WITH AUTH HEADER
-        const currentToken = get().token;
-        const requestOptions = {
-            ...options,
-            headers: {
-                "Content-Type": "application/json",
-                ...options.headers,
-                "Authorization": `Bearer ${currentToken}`,
-            },
-        };
-
         try {
-            const response = await fetch(url, requestOptions);
-            // HANDLE 401 WITH RETRY
-            if (response.status === 401) {
-                const refreshResult = await get().refreshAccessToken();
-                if (refreshResult.success) {
-                    const newToken = get().token;
-                    const retryOptions = {
-                        ...requestOptions,
-                        headers: {
-                            ...requestOptions.headers,
-                            "Authorization": `Bearer ${newToken}`,
-                        },
-                    };
-                    return await fetch(url, retryOptions);
-                } else {
-                    await get().logout();
-                    throw new Error("Session expired. Please log in again.");
-                }
-            }
-            return response;
+            return await makeAuthenticatedRequest(url, options, useAuthStore);
         } catch (error) {
-            if (error.message.includes("Network request failed") || error.message.includes("fetch"))
-                throw new Error("Network connection failed. Please check your internet connection.");
-            throw error;
+            throw new Error(error.message || "Authentication request failed");
         }
     },
 
@@ -670,9 +608,9 @@ export const useAuthStore = create((set,get) => ({
             let data;
             try {
                 data = await response.json();
-                // Update profile response received successfully
+                console.log('Update profile response:', data);
             } catch (parseError) {
-                handleParseError("AuthStore.updateProfile", parseError);
+                console.error("JSON parse error:", parseError);
                 throw new Error("Invalid server response format");
             }
 
@@ -711,7 +649,6 @@ export const useAuthStore = create((set,get) => ({
             set({ 
                 isLoading: false 
             });
-            handleAuthError("AuthStore.updateProfile", error);
             return {
                 success: false,
                 message: error.message || "Profile update failed"
@@ -741,7 +678,7 @@ export const useAuthStore = create((set,get) => ({
             try {
                 data = await response.json();
             } catch (parseError) {
-                handleParseError("AuthStore.changePassword", parseError);
+                console.error("JSON parse error:", parseError);
                 throw new Error("Invalid server response format");
             }
 
@@ -764,7 +701,6 @@ export const useAuthStore = create((set,get) => ({
             set({ 
                 isLoading: false 
             });
-            handleAuthError("AuthStore.changePassword", error);
             return {
                 success: false,
                 message: error.message || "Password change failed"

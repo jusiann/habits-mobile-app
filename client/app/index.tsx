@@ -1,8 +1,8 @@
-import {Text, TouchableOpacity, View} from "react-native";
-import {Image} from "react-native";
-import {useRouter} from "expo-router";
-import styles from "../assets/styles/main.styles";
-import SafeScreen from '../constants/SafeScreen'
+import React from 'react';
+import {Text, TouchableOpacity, View, Image} from 'react-native';
+import {useRouter} from 'expo-router';
+import styles from '../assets/styles/main.styles';
+import SafeScreen from '../constants/SafeScreen';
 
 export default function Index() {
   const router = useRouter();
@@ -49,4 +49,4 @@ export default function Index() {
       </View>
     </SafeScreen>
   );
-};
+}

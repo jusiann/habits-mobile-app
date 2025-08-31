@@ -1,7 +1,5 @@
 import {create} from "zustand";
-import {useAuthStore} from "./auth.store";
-import {API_ENDPOINTS} from "../constants/api.config";
-import { handleParseError, handleApiError, handleGenericError } from "../utils/error.utils";
+import {makeAuthenticatedRequest} from "../constants/api.utils";
 
 export const useHabitStore = create((set, get) => ({
   habits: [],
@@ -14,7 +12,8 @@ export const useHabitStore = create((set, get) => ({
   // MAKE AUTHENTICATED REQUEST
   makeRequest: async (url, options = {}) => {
     try {
-      return await useAuthStore.getState().makeAuthenticatedRequest(url, options);
+      const {useAuthStore} = await import("./auth.store");
+      return await makeAuthenticatedRequest(url, options, useAuthStore);
     } catch (error) {
       throw new Error(error.message || "Authentication request failed");
     }
@@ -41,7 +40,7 @@ export const useHabitStore = create((set, get) => ({
       }
       return false;
     } catch (error) {
-      handleGenericError("HabitStore.checkAndResetDailyUTC", error, false);
+      console.error("Error in checkAndResetDailyUTC:", error);
       return false;
     }
   },
@@ -53,21 +52,59 @@ export const useHabitStore = create((set, get) => ({
       const now = new Date();
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
       const lastFetch = get().lastFetchDate ? new Date(get().lastFetchDate).getTime() : null;
+      const currentHabits = get().habits || [];
       
-      if (lastFetch && lastFetch < today) {
+      // DEBUG: HABIT RESET CHECK STARTED
+      console.log('🕐 [HABIT RESET] Check started at:', now.toLocaleString('tr-TR'));
+      console.log('📊 [HABIT RESET] Current habits count:', currentHabits.length);
+      console.log('📅 [HABIT RESET] Today timestamp:', today);
+      console.log('📅 [HABIT RESET] Last fetch timestamp:', lastFetch);
+      console.log('📅 [HABIT RESET] Last fetch date:', lastFetch ? new Date(lastFetch).toLocaleString('tr-TR') : 'Never');
+      
+      if (!lastFetch) {
+        // DEBUG: FIRST SETUP
+        console.log('🆕 [HABIT RESET] First time setup - initializing and resetting habits');
+        console.log('🆕 [HABIT RESET] Setup Date & Time:', now.toLocaleString('tr-TR'));
+        console.log('🆕 [HABIT RESET] Clearing any existing habits:', currentHabits.length, 'habits');
+        set({ 
+          habits: [],
+          lastFetchDate: now.toISOString() 
+        });
+        // DEBUG: FIRST SETUP COMPLETED
+        console.log('✅ [HABIT RESET] First time setup and reset completed');
+        return true;
+      } else if (lastFetch < today) {
+        // DEBUG: NEW DAY DETECTED
+        console.log('🔄 [HABIT RESET] New day detected! Resetting habits...');
+        console.log('🔄 [HABIT RESET] Reset Date & Time:', now.toLocaleString('tr-TR'));
+        console.log('🔄 [HABIT RESET] Previous habits cleared:', currentHabits.length, 'habits');
+        console.log('🔄 [HABIT RESET] Last fetch was:', new Date(lastFetch).toLocaleString('tr-TR'));
+        console.log('🔄 [HABIT RESET] Today is:', new Date(today).toLocaleString('tr-TR'));
+        
         set({ 
           habits: [], 
           lastFetchDate: now.toISOString() 
         });
+        
+        // DEBUG: RESET COMPLETED
+        console.log('✅ [HABIT RESET] Reset completed successfully');
         return true;
-      } else if (!lastFetch) {
-        set({ 
-          lastFetchDate: now.toISOString() 
-        });
+      } else {
+        // DEBUG: SAME DAY DETECTED
+        console.log('⏰ [HABIT RESET] Same day detected - no reset needed');
+        console.log('⏰ [HABIT RESET] Current habits will be preserved:', currentHabits.length, 'habits');
+        console.log('⏰ [HABIT RESET] Last fetch was:', new Date(lastFetch).toLocaleString('tr-TR'));
+        console.log('⏰ [HABIT RESET] Today is:', new Date(today).toLocaleString('tr-TR'));
       }
       return false;
     } catch (error) {
-      handleGenericError("HabitStore.checkAndResetDaily", error, false);
+      // DEBUG: ERROR OCCURRED
+      console.error('❌ [HABIT RESET] Error in checkAndResetDaily:', error);
+      console.error('❌ [HABIT RESET] Error details:', {
+        message: error.message,
+        stack: error.stack,
+        timestamp: new Date().toLocaleString('tr-TR')
+      });
       return false;
     }
   },
@@ -79,7 +116,7 @@ export const useHabitStore = create((set, get) => ({
       error: null 
     });
     try {
-      const response = await get().makeRequest(API_ENDPOINTS.HABITS.PRESETS, {
+      const response = await get().makeRequest('https://habits-mobile-app.onrender.com/api/habits/presets', {
         method: 'GET'
       });
 
@@ -87,7 +124,7 @@ export const useHabitStore = create((set, get) => ({
       try {
         data = await response.json();
       } catch (parseError) {
-        handleParseError("HabitStore.fetchPresets", parseError, false);
+        console.error("JSON parse error:", parseError);
         throw new Error("Invalid server response format");
       }
 
@@ -131,7 +168,7 @@ export const useHabitStore = create((set, get) => ({
     try {
       // CHECK FOR NEW DAY
       const isNewDay = get().checkAndResetDaily();
-      const response = await get().makeRequest(API_ENDPOINTS.HABITS.DASHBOARD, {
+      const response = await get().makeRequest('https://habits-mobile-app.onrender.com/api/habits/dashboard', {
         method: 'GET'
       });
 
@@ -139,9 +176,9 @@ export const useHabitStore = create((set, get) => ({
       try {
         data = await response.json();
       } catch (parseError) {
-          handleParseError("HabitStore.fetchHabits", parseError, false);
-          throw new Error("Invalid server response format");
-        }
+        console.error("JSON parse error:", parseError);
+        throw new Error("Invalid server response format");
+      }
 
       if (response.ok) {
         const cleanHabits = data.data.habits || [];
@@ -185,7 +222,7 @@ export const useHabitStore = create((set, get) => ({
       error: null 
     });
     try {
-      const response = await get().makeRequest(API_ENDPOINTS.HABITS.ADD, {
+      const response = await get().makeRequest('https://habits-mobile-app.onrender.com/api/habits/add', {
         method: 'POST',
         body: JSON.stringify(habitData)
       });
@@ -194,9 +231,9 @@ export const useHabitStore = create((set, get) => ({
       try {
         data = await response.json();
       } catch (parseError) {
-          handleParseError("HabitStore.createHabit", parseError, false);
-          throw new Error("Invalid server response format");
-        }
+        console.error("JSON parse error:", parseError);
+        throw new Error("Invalid server response format");
+      }
 
       if (response.ok) {
         // REFRESH HABITS LIST
@@ -231,7 +268,7 @@ export const useHabitStore = create((set, get) => ({
       error: null 
     });
     try {
-      const response = await get().makeRequest(API_ENDPOINTS.HABITS.INCREMENT(habitId), {
+      const response = await get().makeRequest(`https://habits-mobile-app.onrender.com/api/habits/${habitId}/increment`, {
         method: 'POST'
       });
 
@@ -239,9 +276,9 @@ export const useHabitStore = create((set, get) => ({
       try {
         data = await response.json();
       } catch (parseError) {
-          handleParseError("HabitStore.incrementHabit", parseError, false);
-          throw new Error("Invalid server response format");
-        }
+        console.error("JSON parse error:", parseError);
+        throw new Error("Invalid server response format");
+      }
 
       if (response.ok) {
         // REFRESH HABITS LIST
@@ -276,7 +313,7 @@ export const useHabitStore = create((set, get) => ({
       error: null 
     });
     try {
-      const response = await get().makeRequest(API_ENDPOINTS.HABITS.DETAIL(habitId), {
+      const response = await get().makeRequest(`https://habits-mobile-app.onrender.com/api/habits/${habitId}`, {
         method: 'PATCH',
         body: JSON.stringify(updateData)
       });
@@ -285,9 +322,9 @@ export const useHabitStore = create((set, get) => ({
       try {
         data = await response.json();
       } catch (parseError) {
-          handleParseError("HabitStore.updateHabit", parseError, false);
-          throw new Error("Invalid server response format");
-        }
+        console.error("JSON parse error:", parseError);
+        throw new Error("Invalid server response format");
+      }
 
       if (response.ok) {
         // REFRESH HABITS LIST
@@ -338,7 +375,7 @@ export const useHabitStore = create((set, get) => ({
     }
   
     try {
-      const response = await get().makeRequest(API_ENDPOINTS.HABITS.LOGS_BY_DATE(date), {
+      const response = await get().makeRequest(`https://habits-mobile-app.onrender.com/api/habits/logs-by-date?date=${date}`, {
         method: 'GET'
       });
   
@@ -346,9 +383,9 @@ export const useHabitStore = create((set, get) => ({
       try {
         data = await response.json();
       } catch (parseError) {
-          handleParseError("HabitStore.habitProgress", parseError, false);
-          throw new Error("Invalid server response format");
-        }
+        console.error("JSON parse error:", parseError);
+        throw new Error("Invalid server response format");
+      }
 
       console.log(`API Response for date ${date}:`, data);
 
@@ -359,17 +396,12 @@ export const useHabitStore = create((set, get) => ({
         );
   
         const summary = data.data.summary;
-        const completedHabits = summary.completedHabits;
-        const inProgressHabits = summary.inProgressHabits;
-        const totalActiveHabits = completedHabits + inProgressHabits;
-        const completionRate = totalActiveHabits > 0 ? (completedHabits / totalActiveHabits) : 0;
   
         const result = { 
           success: true, 
           data: {
             summary: {
-              ...summary,
-              completionRate
+              ...summary
             },
             habits: activeHabits
           }
@@ -390,7 +422,7 @@ export const useHabitStore = create((set, get) => ({
         throw new Error(data.message || data.error || "Failed to fetch habit logs");
       }
     } catch (error) {
-        handleApiError(`HabitStore.habitLogsByDate.${date}`, error, false);
+      console.error(`Error fetching logs for ${date}:`, error);
       set({ 
         error: error.message || 'Network error', 
         isLoading: false 
@@ -414,7 +446,7 @@ export const useHabitStore = create((set, get) => ({
     });
     try {
       const queryParams = new URLSearchParams(params).toString();
-      const url = API_ENDPOINTS.HABITS.PROGRESS(habitId, queryParams);
+      const url = `https://habits-mobile-app.onrender.com/api/habits/${habitId}/progress${queryParams ? `?${queryParams}` : ''}`;
       
       const response = await get().makeRequest(url, {
         method: 'GET'
@@ -424,9 +456,9 @@ export const useHabitStore = create((set, get) => ({
       try {
         data = await response.json();
       } catch (parseError) {
-          handleParseError("HabitStore.deleteHabit", parseError, false);
-          throw new Error("Invalid server response format");
-        }
+        console.error("JSON parse error:", parseError);
+        throw new Error("Invalid server response format");
+      }
 
       if (response.ok) {
         const processedProgress = {
@@ -472,7 +504,7 @@ export const useHabitStore = create((set, get) => ({
       error: null 
     });
     try {
-      const response = await get().makeRequest(API_ENDPOINTS.HABITS.DELETE(habitId), {
+      const response = await get().makeRequest(`https://habits-mobile-app.onrender.com/api/habits/${habitId}`, {
         method: 'DELETE'
       });
 

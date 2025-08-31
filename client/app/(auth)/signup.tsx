@@ -1,9 +1,9 @@
 import {View, Text, KeyboardAvoidingView, Platform, TextInput, TouchableOpacity, ActivityIndicator} from 'react-native'
 import React from 'react'
 import styles from '../../assets/styles/signup.styles';
-import COLORS from "../../constants/colors";
+import COLORS from '../../constants/colors';
 import {Ionicons} from '@expo/vector-icons';
-import {Link} from "expo-router";
+import {Link} from 'expo-router';
 import {useAuthStore} from '../../store/auth.store';
 import CustomAlert from '../../constants/CustomAlert'
 import SafeScreen from '../../constants/SafeScreen'

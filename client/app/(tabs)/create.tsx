@@ -1,15 +1,15 @@
-import {View, Text, TouchableOpacity, ScrollView, TextInput, Modal, KeyboardAvoidingView, Platform, ActivityIndicator} from 'react-native'
-import React from 'react'
-import {useRouter, useFocusEffect} from 'expo-router'
-import {Ionicons} from '@expo/vector-icons'
-import COLORS from '../../constants/colors'
-import styles from '../../assets/styles/create.styles'
-import {useAuthStore} from '../../store/auth.store'
-import {useHabitStore} from '../../store/habit.store'
-import {CUSTOM_ICONS} from '../../constants/custom.icons'
-import CustomAlert from '../../constants/CustomAlert'
-import SafeScreen from '../../constants/SafeScreen'
-import {showConnectionError} from '../../constants/alert.utils'
+import React from 'react';
+import {View, Text, TouchableOpacity, ScrollView, TextInput, Modal, KeyboardAvoidingView, Platform, ActivityIndicator} from 'react-native';
+import {useRouter, useFocusEffect} from 'expo-router';
+import {Ionicons} from '@expo/vector-icons';
+import {useAuthStore} from '../../store/auth.store';
+import {useHabitStore} from '../../store/habit.store';
+import COLORS from '../../constants/colors';
+import styles from '../../assets/styles/create.styles';
+import {CUSTOM_ICONS} from '../../constants/custom.icons';
+import CustomAlert from '../../constants/CustomAlert';
+import SafeScreen from '../../constants/SafeScreen';
+import {showConnectionError} from '../../constants/alert.utils';
 
 export default function Create() {
   const router = useRouter();
@@ -24,7 +24,8 @@ export default function Create() {
   const [incrementAmount, setIncrementAmount] = React.useState('');
   const [selectedUnit, setSelectedUnit] = React.useState('');
   const [showIconModal, setShowIconModal] = React.useState(false);
-  const [isLoading, setIsLoading] = React.useState(false);
+  const [isSaveLoading, setIsSaveLoading] = React.useState(false);
+  const [isPresetsLoading, setIsPresetsLoading] = React.useState(false);
   const [showAlert, setShowAlert] = React.useState({
     visible: false,
     title: '',
@@ -35,7 +36,8 @@ export default function Create() {
 
   React.useEffect(() => {
     if (token && presets.length === 0) {
-      fetchPresets()
+      setIsPresetsLoading(true);
+      fetchPresets().finally(() => setIsPresetsLoading(false));
     }
   }, [token, presets.length, fetchPresets]);
 
@@ -47,6 +49,7 @@ export default function Create() {
     }
   }, [selectedHabit, habitType]);
 
+  // Reset form when screen comes into focus
   useFocusEffect(
     React.useCallback(() => {
       setHabitType('default');
@@ -58,12 +61,28 @@ export default function Create() {
       setIncrementAmount('');
       setSelectedUnit('');
       setShowIconModal(false);
-      setIsLoading(false);
+      setIsSaveLoading(false);
+      setIsPresetsLoading(false);
     }, [])
   );
 
+  // Reset function for manual use
+  const resetForm = React.useCallback(() => {
+    setHabitType('default');
+    setSelectedHabit(null);
+    setCustomName('');
+    setCustomIcon('heart-outline');
+    setCustomUnit('');
+    setTargetAmount('');
+    setIncrementAmount('');
+    setSelectedUnit('');
+    setShowIconModal(false);
+    setIsSaveLoading(false);
+    setIsPresetsLoading(false);
+  }, []);
+
   const createHabitAction = async () => {
-    setIsLoading(true)
+    setIsSaveLoading(true);
     try {
       let habitData = {}
       if (habitType === 'default') {
@@ -144,12 +163,13 @@ export default function Create() {
 
       const result = await createHabit(habitData)
       if (result.success) {
+        resetForm();
         setShowAlert({
           visible: true,
           title: 'Success',
           message: 'Habit created successfully!',
           type: 'success',
-          buttons: [{ text: 'OK', onPress: () => { setShowAlert(previous => ({ ...previous, visible: false })); router.push('/(tabs)'); }, style: 'default' }]
+          buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
         });
       } else {
         setShowAlert({
@@ -162,10 +182,10 @@ export default function Create() {
       }
     } catch (error: any) {
       showConnectionError(() => {
-        setIsLoading(false);
+        setIsSaveLoading(false);
       });
     } finally {
-      setIsLoading(false)
+      setIsSaveLoading(false);
     }
   };
 
@@ -175,7 +195,7 @@ export default function Create() {
       <View style={styles.formGroup}>
         <Text style={styles.label}>Choose a Default Habit</Text>
         {
-          storeLoading ? (
+          isPresetsLoading ? (
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 20 }}>
               <ActivityIndicator size="large" color={COLORS.primary} />
             </View>
@@ -185,7 +205,12 @@ export default function Create() {
               <Text style={[styles.label, { color: 'red' }]}>Failed to load presets: {storeError}</Text>
               <TouchableOpacity 
                 style={styles.button}
-                onPress={() => token && fetchPresets()}
+                onPress={() => {
+                  if (token) {
+                    setIsPresetsLoading(true);
+                    fetchPresets().finally(() => setIsPresetsLoading(false));
+                  }
+                }}
               >
                 <Text style={styles.buttonText}>Retry</Text>
               </TouchableOpacity>
@@ -419,12 +444,12 @@ export default function Create() {
           {/* CREATE BUTTON */}
           <TouchableOpacity
             style={{
-              opacity: isLoading ? 0.5 : 1
+              opacity: isSaveLoading ? 0.5 : 1
             }}
             onPress={createHabitAction}
-            disabled={isLoading}
+            disabled={isSaveLoading}
           >
-            {isLoading ? (
+            {isSaveLoading ? (
               <ActivityIndicator size={25} color={COLORS.primary} />
             ) : (
               <Text style={{
@@ -543,4 +568,4 @@ export default function Create() {
       </KeyboardAvoidingView>
     </SafeScreen>
   );
-};
+}

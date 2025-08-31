@@ -1,14 +1,14 @@
-import {View, Text, TouchableOpacity, ScrollView, TextInput, Modal, ActivityIndicator, KeyboardAvoidingView, Platform} from 'react-native'
-import {Image} from 'expo-image'
-import React from 'react'
-import {useAuthStore} from '../../store/auth.store'
-import {useRouter, useFocusEffect } from 'expo-router'
-import {Ionicons} from '@expo/vector-icons'
-import CustomAlert from '../../constants/CustomAlert'
-import SafeScreen from '../../constants/SafeScreen'
-import COLORS from '../../constants/colors'
-import styles from '../../assets/styles/profile.styles'
-import {getAvatarSource} from '../../constants/avatar.utils'
+import React from 'react';
+import {View, Text, TouchableOpacity, ScrollView, TextInput, Modal, ActivityIndicator, KeyboardAvoidingView, Platform} from 'react-native';
+import {Image} from 'expo-image';
+import {useRouter, useFocusEffect} from 'expo-router';
+import {Ionicons} from '@expo/vector-icons';
+import {useAuthStore} from '../../store/auth.store';
+import COLORS from '../../constants/colors';
+import styles from '../../assets/styles/profile.styles';
+import CustomAlert from '../../constants/CustomAlert';
+import SafeScreen from '../../constants/SafeScreen';
+import {getAvatarSource} from '../../constants/avatar.utils';
 
 export default function UpdateProfile() {
   const {user, updateProfile, changePassword, isLoading} = useAuthStore();
@@ -48,39 +48,40 @@ export default function UpdateProfile() {
   });
 
   React.useEffect(() => {
-    if (!user) 
-      return;
-    
-    const changes = fullname !== (user.fullname || '') ||
-                   gender !== (user.gender || '') ||
-                   age !== (user.age?.toString() || '') ||
-                   height !== (user.height?.toString() || '') ||
-                   weight !== (user.weight?.toString() || '') ||
-                   profilePicture !== (user.profilePicture || '');
+    const changes = fullname !== (user?.fullname || '') ||
+                   gender !== (user?.gender || '') ||
+                   age !== (user?.age?.toString() || '') ||
+                   height !== (user?.height?.toString() || '') ||
+                   weight !== (user?.weight?.toString() || '') ||
+                   profilePicture !== (user?.profilePicture || '');
     
     setHasChanges(changes);
-  }, [user, fullname, gender, height, weight, profilePicture]);
+  }, [fullname, gender, height, weight, profilePicture]);
 
   useFocusEffect(
     React.useCallback(() => {
-      if (user) {
-        setFullname(user.fullname || '');
-        setGender(user.gender || '');
-        setAge(user.age?.toString() || '');
-        setHeight(user.height?.toString() || '');
-        setWeight(user.weight?.toString() || '');
-        setProfilePicture(user.profilePicture || '01');
-        setShowPasswordModal(false);
-        setCurrentPassword('');
-        setNewPassword('');
-        setConfirmNewPassword('');
-        setShowCurrentPassword(false);
-        setShowNewPassword(false);
-        setShowConfirmPassword(false);
-        setHasChanges(false);
-      }
+      setFullname(user?.fullname || '');
+      setGender(user?.gender || '');
+      setAge(user?.age?.toString() || '');
+      setHeight(user?.height?.toString() || '');
+      setWeight(user?.weight?.toString() || '');
+      setProfilePicture(user?.profilePicture || '01');
+      setSelectedAvatar('');
+      setTempProfilePicture('');
+      setIsAvatarSaving(false);
     }, [user])
   );
+
+  React.useEffect(() => {
+    if (user) {
+      setFullname(user.fullname || '');
+      setGender(user.gender || '');
+      setAge(user.age?.toString() || '');
+      setHeight(user.height?.toString() || '');
+      setWeight(user.weight?.toString() || '');
+      setProfilePicture(user.profilePicture || '01');
+    }
+  }, [user]);
 
   const updateProfileAction = async () => {
     try {
@@ -699,4 +700,4 @@ export default function UpdateProfile() {
       </Modal>
     </SafeScreen>
   );
-};
+}

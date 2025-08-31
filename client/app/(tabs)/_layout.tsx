@@ -1,9 +1,9 @@
-import React from 'react'
-import {Tabs} from 'expo-router'
-import {View, Text} from 'react-native'
-import {Ionicons} from '@expo/vector-icons'
-import COLORS from '../../constants/colors'
-import {useSafeAreaInsets} from 'react-native-safe-area-context'
+import React from 'react';
+import {View, Text} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {Tabs} from 'expo-router';
+import {Ionicons} from '@expo/vector-icons';
+import COLORS from '../../constants/colors';
 
 function TabIcon({ focused, iconName, title }: any) {
   
@@ -29,7 +29,7 @@ function TabIcon({ focused, iconName, title }: any) {
         <Text style={{
           color: COLORS.white,
           fontSize: 12,
-          fontWeight: '600',
+          fontWeight: "600",
           marginTop: 0
         }}>
           {title}
@@ -38,7 +38,6 @@ function TabIcon({ focused, iconName, title }: any) {
     </View>
   );
 }
-
 export default function TabLayout() {
   
   const insets = useSafeAreaInsets();
@@ -57,7 +56,7 @@ export default function TabLayout() {
             marginHorizontal: 20,
             marginBottom: 20,
             paddingHorizontal: 10,
-            position: 'absolute',
+            position: "absolute",
             bottom: 0,
             left: 0,
             right: 0,
@@ -71,9 +70,9 @@ export default function TabLayout() {
             shadowOpacity: 0.15,
             shadowRadius: 10,
             elevation: 5,
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexDirection: 'row',
+            alignItems: "center",
+            justifyContent: "center",
+            flexDirection: "row",
             paddingBottom: 13 + insets.bottom,
             height: 50,
           }
@@ -150,5 +149,5 @@ export default function TabLayout() {
           }}
         />
     </Tabs>
-  )
+  );
 }

@@ -35,6 +35,13 @@ export class StorageUtils {
         AsyncStorage.getItem(this.KEYS.TOKEN_EXPIRATION)
       ]);
 
+      console.log('StorageUtils.loadAuthData - Raw values from AsyncStorage:', {
+        user: user ? 'Available' : 'Not found',
+        token: token ? 'Available' : 'Not found',
+        refreshToken: refreshToken ? 'Available' : 'Not found',
+        tokenExpirationTime: tokenExpirationTime ? tokenExpirationTime : 'Not found'
+      });
+
       return {
         user: user ? JSON.parse(user) : null,
         token,
@@ -42,6 +49,7 @@ export class StorageUtils {
         tokenExpirationTime: tokenExpirationTime ? parseInt(tokenExpirationTime) : null
       };
     } catch (error) {
+      console.error('StorageUtils.loadAuthData - Error:', error);
       handleStorageError("StorageUtils.loadAuthData", error, false);
       return {
         user: null,

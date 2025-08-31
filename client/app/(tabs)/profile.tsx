@@ -1,15 +1,15 @@
+import React from 'react';
 import {View, Text, TouchableOpacity, ScrollView, ActivityIndicator} from 'react-native';
 import {Image} from 'expo-image';
-import React from 'react'
-import {useAuthStore} from '../../store/auth.store'
-import {useHabitStore} from '../../store/habit.store'
-import {useRouter} from 'expo-router'
-import {Ionicons} from '@expo/vector-icons'
-import CustomAlert from '../../constants/CustomAlert'
-import SafeScreen from '../../constants/SafeScreen'
-import COLORS from '../../constants/colors'
-import styles from '../../assets/styles/profile.styles'
-import {getAvatarSource} from '../../constants/avatar.utils'
+import {useRouter} from 'expo-router';
+import {Ionicons} from '@expo/vector-icons';
+import {useAuthStore} from '../../store/auth.store';
+import {useHabitStore} from '../../store/habit.store';
+import COLORS from '../../constants/colors';
+import styles from '../../assets/styles/profile.styles';
+import CustomAlert from '../../constants/CustomAlert';
+import SafeScreen from '../../constants/SafeScreen';
+import {getAvatarSource} from '../../constants/avatar.utils';
 
 export default function Profile() {
   const {user, logout, isLoading} = useAuthStore();

@@ -1,13 +1,13 @@
-import {View, Text, ScrollView, TouchableOpacity, ActivityIndicator} from 'react-native';
 import React from 'react';
-import {useNavigation } from '@react-navigation/native';
-import {Ionicons} from '@expo/vector-icons';
+import {View, Text, ScrollView, TouchableOpacity, ActivityIndicator} from 'react-native';
+import {useNavigation} from '@react-navigation/native';
 import {Image} from 'expo-image';
-import SafeScreen from '../../constants/SafeScreen';
+import {Ionicons} from '@expo/vector-icons';
 import {useHabitStore} from '../../store/habit.store';
 import {useAuthStore} from '../../store/auth.store';
 import COLORS from '../../constants/colors';
 import styles from '../../assets/styles/history.styles';
+import SafeScreen from '../../constants/SafeScreen';
 import {getAvatarSource} from '../../constants/avatar.utils';
 import {
   MONTH_NAMES,
@@ -30,6 +30,36 @@ export default function History() {
   const [days, setDays] = React.useState<(Date | null)[]>([]);
   const [actions, setActions] = React.useState<any>(null);
   
+  React.useEffect(() => {
+    const initActions = async () => {
+      const result = await historyAction();
+      setActions(result);
+    };
+    initActions();
+  }, []);
+
+  React.useEffect(() => {
+    if (!actions) 
+      return;
+
+    const loadHistoryData = async () => {
+      try {
+        setLoading(true);
+        await actions.loadMonthData(currentDate);
+        const daysInMonth = actions.getDaysInMonth(currentDate);
+        setDays(daysInMonth);
+      } catch (error) {
+        console.error('Error loading history data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadHistoryData();
+    const navigationListener = navigation.addListener('focus', loadHistoryData);
+    return () => navigationListener();
+  }, [navigation, currentDate, actions]);
+
   const historyAction = async () => {  
     try {
       // GETTING MONTH'S DAYS
@@ -43,17 +73,17 @@ export default function History() {
 
         const days: (Date | null)[] = [];
         
-        for (let i = 0; i < startingDayOfWeek; i++) {
+        for (let i = 0; i < startingDayOfWeek; i++)
           days.push(null);
-        }
-
-        for (let day = 1; day <= daysInMonth; day++) {
-          days.push(new Date(year, month, day));
-        }
         
-        while (days.length < CALENDAR_CONFIG.TOTAL_GRID_DAYS) {
+
+        for (let day = 1; day <= daysInMonth; day++)
+          days.push(new Date(year, month, day));
+        
+        
+        while (days.length < CALENDAR_CONFIG.TOTAL_GRID_DAYS)
           days.push(null);
-        }   
+        
         return days;
       };
 
@@ -85,11 +115,11 @@ export default function History() {
               const summary = result.data.summary;
               
               // ONLY COUNT DAYS WITH HABIT DATA
-              if (summary.totalHabits > 0) {
+              if (summary.completionRate > 0) {
                 totalDaysWithData++;
                 
-                // CALC DAILY COMPLETION RATE
-                const dailyCompletionRate = (summary.completedHabits / summary.totalHabits) * 100;
+                // USE BACKEND COMPLETION RATE DIRECTLY
+                const dailyCompletionRate = summary.completionRate;
                 totalCompletionRateSum += dailyCompletionRate;
                 totalCompletedHabits += summary.completedHabits;
                 
@@ -108,30 +138,13 @@ export default function History() {
             }
           }
           
-
           setMonthData(newMonthData);
-          
-          // Debug: Completion rate calculation values
-          console.log('=== COMPLETION RATE DEBUG ===');
-          console.log('totalCompletionRateSum:', totalCompletionRateSum);
-          console.log('totalDaysWithData:', totalDaysWithData);
-          console.log('daysInMonth:', daysInMonth);
-          console.log('totalCompletedHabits:', totalCompletedHabits);
-          console.log('currentStreakCount:', currentStreakCount);
-          // Değişiklik: Toplam rate'i o aydaki gün sayısına böl (sadece veri olan günlere değil)
-          const calculatedCompletionRate = daysInMonth > 0 ? Math.round(totalCompletionRateSum / daysInMonth) : 0;
-          console.log('calculatedCompletionRate:', calculatedCompletionRate);
-          console.log('==============================');
-          
           setStats({
             currentStreak: currentStreakCount,
-            completionRate: calculatedCompletionRate,
+            completionRate: daysInMonth > 0 ? Math.round(totalCompletionRateSum / daysInMonth) : 0,
             totalCompletedDays: totalDaysWithData,
             totalCompleted: totalCompletedHabits
           });
-
-          
-          
         } catch (error) {
           console.error('Error loading month data:', error);
           throw error;
@@ -149,36 +162,6 @@ export default function History() {
       throw error;
     }
   };
-
-  React.useEffect(() => {
-    const initActions = async () => {
-      const result = await historyAction();
-      setActions(result);
-    };
-    initActions();
-  }, []);
-
-  React.useEffect(() => {
-    if (!actions) 
-      return;
-
-    const loadHistoryData = async () => {
-      try {
-        setLoading(true);
-        await actions.loadMonthData(currentDate);
-        const daysInMonth = actions.getDaysInMonth(currentDate);
-        setDays(daysInMonth);
-      } catch (error) {
-        console.error('Error loading history data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadHistoryData();
-    const navigationListener = navigation.addListener('focus', loadHistoryData);
-    return () => navigationListener();
-  }, [navigation, currentDate, actions]);
 
   return (
     <SafeScreen>
@@ -271,7 +254,7 @@ export default function History() {
                 }]}>
                   <Ionicons name="pie-chart" size={24} color={COLORS.primary} style={{ marginBottom: 4 }} />
                   <Text style={[styles.selectedStatNumber, { color: COLORS.primary, fontSize: 20 }]}>
-                    {Math.round(monthData[selectedDate.getDate()].summary.completionRate * 100)}%
+                    {Math.round(monthData[selectedDate.getDate()].summary.completionRate)}%
                   </Text>
                 </View>
               </View>
@@ -358,7 +341,7 @@ export default function History() {
                           <View 
                             style={[
                               styles.progressBarFill,
-                              { width: `${progress * 100}%` }
+                              { width: `${progress}%` }
                             ]} 
                           />
                         </View>

@@ -1,14 +1,14 @@
-import {View, Text, TouchableOpacity, ScrollView, TextInput, Modal, KeyboardAvoidingView, Platform, ActivityIndicator} from 'react-native'
-import CustomAlert from '../../constants/CustomAlert'
-import React from 'react'
-import {useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router'
-import {Ionicons} from '@expo/vector-icons'
-import COLORS from '../../constants/colors'
-import styles from '../../assets/styles/create.styles'
-import {useHabitStore} from '../../store/habit.store'
-import {CUSTOM_ICONS} from '../../constants/custom.icons'
-import SafeScreen from '../../constants/SafeScreen'
-import {showConnectionError} from '../../constants/alert.utils'
+import React from 'react';
+import {View, Text, TouchableOpacity, ScrollView, TextInput, Modal, KeyboardAvoidingView, Platform, ActivityIndicator} from 'react-native';
+import {useRouter, useLocalSearchParams, useFocusEffect} from 'expo-router';
+import {Ionicons} from '@expo/vector-icons';
+import {useHabitStore} from '../../store/habit.store';
+import COLORS from '../../constants/colors';
+import styles from '../../assets/styles/create.styles';
+import {CUSTOM_ICONS} from '../../constants/custom.icons';
+import CustomAlert from '../../constants/CustomAlert';
+import SafeScreen from '../../constants/SafeScreen';
+import {showConnectionError} from '../../constants/alert.utils';
 
 export default function Detail() {
   const router = useRouter()
@@ -56,22 +56,29 @@ export default function Detail() {
   useFocusEffect(
     React.useCallback(() => {
       if (habitId && habits.length > 0) {
-        const foundHabit = habits.find((h: any) => h.id === habitId)
+        const foundHabit = habits.find((h: any) => h.id === habitId);
         if (foundHabit) {
-          setHabit(foundHabit)
-          setOriginalUnit(foundHabit.unit)
-          setTargetAmount(foundHabit.targetAmount.toString())
-          setIncrementAmount(foundHabit.incrementAmount.toString())
-          setSelectedUnit(foundHabit.unit)
-          setHasChanges(false)
+          setHabit(foundHabit);
+          setOriginalUnit(foundHabit.unit);
+          setTargetAmount(foundHabit.targetAmount.toString());
+          setIncrementAmount(foundHabit.incrementAmount.toString());
+          setSelectedUnit(foundHabit.unit);
+          setHasChanges(false);
           
           if (foundHabit.type === 'other') {
-            setCustomName(foundHabit.name)
-            setCustomIcon(foundHabit.icon)
-            setCustomUnit(foundHabit.unit)
+            setCustomName(foundHabit.name);
+            setCustomIcon(foundHabit.icon);
+            setCustomUnit(foundHabit.unit);
+          } else {
+            setCustomName('');
+            setCustomIcon('heart-outline');
+            setCustomUnit('');
           }
         }
       }
+      setShowIconModal(false);
+      setIsSaveLoading(false);
+      setIsDeleteLoading(false);
     }, [habitId, habits])
   );
 
@@ -587,4 +594,4 @@ export default function Detail() {
       </KeyboardAvoidingView>
     </SafeScreen>
   );
-};
+}

@@ -1,15 +1,15 @@
-import SafeScreen from "../constants/SafeScreen";
-import {StatusBar} from "expo-status-bar";
-import {SafeAreaProvider} from "react-native-safe-area-context";
-import {Stack, SplashScreen} from "expo-router";
-import {useAuthStore} from "../store/auth.store";
-import {useEffect, useState} from "react";
+import React from 'react';
+import {SafeAreaProvider} from 'react-native-safe-area-context';
+import {StatusBar} from 'expo-status-bar';
+import {Stack, SplashScreen} from 'expo-router';
+import {useAuthStore} from '../store/auth.store';
+import SafeScreen from '../constants/SafeScreen';
  
 function SplashScreenController() {
   const {checkAuth} = useAuthStore();
-  const [isReady, setIsReady] = useState(false);
+  const [isReady, setIsReady] = React.useState(false);
 
-  useEffect(() => {
+  React.useEffect(() => {
     const initAuth = async () => {
       await checkAuth();
       setIsReady(true);
@@ -17,13 +17,13 @@ function SplashScreenController() {
       initAuth();
   }, [checkAuth]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (isReady) {
        SplashScreen.hideAsync();
     }
   }, [isReady]);
     return null;
-  };
+  }
 
   function RootNavigator() {
     const {token} = useAuthStore();
@@ -43,7 +43,7 @@ function SplashScreenController() {
         </Stack.Protected>
       </Stack>
     );
-  };
+  }
 
   export default function RootLayout() {
     return (
@@ -55,5 +55,5 @@ function SplashScreenController() {
         <StatusBar style="dark" />
       </SafeAreaProvider>
     );
-  };
+  }
 

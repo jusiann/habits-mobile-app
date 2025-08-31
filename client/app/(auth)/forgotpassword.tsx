@@ -1,14 +1,14 @@
-import React from "react";
-import {View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ActivityIndicator} from "react-native";
-import {Ionicons } from "@expo/vector-icons";
-import {router} from "expo-router";
-import {useAuthStore} from "../../store/auth.store";
-import COLORS from "../../constants/colors";
-import styles from "../../assets/styles/passwordpages.styles";
-import SafeScreen from "../../constants/SafeScreen";
-import CustomAlert from "../../constants/CustomAlert";
+import React from 'react';
+import {View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ActivityIndicator} from 'react-native';
+import {router} from 'expo-router';
+import {Ionicons} from '@expo/vector-icons';
+import {useAuthStore} from '../../store/auth.store';
+import COLORS from '../../constants/colors';
+import styles from '../../assets/styles/passwordpages.styles';
+import SafeScreen from '../../constants/SafeScreen';
+import CustomAlert from '../../constants/CustomAlert';
 
-const ForgotPassword = () => {
+export default function ForgotPassword() {
   const [email, setEmail] = React.useState("");
   const [resetCode, setResetCode] = React.useState("");
   const [codeSent, setCodeSent] = React.useState(false);
@@ -281,5 +281,3 @@ const ForgotPassword = () => {
     </SafeScreen>
   );
 };
-
-export default ForgotPassword;

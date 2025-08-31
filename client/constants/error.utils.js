@@ -1,4 +1,4 @@
-import {showConnectionError, showErrorAlert, showNetworkError} from "../constants/alert.utils";
+import {showConnectionError, showErrorAlert, showNetworkError} from "./alert.utils";
 
 export class ErrorHandler {
   static logError(context, error, additionalInfo = {}) {
@@ -50,38 +50,29 @@ export class ErrorHandler {
 
   static handleValidationError(context, error, showAlert = true) {
     this.logError(context, error, { type: 'validation' });
-    
-    if (showAlert) {
+    if (showAlert)
       showErrorAlert("Validation Error", error.message);
-    }
   };
 
   static handleStorageError(context, error, showAlert = true) {
     this.logError(context, error, { type: 'storage' });
-    
-    if (showAlert) {
+    if (showAlert)
       showErrorAlert("Storage Error", "Failed to save data locally.");
-    }
   };
 
   static handleParseError(context, error, showAlert = true) {
     this.logError(context, error, { type: 'parse' });
-    
-    if (showAlert) {
+    if (showAlert)
       showErrorAlert("Data Error", "Invalid server response format.");
-    }
   };
 
   static handleGenericError(context, error, showAlert = true) {
     this.logError(context, error, { type: 'generic' });
-    
     if (showAlert) {
-      if (error.message.includes("Failed to fetch") || 
-          error.message.includes("Network request failed")) {
+      if (error.message.includes("Failed to fetch") || error.message.includes("Network request failed")) 
         showConnectionError();
-      } else {
+      else
         showErrorAlert("Error", error.message || "An unexpected error occurred.");
-      }
     }
   };
 
@@ -89,11 +80,10 @@ export class ErrorHandler {
     try {
       return await asyncFunction();
     } catch (error) {
-      if (errorHandler) {
+      if (errorHandler)
         errorHandler(context, error);
-      } else {
+      else
         this.handleGenericError(context, error);
-      }
       throw error;
     }
   };
@@ -102,11 +92,10 @@ export class ErrorHandler {
     try {
       return syncFunction();
     } catch (error) {
-      if (errorHandler) {
+      if (errorHandler)
         errorHandler(context, error);
-      } else {
+      else
         this.handleGenericError(context, error);
-      }
       throw error;
     }
   };

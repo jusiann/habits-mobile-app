@@ -1,23 +1,36 @@
-import {View, Text, ScrollView, TouchableOpacity, ActivityIndicator} from 'react-native';
 import React from 'react';
+import {View, Text, ScrollView, TouchableOpacity, ActivityIndicator} from 'react-native';
 import {Image} from 'expo-image';
 import {router} from 'expo-router';
 import {Ionicons} from '@expo/vector-icons';
-import styles from '../../assets/styles/home.styles';
 import {useAuthStore} from '../../store/auth.store';
 import {useHabitStore} from '../../store/habit.store';
-import SafeScreen from '../../constants/SafeScreen';
+import styles from '../../assets/styles/home.styles';
 import COLORS from '../../constants/colors';
+import SafeScreen from '../../constants/SafeScreen';
 import {getAvatarSource} from '../../constants/avatar.utils';
 
 export default function Home() {
   const {user, token} = useAuthStore();
-  const {habits, fetchHabits, incrementHabit, isLoading, habitLogsByDate} = useHabitStore();
+  const {habits, fetchHabits, incrementHabit, habitLogsByDate} = useHabitStore();
   const [pressedButton, setPressedButton] = React.useState<string | null>(null);
+  const [isLoading, setIsLoading] = React.useState(false);
+  const getGreeting = () => {
+    const currentHour = new Date().getHours();
+    if (currentHour >= 6 && currentHour < 12)
+      return "Good Morning";
+    else if (currentHour >= 12 && currentHour < 18)
+      return "Good Afternoon";
+    else if (currentHour >= 18 && currentHour < 22)
+      return "Good Evening";
+    else
+      return "Good Night";
+  };
 
   React.useEffect(() => {
     if (token) {
-      fetchHabits();
+      setIsLoading(true);
+      fetchHabits().finally(() => setIsLoading(false));
       loadHistoryData();
     }
   }, [token, fetchHabits]);
@@ -42,18 +55,6 @@ export default function Home() {
     } catch (error) {
       console.error('Error loading history data:', error);
     }
-  };
-
-  const getGreeting = () => {
-    const currentHour = new Date().getHours();
-    if (currentHour >= 6 && currentHour < 12)
-      return "Good Morning";
-    else if (currentHour >= 12 && currentHour < 18)
-      return "Good Afternoon";
-    else if (currentHour >= 18 && currentHour < 22)
-      return "Good Evening";
-    else
-      return "Good Night";
   };
 
   return (
