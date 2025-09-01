@@ -7,6 +7,7 @@ import COLORS from '../../constants/colors';
 import styles from '../../assets/styles/passwordpages.styles';
 import SafeScreen from '../../constants/SafeScreen';
 import CustomAlert from '../../constants/CustomAlert';
+import {showConnectionError} from '../../constants/alert.utils'
 
 export default function ForgotPassword() {
   const [email, setEmail] = React.useState("");
@@ -23,10 +24,7 @@ export default function ForgotPassword() {
     buttons: [] as Array<{ text: string; onPress: () => void; style?: 'default' | 'cancel' | 'destructive' }>
   });
 
-  const validateEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
+
 
   const sendResetCodeAction = async () => {
     try {
@@ -41,13 +39,14 @@ export default function ForgotPassword() {
         return;
       }
 
-      if (!validateEmail(email)) {
+      const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+      if (!emailRegex.test(email)) {
         setShowAlert({
           visible: true,
-          title: "Invalid Email",
-          message: "Please enter a valid email address.",
-          type: "warning",
-          buttons: [{ text: "OK", onPress: () => setShowAlert(previous => ({ ...previous, visible: false })) }]
+          title: 'Invalid Email',
+          message: 'Please enter a valid email address.',
+          type: 'error',
+          buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
         });
         return;
       }
@@ -73,13 +72,11 @@ export default function ForgotPassword() {
         });
       }
     } catch (error) {
-      setShowAlert({
-        visible: true,
-        title: "Connection Error",
-        message: "Failed to send reset code. Please check your internet connection and try again.",
-        type: "error",
-        buttons: [{ text: "OK", onPress: () => setShowAlert(previous => ({ ...previous, visible: false })) }]
-      });
+      if (error.message.includes("Failed to fetch") || error.message.includes("Network request failed")) {
+        showConnectionError(() => {
+          setShowAlert(previous => ({ ...previous, visible: false }));
+        });
+      }
     } finally {
       setSendingCode(false);
     }
@@ -100,7 +97,6 @@ export default function ForgotPassword() {
 
       setVerifyingCode(true);
       const result = await verifyResetCode(email, resetCode);
-      
       if (result.success) {
         router.push({
           pathname: '/(auth)/changepassword',
@@ -116,13 +112,11 @@ export default function ForgotPassword() {
         });
       }
     } catch (error) {
-      setShowAlert({
-        visible: true,
-        title: "Connection Error",
-        message: "Failed to verify reset code. Please check your internet connection.",
-        type: "error",
-        buttons: [{ text: "OK", onPress: () => setShowAlert(previous => ({ ...previous, visible: false })) }]
-      });
+      if (error.message.includes("Failed to fetch") || error.message.includes("Network request failed")) {
+        showConnectionError(() => {
+          setShowAlert(previous => ({ ...previous, visible: false }));
+        });
+      }
     } finally {
       setVerifyingCode(false);
     }
@@ -141,6 +135,7 @@ export default function ForgotPassword() {
         style={{ flex: 1 }}
         behavior={Platform.OS === "android" ? "padding" : "height"}
       >
+
         {/* BACK TO SIGN IN HEADER */}
         <View style={{ 
           flexDirection: 'row', 
@@ -176,18 +171,19 @@ export default function ForgotPassword() {
         </View>
         
         <View style={[styles.container, { paddingTop: 60 }]}>
-        
-        <View style={styles.card}>
-          {/* HEADER */}
-          <View style={[styles.header, { marginBottom: 40 }]}>
-            <Text style={styles.title}>Forgot Password</Text>
-            <Text style={styles.subtitle}>
-              Enter your email address and reset code
-            </Text>
-          </View>
+          <View style={styles.card}>
 
-          <View style={styles.formContainer}>
-            {/* EMAIL INPUT */}
+            {/* HEADER */}
+            <View style={[styles.header, { marginBottom: 40 }]}>
+              <Text style={styles.title}>Forgot Password</Text>
+              <Text style={styles.subtitle}>
+                Enter your email address and reset code
+              </Text>
+            </View>
+
+            <View style={styles.formContainer}>
+
+              {/* EMAIL INPUT */}
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>Email</Text>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
@@ -208,6 +204,7 @@ export default function ForgotPassword() {
                       autoCapitalize="none"
                     />
                   </View>
+
                   {/* SEND RESET CODE BUTTON */}
                   <TouchableOpacity
                     onPress={sendResetCodeAction}
@@ -216,8 +213,7 @@ export default function ForgotPassword() {
                       backgroundColor: COLORS.primary,
                       height: 48,
                       width: 48,
-                      borderRadius: 8,
-                      alignItems: 'center',
+                      borderRadius: 8,                      alignItems: 'center',
                       justifyContent: 'center'
                     }}
                   >
@@ -228,11 +224,10 @@ export default function ForgotPassword() {
                         <Text style={{ color: '#fff', fontSize: 16, fontWeight: 'bold' }}>
                           {
                             codeSent ? 
-                                <Ionicons name="checkmark" size={24} color="#fff" /> 
-                                : <Ionicons name="arrow-forward" size={24} color="#fff" />
-
+                              <Ionicons name="checkmark" size={24} color="#fff" /> 
+                              : <Ionicons name="arrow-forward" size={24} color="#fff" />
                           }
-                        </Text>
+                          </Text>
                     )}
                   </TouchableOpacity>
                 </View>
@@ -263,18 +258,20 @@ export default function ForgotPassword() {
             {/* BUTTONS SECTION */}
             <View style={{ marginTop: 30 }}>
               {/* VERIFY CODE BUTTON */}
-               <TouchableOpacity
-                 style={[styles.button, verifyingCode && styles.buttonDisabled]}
-                 onPress={verifyCodeAction}
-                 disabled={verifyingCode}
-               >
-                 {verifyingCode ? (
-                   <ActivityIndicator color="#fff" />
-                 ) : (
-                   <Text style={styles.buttonText}>Verify Code</Text>
-                 )}
-               </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.button, verifyingCode && styles.buttonDisabled]}
+                onPress={verifyCodeAction}
+                disabled={verifyingCode}
+              >
+                {
+                  verifyingCode ? (
+                    <ActivityIndicator color="#fff" />
+                  ) : (
+                    <Text style={styles.buttonText}>Verify Code</Text>
+                  )}
+              </TouchableOpacity>
             </View>
+            
           </View>
         </View>
       </KeyboardAvoidingView>

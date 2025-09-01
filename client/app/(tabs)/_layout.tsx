@@ -6,8 +6,6 @@ import {Ionicons} from '@expo/vector-icons';
 import COLORS from '../../constants/colors';
 
 function TabIcon({ focused, iconName, title }: any) {
-  
-  
   return (
     <View style={{
       alignItems: 'center',
@@ -38,8 +36,8 @@ function TabIcon({ focused, iconName, title }: any) {
     </View>
   );
 }
+
 export default function TabLayout() {
-  
   const insets = useSafeAreaInsets();
   
   return (

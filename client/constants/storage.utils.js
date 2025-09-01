@@ -71,7 +71,7 @@ export class StorageUtils {
 
   static async updateTokens(accessToken, refreshToken) {
     try {
-      const expirationTime = Date.now() + (15 * 60 * 1000); // 15 minutes
+      const expirationTime = Date.now() + (15 * 60 * 1000);
       
       await Promise.all([
         AsyncStorage.setItem(this.KEYS.TOKEN, accessToken),

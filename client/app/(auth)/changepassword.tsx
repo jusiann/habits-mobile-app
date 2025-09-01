@@ -35,6 +35,17 @@ export default function ChangePassword() {
       return;
     }
 
+    // if (currentPassword === newPassword) {
+    //   setShowAlert({
+    //     visible: true,
+    //     title: 'Error',
+    //     message: 'New password must be different from current password',
+    //     type: 'error',
+    //     buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+    //   });
+    //   return;
+    // }
+
     if (newPassword !== confirmPassword) {
       setShowAlert({
         visible: true,
@@ -116,8 +127,6 @@ export default function ChangePassword() {
         </View>
         
         <View style={[styles.container, { paddingTop: 60 }]}>
-
-          {/* CARD */}
           <View style={styles.card}>
 
             {/* HEADER */}

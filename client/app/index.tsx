@@ -10,42 +10,40 @@ export default function Index() {
   return (
     <SafeScreen>
       <View style={styles.container}>
-      {/* TITLE SELECTION */}
-      <View style={styles.card}>
+        <View style={styles.card}>
         
-        {/* LOGO SECTION */}
-        <View style={styles.topIllustration}>
-          <Image 
-            source={require("../assets/images/logos/retro-theme-logo.png")} 
-            style={styles.illustrationImage}
-          />
-        </View>
+          {/* LOGO SECTION */}
+          <View style={styles.topIllustration}>
+            <Image 
+              source={require("../assets/images/logos/orange-theme-logo.png")} 
+              style={styles.illustrationImage}
+            />
+          </View>
         
-         <View style={styles.header}>
-          <Text style={styles.titleFirst}>Welcome to</Text>
-          <Text style={styles.titleSecond}>Habits App</Text>
-          
-          <Text style={styles.subtitleSpaced}>
-            Track your daily habits and build better routines
-          </Text>
-        </View>
+          <View style={styles.header}>
+            <Text style={styles.titleFirst}>Welcome to</Text>
+            <Text style={styles.titleSecond}>Habits App</Text>
+            <Text style={styles.subtitleSpaced}>
+              Track your daily habits and build better routines
+            </Text>
+          </View>
 
-        {/* BUTTON SECTION */}
-        <View style={styles.formContainer}>
-          <TouchableOpacity 
-            style={styles.button} 
-            onPress={() => router.push('/(auth)')}
-          >
-            <Text style={styles.buttonText}>Sign In</Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={styles.button} 
-            onPress={() => router.push('/(auth)/signup')}
-          >
-            <Text style={styles.buttonText}>Sign Up</Text>
-          </TouchableOpacity>
+          {/* BUTTON SECTION */}
+          <View style={styles.formContainer}>
+            <TouchableOpacity 
+              style={styles.button} 
+              onPress={() => router.push('/(auth)')}
+            >
+              <Text style={styles.buttonText}>Sign In</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.button} 
+              onPress={() => router.push('/(auth)/signup')}
+            >
+              <Text style={styles.buttonText}>Sign Up</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
       </View>
     </SafeScreen>
   );

@@ -19,96 +19,6 @@ export const useHabitStore = create((set, get) => ({
     }
   },
   
-  // CHECK AND RESET DAILY (UTC based version - commented out)
-  /*
-  checkAndResetDailyUTC: () => {
-    try {
-      const now = new Date();
-      const todayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), norw.getUTCDate())).getTime();
-      const lastFetch = get().lastFetchDate ? new Date(get().lastFetchDate).getTime() : null;
-      
-      if (lastFetch && lastFetch < todayUTC) {
-        set({ 
-          habits: [], 
-          lastFetchDate: now.toISOString() 
-        });
-        return true; 
-      } else if (!lastFetch) {
-        set({ 
-          lastFetchDate: now.toISOString() 
-        });
-      }
-      return false;
-    } catch (error) {
-      console.error("Error in checkAndResetDailyUTC:", error);
-      return false;
-    }
-  },
-  */
-
-  // CHECK AND RESET DAILY (Local time based version - active)
-  checkAndResetDaily: () => {
-    try {
-      const now = new Date();
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-      const lastFetch = get().lastFetchDate ? new Date(get().lastFetchDate).getTime() : null;
-      const currentHabits = get().habits || [];
-      
-      // DEBUG: HABIT RESET CHECK STARTED
-      console.log('🕐 [HABIT RESET] Check started at:', now.toLocaleString('tr-TR'));
-      console.log('📊 [HABIT RESET] Current habits count:', currentHabits.length);
-      console.log('📅 [HABIT RESET] Today timestamp:', today);
-      console.log('📅 [HABIT RESET] Last fetch timestamp:', lastFetch);
-      console.log('📅 [HABIT RESET] Last fetch date:', lastFetch ? new Date(lastFetch).toLocaleString('tr-TR') : 'Never');
-      
-      if (!lastFetch) {
-        // DEBUG: FIRST SETUP
-        console.log('🆕 [HABIT RESET] First time setup - initializing and resetting habits');
-        console.log('🆕 [HABIT RESET] Setup Date & Time:', now.toLocaleString('tr-TR'));
-        console.log('🆕 [HABIT RESET] Clearing any existing habits:', currentHabits.length, 'habits');
-        set({ 
-          habits: [],
-          lastFetchDate: now.toISOString() 
-        });
-        // DEBUG: FIRST SETUP COMPLETED
-        console.log('✅ [HABIT RESET] First time setup and reset completed');
-        return true;
-      } else if (lastFetch < today) {
-        // DEBUG: NEW DAY DETECTED
-        console.log('🔄 [HABIT RESET] New day detected! Resetting habits...');
-        console.log('🔄 [HABIT RESET] Reset Date & Time:', now.toLocaleString('tr-TR'));
-        console.log('🔄 [HABIT RESET] Previous habits cleared:', currentHabits.length, 'habits');
-        console.log('🔄 [HABIT RESET] Last fetch was:', new Date(lastFetch).toLocaleString('tr-TR'));
-        console.log('🔄 [HABIT RESET] Today is:', new Date(today).toLocaleString('tr-TR'));
-        
-        set({ 
-          habits: [], 
-          lastFetchDate: now.toISOString() 
-        });
-        
-        // DEBUG: RESET COMPLETED
-        console.log('✅ [HABIT RESET] Reset completed successfully');
-        return true;
-      } else {
-        // DEBUG: SAME DAY DETECTED
-        console.log('⏰ [HABIT RESET] Same day detected - no reset needed');
-        console.log('⏰ [HABIT RESET] Current habits will be preserved:', currentHabits.length, 'habits');
-        console.log('⏰ [HABIT RESET] Last fetch was:', new Date(lastFetch).toLocaleString('tr-TR'));
-        console.log('⏰ [HABIT RESET] Today is:', new Date(today).toLocaleString('tr-TR'));
-      }
-      return false;
-    } catch (error) {
-      // DEBUG: ERROR OCCURRED
-      console.error('❌ [HABIT RESET] Error in checkAndResetDaily:', error);
-      console.error('❌ [HABIT RESET] Error details:', {
-        message: error.message,
-        stack: error.stack,
-        timestamp: new Date().toLocaleString('tr-TR')
-      });
-      return false;
-    }
-  },
-
   // FETCH PRESETS
   fetchPresets: async () => {
     set({ 
@@ -131,7 +41,6 @@ export const useHabitStore = create((set, get) => ({
       if (response.ok) {
         const cleanPresets = data.data.presets.health || [];
         
-        // UPDATE STATE WITH PRESETS
         set({ 
           presets: cleanPresets, 
           isLoading: false 
@@ -166,7 +75,6 @@ export const useHabitStore = create((set, get) => ({
       error: null 
     });
     try {
-      // CHECK FOR NEW DAY
       const isNewDay = get().checkAndResetDaily();
       const response = await get().makeRequest('https://habits-mobile-app.onrender.com/api/habits/dashboard', {
         method: 'GET'
@@ -182,7 +90,6 @@ export const useHabitStore = create((set, get) => ({
 
       if (response.ok) {
         const cleanHabits = data.data.habits || [];
-        // UPDATE STATE WITH HABITS
         set({ 
           habits: cleanHabits, 
           isLoading: false 
@@ -236,7 +143,6 @@ export const useHabitStore = create((set, get) => ({
       }
 
       if (response.ok) {
-        // REFRESH HABITS LIST
         await get().fetchHabits();
         return { 
           success: true, 
@@ -281,7 +187,6 @@ export const useHabitStore = create((set, get) => ({
       }
 
       if (response.ok) {
-        // REFRESH HABITS LIST
         await get().fetchHabits();
         return { 
           success: true, 
@@ -327,7 +232,6 @@ export const useHabitStore = create((set, get) => ({
       }
 
       if (response.ok) {
-        // REFRESH HABITS LIST
         await get().fetchHabits();
         return { 
           success: true, 
@@ -387,7 +291,8 @@ export const useHabitStore = create((set, get) => ({
         throw new Error("Invalid server response format");
       }
 
-      console.log(`API Response for date ${date}:`, data);
+      // REMOVE IT
+      console.log(`API Response for date ${date}`);
 
       if (response.ok) {
         const activeHabits = data.data.habits.filter(habit => 
@@ -396,7 +301,6 @@ export const useHabitStore = create((set, get) => ({
         );
   
         const summary = data.data.summary;
-  
         const result = { 
           success: true, 
           data: {
@@ -422,7 +326,6 @@ export const useHabitStore = create((set, get) => ({
         throw new Error(data.message || data.error || "Failed to fetch habit logs");
       }
     } catch (error) {
-      console.error(`Error fetching logs for ${date}:`, error);
       set({ 
         error: error.message || 'Network error', 
         isLoading: false 
@@ -517,7 +420,6 @@ export const useHabitStore = create((set, get) => ({
       }
 
       if (response.ok) {
-        // REFRESH HABITS LIST
         await get().fetchHabits();
         return { 
           success: true, 
@@ -541,6 +443,158 @@ export const useHabitStore = create((set, get) => ({
       });
     }
   },
+
+  // CHECK AND RESET DAILY (UTC based version - commented out)
+  /*
+  checkAndResetDailyUTC: () => {
+    try {
+      const now = new Date();
+      const todayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), norw.getUTCDate())).getTime();
+      const lastFetch = get().lastFetchDate ? new Date(get().lastFetchDate).getTime() : null;
+      
+      if (lastFetch && lastFetch < todayUTC) {
+        set({ 
+          habits: [], 
+          lastFetchDate: now.toISOString() 
+        });
+        return true; 
+      } else if (!lastFetch) {
+        set({ 
+          lastFetchDate: now.toISOString() 
+        });
+      }
+      return false;
+    } catch (error) {
+      console.error("Error in checkAndResetDailyUTC:", error);
+      return false;
+    }
+  },
+  */
+
+  // CHECK AND RESET DAILY (Local time based version - DEACTIVATED)
+  checkAndResetDaily: () => {
+    try {
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+      const lastFetch = get().lastFetchDate ? new Date(get().lastFetchDate).getTime() : null;
+      const currentHabits = get().habits || [];
+      
+      // DEBUG: HABIT RESET CHECK STARTED
+      console.log('🕐 [HABIT RESET] Check started at:', now.toLocaleString('tr-TR'));
+      console.log('📊 [HABIT RESET] Current habits count:', currentHabits.length);
+      console.log('📅 [HABIT RESET] Today timestamp:', today);
+      console.log('📅 [HABIT RESET] Last fetch timestamp:', lastFetch);
+      console.log('📅 [HABIT RESET] Last fetch date:', lastFetch ? new Date(lastFetch).toLocaleString('tr-TR') : 'Never');
+      if (!lastFetch) {
+        // DEBUG: FIRST SETUP
+        console.log('🆕 [HABIT RESET] First time setup - initializing and resetting habits');
+        console.log('🆕 [HABIT RESET] Setup Date & Time:', now.toLocaleString('tr-TR'));
+        console.log('🆕 [HABIT RESET] Clearing any existing habits:', currentHabits.length, 'habits');
+        set({ 
+          habits: [],
+          lastFetchDate: now.toISOString() 
+        });
+        // DEBUG: FIRST SETUP COMPLETED
+        console.log('✅ [HABIT RESET] First time setup and reset completed');
+        return true;
+      } else if (lastFetch < today) {
+        // DEBUG: NEW DAY DETECTED
+        console.log('🔄 [HABIT RESET] New day detected! Resetting habits...');
+        console.log('🔄 [HABIT RESET] Reset Date & Time:', now.toLocaleString('tr-TR'));
+        console.log('🔄 [HABIT RESET] Previous habits cleared:', currentHabits.length, 'habits');
+        console.log('🔄 [HABIT RESET] Last fetch was:', new Date(lastFetch).toLocaleString('tr-TR'));
+        console.log('🔄 [HABIT RESET] Today is:', new Date(today).toLocaleString('tr-TR'));
+        set({ 
+          habits: [], 
+          lastFetchDate: now.toISOString() 
+        });
+        // DEBUG: RESET COMPLETED
+        console.log('✅ [HABIT RESET] Reset completed successfully');
+        return true;
+      } else {
+        // DEBUG: SAME DAY DETECTED
+        console.log('⏰ [HABIT RESET] Same day detected - no reset needed');
+        console.log('⏰ [HABIT RESET] Current habits will be preserved:', currentHabits.length, 'habits');
+        console.log('⏰ [HABIT RESET] Last fetch was:', new Date(lastFetch).toLocaleString('tr-TR'));
+        console.log('⏰ [HABIT RESET] Today is:', new Date(today).toLocaleString('tr-TR'));
+      }
+      return false;
+    } catch (error) {
+      // DEBUG: ERROR OCCURRED
+      console.error('❌ [HABIT RESET] Error in checkAndResetDaily:', error);
+      console.error('❌ [HABIT RESET] Error details:', {
+        message: error.message,
+        stack: error.stack,
+        timestamp: new Date().toLocaleString('tr-TR')
+      });
+      return false;
+    }
+  },
+
+  // CHECK AND RESET DAILY (FOR TURKEY UTC+3)
+  // checkAndResetDaily: () => {
+  //   try {
+  //     const now = new Date();
+  //     const currentHabits = get().habits || [];
+  //     const nowTR = new Date(now.getTime() + 3 * 60 * 60 * 1000);
+  //     const todayTR = new Date(nowTR.getFullYear(), nowTR.getMonth(), nowTR.getDate()).getTime();
+  //     const lastFetch = get().lastFetchDate ? new Date(get().lastFetchDate) : null;
+  //     const lastFetchTR = lastFetch ? new Date(lastFetch.getTime() + 3 * 60 * 60 * 1000) : null;
+  //     const lastFetchDayTR = lastFetchTR ? new Date(lastFetchTR.getFullYear(), lastFetchTR.getMonth(), lastFetchTR.getDate()).getTime() : null;
+      
+  //     // DEBUG: HABIT RESET CHECK STARTED
+  //     console.log('🕐 [HABIT RESET] Check started at:', nowTR.toLocaleString('tr-TR'));
+  //     console.log('📊 [HABIT RESET] Current habits count:', currentHabits.length);
+  //     console.log('📅 [HABIT RESET] Today (TR) timestamp:', todayTR);
+  //     console.log('📅 [HABIT RESET] Last fetch (TR) timestamp:', lastFetchDayTR);
+  //     console.log('📅 [HABIT RESET] Last fetch (TR) date:', lastFetchDayTR ? new Date(lastFetchDayTR).toLocaleString('tr-TR') : 'Never');
+
+  //     if (!lastFetchDayTR) {
+  //       // DEBUG: FIRST SETUP
+  //       console.log('🆕 [HABIT RESET] First time setup - initializing and resetting habits');
+  //       console.log('🆕 [HABIT RESET] Setup Date & Time:', nowTR.toLocaleString('tr-TR'));
+  //       console.log('🆕 [HABIT RESET] Clearing any existing habits:', currentHabits.length, 'habits');
+  //       set({ 
+  //         habits: [],
+  //         lastFetchDate: now.toISOString() 
+  //       });
+
+  //       // DEBUG: FIRST SETUP COMPLETED
+  //       console.log('✅ [HABIT RESET] First time setup and reset completed');
+  //       return true;
+  //     } else if (lastFetchDayTR < todayTR) {
+  //       // DEBUG: NEW DAY DETECTED
+  //       console.log('🔄 [HABIT RESET] New day detected! Resetting habits...');
+  //       console.log('🔄 [HABIT RESET] Reset Date & Time:', nowTR.toLocaleString('tr-TR'));
+  //       console.log('🔄 [HABIT RESET] Previous habits cleared:', currentHabits.length, 'habits');
+  //       console.log('🔄 [HABIT RESET] Last fetch was:', lastFetchDayTR ? new Date(lastFetchDayTR).toLocaleString('tr-TR') : 'Never');
+  //       console.log('🔄 [HABIT RESET] Today is:', new Date(todayTR).toLocaleString('tr-TR'));
+  //       set({ 
+  //         habits: [], 
+  //         lastFetchDate: now.toISOString() 
+  //       });
+  //       // DEBUG: RESET COMPLETED
+  //       console.log('✅ [HABIT RESET] Reset completed successfully');
+  //       return true;
+  //     } else {
+  //       // DEBUG: SAME DAY DETECTED
+  //       console.log('⏰ [HABIT RESET] Same day detected - no reset needed');
+  //       console.log('⏰ [HABIT RESET] Current habits will be preserved:', currentHabits.length, 'habits');
+  //       console.log('⏰ [HABIT RESET] Last fetch was:', lastFetchDayTR ? new Date(lastFetchDayTR).toLocaleString('tr-TR') : 'Never');
+  //       console.log('⏰ [HABIT RESET] Today is:', new Date(todayTR).toLocaleString('tr-TR'));
+  //     }
+  //     return false;
+  //   } catch (error) {
+  //     // DEBUG: ERROR OCCURRED
+  //     console.error('❌ [HABIT RESET] Error in checkAndResetDaily:', error);
+  //     console.error('❌ [HABIT RESET] Error details:', {
+  //       message: error.message,
+  //       stack: error.stack,
+  //       timestamp: new Date().toLocaleString('tr-TR')
+  //     });
+  //     return false;
+  //   }
+  // },
 
   // CLEAR STORE
   clearStore: () => {

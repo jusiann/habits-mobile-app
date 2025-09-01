@@ -12,6 +12,15 @@ export const useAuthStore = create((set,get) => ({
     refreshTimer: null,
     isLoading: false,
 
+    // API WRAPPER WITH AUTO REFRESH
+    makeAuthenticatedRequest: async (url, options = {}) => {
+        try {
+            return await makeAuthenticatedRequest(url, options, useAuthStore);
+        } catch (error) {
+            throw new Error(error.message || "Authentication request failed");
+        }
+    },
+
     // REGISTER USER
     register: async (email, username, fullname, password) => {
         set({ 
@@ -43,9 +52,8 @@ export const useAuthStore = create((set,get) => ({
                 const errorMessage = data.error || data.message || "Registration failed";
                 throw new Error(errorMessage);
             }
-            // SAVE TO STORAGE
+
             const expirationTime = await StorageUtils.saveAuthData(data.user, data.accessToken, data.refreshToken);
-            // UPDATE STATE
             set({ 
                 user: data.user, 
                 token: data.accessToken, 
@@ -53,7 +61,7 @@ export const useAuthStore = create((set,get) => ({
                 tokenExpirationTime: expirationTime,
                 isLoading: false 
             });
-            // START AUTO REFRESH
+            
             get().startAutoRefresh();
             return {
                 success: true,
@@ -79,7 +87,6 @@ export const useAuthStore = create((set,get) => ({
             isLoading: true
         });
         try {
-            // SEND EMAIL OR USERNAME
             let body = {};
             if (email) {
                 body = { email, password };
@@ -108,10 +115,7 @@ export const useAuthStore = create((set,get) => ({
             if (!response.ok) 
                 throw new Error(data.message || data.error || "Login failed");
 
-            // SAVE TO STORAGE
             const expirationTime = await StorageUtils.saveAuthData(data.user, data.accessToken, data.refreshToken);
-            
-            // UPDATE STATE
             set({ 
                 user: data.user, 
                 token: data.accessToken, 
@@ -120,9 +124,7 @@ export const useAuthStore = create((set,get) => ({
                 isLoading: false 
             });
 
-            // START AUTO REFRESH
             get().startAutoRefresh();
-
             return {
                 success: true,
             };
@@ -167,24 +169,21 @@ export const useAuthStore = create((set,get) => ({
             }
 
             if (!response.ok) {
-                // Token geçersiz veya süresi dolmuşsa logout
                 if (response.status === 401 || response.status === 403) {
                     await get().logout();
                 }
                 throw new Error(data.message || data.error || "Token refresh failed");
             }
 
-            // UPDATE TOKENS AND USER IN STORAGE
             const expirationTime = await StorageUtils.updateTokens(data.accessToken, data.refreshToken);
             if (data.user)
                 await StorageUtils.updateUser(data.user);
 
-            // UPDATE STATE
             set({ 
                 token: data.accessToken, 
                 refreshToken: data.refreshToken,
                 tokenExpirationTime: expirationTime,
-                user: data.user || get().user // Eğer user gelmezse mevcut user'ı koru
+                user: data.user || get().user
             });
 
             return { 
@@ -192,14 +191,11 @@ export const useAuthStore = create((set,get) => ({
             };
         } catch (error) {
             console.error("Token refresh failed:", error);
-            
-            // Eğer refresh token geçersizse veya başka bir kritik hata varsa logout yap
             if (error.message.includes("invalidated") || 
                 error.message.includes("expired") || 
                 error.message.includes("invalid")) {
                 await get().logout();
             }
-            
             return { 
                 success: false, 
                 message: error.message || "Token refresh failed" 
@@ -215,12 +211,9 @@ export const useAuthStore = create((set,get) => ({
                    'Refresh Token:', refreshToken ? 'Available' : 'Not available',
                    'Expiration Time:', tokenExpirationTime ? new Date(tokenExpirationTime).toISOString() : 'Not set');
         
-        // CLEAR EXISTING TIMER
-        if (refreshTimer) {
+        if (refreshTimer)
             clearTimeout(refreshTimer);
-        }
         
-        // Token veya refresh token yoksa çıkış yap
         if (!token || !refreshToken) {
             console.error('Missing token or refresh token, logging out');
             get().logout();
@@ -228,19 +221,19 @@ export const useAuthStore = create((set,get) => ({
         }
 
         if (!tokenExpirationTime) {
-            // Token süresi yoksa varsayılan olarak 15 dakika ekle
             const newExpirationTime = Date.now() + (15 * 60 * 1000);
-            set({ tokenExpirationTime: newExpirationTime });
-            return get().startAutoRefresh(); // Recursive call with new expiration
+            set({ 
+                tokenExpirationTime: 
+                newExpirationTime 
+            });
+            return get().startAutoRefresh();
         }
 
-        // REFRESH 2 MINUTES BEFORE EXPIRY
         const currentTime = Date.now();
         const refreshTime = tokenExpirationTime - (2 * 60 * 1000);
         const timeUntilRefresh = refreshTime - currentTime;
 
-        // REFRESH IMMEDIATELY IF EXPIRED OR CLOSE TO EXPIRY
-        if (timeUntilRefresh <= 5000) { // 5 saniyeden az kaldıysa
+        if (timeUntilRefresh <= 5000) {
             get().refreshAccessToken().then((result) => {
                 if (result.success) {
                     get().startAutoRefresh();
@@ -266,14 +259,13 @@ export const useAuthStore = create((set,get) => ({
                 console.error("Auto refresh failed:", error);
                 await get().logout();
             }
-        }, Math.min(timeUntilRefresh, 15 * 60 * 1000)); // En fazla 15 dakika bekle
+        }, Math.min(timeUntilRefresh, 15 * 60 * 1000));
 
         set({ 
             refreshTimer: timer 
         }); 
     },
 
-    // STOP AUTO REFRESH TIMER
     stopAutoRefresh: () => {
         const { refreshTimer } = get();
         if (refreshTimer) {
@@ -288,13 +280,11 @@ export const useAuthStore = create((set,get) => ({
     // LOGOUT USER
     logout: async () => {
         try {
-            // STOP AUTO REFRESH
             get().stopAutoRefresh();
             
             const token = get().token;
             if (token) {
                 try {
-                    // BLACKLIST TOKEN ON SERVER
                     await fetch(API_ENDPOINTS.AUTH.LOGOUT, {
                         method: "POST",
                         headers: {
@@ -307,15 +297,9 @@ export const useAuthStore = create((set,get) => ({
                 }
             }
 
-            // CLEAR STORE STATE FIRST
             get().clearStore();
-            
-            // CLEAR HABIT STORE CACHE
             useHabitStore.getState().clearStore();
-
-            // THEN CLEAR LOCAL STORAGE
             await StorageUtils.clearAuthData();
-            
             return {
                 success: true,
                 message: "Logged out successfully"
@@ -331,7 +315,6 @@ export const useAuthStore = create((set,get) => ({
     // CHECK AUTH STATUS
     checkAuth: async () => {
         try {
-            // LOAD FROM STORAGE
             const {user, token, refreshToken, tokenExpirationTime} = await StorageUtils.loadAuthData();
             
             console.log('CheckAuth - Loaded from storage:', {
@@ -342,7 +325,6 @@ export const useAuthStore = create((set,get) => ({
             });
             
             if (token && refreshToken) {
-                // RESTORE STATE
                 set({ 
                     user, 
                     token, 
@@ -350,7 +332,6 @@ export const useAuthStore = create((set,get) => ({
                     tokenExpirationTime
                 });
                 
-                // FETCH LATEST USER DATA
                 try {
                     const response = await fetch(
                         API_ENDPOINTS.AUTH.ME,
@@ -376,6 +357,8 @@ export const useAuthStore = create((set,get) => ({
                                 delete updatedUser[key];
                             }
                         });
+
+                        // UPDATE STORAGE
                         await StorageUtils.updateUser(updatedUser);
                         set({ 
                             user: updatedUser 
@@ -384,7 +367,16 @@ export const useAuthStore = create((set,get) => ({
                         throw new Error('Failed to fetch user data');
                     }
                 } catch (error) {
-                    throw error;
+                    set({
+                        user: null,
+                        token: null,
+                        refreshToken: null,
+                        tokenExpirationTime: null
+                    });
+                    return {
+                        success: false,
+                        message: error.message || "Failed to fetch user data"
+                    };  
                 }
                 
                 // CHECK IF TOKEN NEEDS REFRESH
@@ -407,7 +399,6 @@ export const useAuthStore = create((set,get) => ({
                     };
                 }
             } else {
-                // NO TOKENS FOUND
                 set({ 
                     user: null, 
                     token: null, 
@@ -463,6 +454,9 @@ export const useAuthStore = create((set,get) => ({
                 message: "Reset code sent to your email"
             };
         } catch (error) {
+            set({
+                isLoading: false
+            });
             return {
                 success: false,
                 message: error.message || "Failed to send reset code"
@@ -499,6 +493,9 @@ export const useAuthStore = create((set,get) => ({
                 throw new Error(data.message || 'Invalid reset code');
             }
         } catch (error) {
+            set({
+                isLoading: false
+            });
             return {
                 success: false,
                 message: error.message || "Failed to verify reset code"
@@ -516,7 +513,6 @@ export const useAuthStore = create((set,get) => ({
             isLoading: true 
         });
         try {
-            // CHECK RESET CODE AND GET TEMPORARY TOKEN
             const checkResponse = await fetch(API_ENDPOINTS.AUTH.CHECK_RESET_TOKEN, {
                 method: "POST",
                 headers: {
@@ -536,7 +532,6 @@ export const useAuthStore = create((set,get) => ({
             if (!checkResponse.ok || !checkData.success)
                 throw new Error(checkData.message || checkData.error || "Invalid reset code");
 
-            // USE TEMPORARY TOKEN TO RESET PASSWORD
             const resetResponse = await fetch(API_ENDPOINTS.AUTH.CHANGE_PASSWORD, {
                 method: "POST",
                 headers: {
@@ -559,12 +554,14 @@ export const useAuthStore = create((set,get) => ({
             if (!resetResponse.ok || !resetData.success)
                 throw new Error(resetData.message || resetData.error || "Failed to reset password");
             
-
             return {
                 success: true,
                 message: "Password reset successfully"
             };
         } catch (error) {
+            set({ 
+                isLoading: false 
+            });
             return {
                 success: false,
                 message: error.message || "Failed to reset password"
@@ -573,15 +570,6 @@ export const useAuthStore = create((set,get) => ({
             set({ 
                 isLoading: false 
             });
-        }
-    },
-
-    // API WRAPPER WITH AUTO REFRESH
-    makeAuthenticatedRequest: async (url, options = {}) => {
-        try {
-            return await makeAuthenticatedRequest(url, options, useAuthStore);
-        } catch (error) {
-            throw new Error(error.message || "Authentication request failed");
         }
     },
 
@@ -714,10 +702,7 @@ export const useAuthStore = create((set,get) => ({
 
     // CLEAR STORE
     clearStore: () => {
-        // STOP AUTO REFRESH
         get().stopAutoRefresh();
-        
-        // CLEAR STATE
         set({
             user: null,
             token: null,

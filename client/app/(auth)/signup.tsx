@@ -28,7 +28,6 @@ export default function Signup() {
 
   const signupAction = async () => {
     try {
-      // Validation checks before API call
       if (!username || !email || !fullName || !password) {
         setShowAlert({
           visible: true,
@@ -75,7 +74,6 @@ export default function Signup() {
       }
       
       const result = await register(email, username, fullName, password);
-      
       if (result.success) {
         setShowAlert({
           visible: true,
@@ -85,7 +83,6 @@ export default function Signup() {
           buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
         });
       } else {
-        // Show error alert for failed registration
         setShowAlert({
           visible: true,
           title: 'Sign Up Failed',
@@ -94,9 +91,7 @@ export default function Signup() {
           buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
         });
       }
-      
     } catch (error) {
-      // Only show connection error if it's a network issue
       if (error.message.includes("Failed to fetch") || error.message.includes("Network request failed")) {
         showConnectionError(() => {
           setShowAlert(previous => ({ ...previous, visible: false }));
@@ -120,174 +115,173 @@ export default function Signup() {
         behavior={Platform.OS === "android" ? "padding" : "height"}
       >
         <View style={styles.container}>
-        <View style={styles.card}>
+          <View style={styles.card}>
 
-          {/* HEADER */}
-          <View style={styles.header}>
-            <Text style={styles.title}>Create an Account</Text>
-            <Text style={styles.subtitle}>Sign up to get started</Text>
-          </View>
-
-          {/* FORM */}
-          <View style={styles.formContainer}>
-
-            {/* USERNAME */}
-            <View style={styles.inputGroup}>
-              {/* <Text style={styles.label}>Username</Text> */}
-              <View style={styles.inputContainer}>
-                <Ionicons
-                  name="at-outline"
-                  size={24}
-                  color={COLORS.primary}
-                  style={styles.inputIcon}
-                />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter your Username"
-                  placeholderTextColor={COLORS.placeholderText}
-                  autoCapitalize="none"
-                  value={username}
-                  onChangeText={setUsername}
-                />
-              </View>
+            {/* HEADER */}
+            <View style={styles.header}>
+              <Text style={styles.title}>Create an Account</Text>
+              <Text style={styles.subtitle}>Sign up to get started</Text>
             </View>
 
-            {/* EMAIL */}
-            <View style={styles.inputGroup}>
-              {/* <Text style={styles.label}>Email</Text> */}
-              <View style={styles.inputContainer}>
-                <Ionicons
-                  name="mail-outline"
-                  size={24}
-                  color={COLORS.primary}
-                  style={styles.inputIcon}
-                />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter your Email"
-                  placeholderTextColor={COLORS.placeholderText}
-                  autoCapitalize="none"
-                  value={email}
-                  onChangeText={setEmail}
-                  keyboardType='email-address'
-                />
-              </View>
-            </View>
+            <View style={styles.formContainer}>
 
-            {/* FULL NAME */}
-            <View style={styles.inputGroup}>
-              {/* <Text style={styles.label}>Full Name</Text> */}
-              <View style={styles.inputContainer}>
-                <Ionicons
-                  name="person-outline"
-                  size={24}
-                  color={COLORS.primary}
-                  style={styles.inputIcon}
-                />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter your Full Name"
-                  placeholderTextColor={COLORS.placeholderText}
-                  autoCapitalize="none"
-                  value={fullName}
-                  onChangeText={setFullName}
-                />
-              </View>
-            </View>
-
-            {/* PASSWORD */}
-            <View style={styles.inputGroup}>
-              {/* <Text style={styles.label}>Password</Text> */}
-              <View style={styles.inputContainer}>
-
-                {/* LEFT ICON */}
-                <Ionicons
-                  name="lock-closed-outline"
-                  size={20}
-                  color={COLORS.primary}
-                  style={styles.inputIcon}
-                />
-
-                {/* INPUT */}
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter your Password"
-                  placeholderTextColor={COLORS.placeholderText}
-                  value={password}
-                  onChangeText={setPassword}
-                  secureTextEntry={!showPassword}
-                />
-                <TouchableOpacity
-                  onPress={() => setShowPassword(!showPassword)}
-                >
+              {/* USERNAME */}
+              <View style={styles.inputGroup}>
+                {/* <Text style={styles.label}>Username</Text> */}
+                <View style={styles.inputContainer}>
                   <Ionicons
-                    name={showPassword ? "eye-outline" : "eye-off-outline"}
+                    name="at-outline"
+                    size={24}
+                    color={COLORS.primary}
+                    style={styles.inputIcon}
+                  />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Enter your Username"
+                    placeholderTextColor={COLORS.placeholderText}
+                    autoCapitalize="none"
+                    value={username}
+                    onChangeText={setUsername}
+                  />
+                </View>
+              </View>
+
+              {/* EMAIL */}
+              <View style={styles.inputGroup}>
+                {/* <Text style={styles.label}>Email</Text> */}
+                <View style={styles.inputContainer}>
+                  <Ionicons
+                    name="mail-outline"
+                    size={24}
+                    color={COLORS.primary}
+                    style={styles.inputIcon}
+                  />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Enter your Email"
+                    placeholderTextColor={COLORS.placeholderText}
+                    autoCapitalize="none"
+                    value={email}
+                    onChangeText={setEmail}
+                    keyboardType='email-address'
+                  />
+                </View>
+              </View>
+
+              {/* FULL NAME */}
+              <View style={styles.inputGroup}>
+                {/* <Text style={styles.label}>Full Name</Text> */}
+                <View style={styles.inputContainer}>
+                  <Ionicons
+                    name="person-outline"
+                    size={24}
+                    color={COLORS.primary}
+                    style={styles.inputIcon}
+                  />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Enter your Full Name"
+                    placeholderTextColor={COLORS.placeholderText}
+                    autoCapitalize="none"
+                    value={fullName}
+                    onChangeText={setFullName}
+                  />
+                </View>
+              </View>
+
+              {/* PASSWORD */}
+              <View style={styles.inputGroup}>
+                {/* <Text style={styles.label}>Password</Text> */}
+                <View style={styles.inputContainer}>
+
+                  {/* LEFT ICON */}
+                  <Ionicons
+                    name="lock-closed-outline"
                     size={20}
                     color={COLORS.primary}
                     style={styles.inputIcon}
                   />
-                </TouchableOpacity>
+
+                  {/* INPUT */}
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Enter your Password"
+                    placeholderTextColor={COLORS.placeholderText}
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry={!showPassword}
+                  />
+                  <TouchableOpacity
+                    onPress={() => setShowPassword(!showPassword)}
+                  >
+                    <Ionicons
+                      name={showPassword ? "eye-outline" : "eye-off-outline"}
+                      size={20}
+                      color={COLORS.primary}
+                      style={styles.inputIcon}
+                    />
+                  </TouchableOpacity>
+                </View>
               </View>
-            </View>
 
-            {/* CONFIRM PASSWORD */}
-            <View style={styles.inputGroup}>
-              {/* <Text style={styles.label}>Confirm Password</Text> */}
-              <View style={styles.inputContainer}>
+              {/* CONFIRM PASSWORD */}
+              <View style={styles.inputGroup}>
+                {/* <Text style={styles.label}>Confirm Password</Text> */}
+                <View style={styles.inputContainer}>
 
-                {/* LEFT ICON */}
-                <Ionicons
-                  name="lock-closed-outline"
-                  size={20}
-                  color={COLORS.primary}
-                  style={styles.inputIcon}
-                />
-
-                {/* INPUT */}
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter your Confirm Password"
-                  placeholderTextColor={COLORS.placeholderText}
-                  value={confirmPassword}
-                  onChangeText={setConfirmPassword}
-                  secureTextEntry={!showConfirmPassword}
-                />
-                <TouchableOpacity
-                  onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-                >
+                  {/* LEFT ICON */}
                   <Ionicons
-                    name={showConfirmPassword ? "eye-outline" : "eye-off-outline"}
+                    name="lock-closed-outline"
                     size={20}
                     color={COLORS.primary}
                     style={styles.inputIcon}
                   />
-                </TouchableOpacity>
+
+                  {/* INPUT */}
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Enter your Confirm Password"
+                    placeholderTextColor={COLORS.placeholderText}
+                    value={confirmPassword}
+                    onChangeText={setConfirmPassword}
+                    secureTextEntry={!showConfirmPassword}
+                  />
+                  <TouchableOpacity
+                    onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                  >
+                    <Ionicons
+                      name={showConfirmPassword ? "eye-outline" : "eye-off-outline"}
+                      size={20}
+                      color={COLORS.primary}
+                      style={styles.inputIcon}
+                    />
+                  </TouchableOpacity>
+                </View>
               </View>
-            </View>
 
-            {/* SIGNUP BUTTON */}
-            <TouchableOpacity style={styles.button} onPress={signupAction} disabled={isLoading}>
-              {
-                isLoading ? (
-                  <ActivityIndicator size={25} color="#fff" />
-                ) : (
-                  <Text style={styles.buttonText}>Sign Up</Text>
-                )
-              }
-            </TouchableOpacity>
+              {/* REGISTER BUTTON */}
+              <TouchableOpacity style={styles.button} onPress={signupAction} disabled={isLoading}>
+                {
+                  isLoading ? (
+                    <ActivityIndicator size={25} color="#fff" />
+                  ) : (
+                    <Text style={styles.buttonText}>Sign Up</Text>
+                  )
+                }
+              </TouchableOpacity>
 
-            {/* SIGN IN LINK */}
-            <View style={styles.footer}>
-              <Text style={styles.footerText}>Already have an account?</Text>
-              <Link href="/" asChild>
-                <TouchableOpacity>
-                  <Text style={styles.link}>Sign In</Text>
-                </TouchableOpacity>
-              </Link>
+              {/* SIGNIN LINK */}
+              <View style={styles.footer}>
+                <Text style={styles.footerText}>Already have an account?</Text>
+                <Link href="/" asChild>
+                  <TouchableOpacity>
+                    <Text style={styles.link}>Sign In</Text>
+                  </TouchableOpacity>
+                </Link>
+              </View>
+              
             </View>
-            
           </View>
-        </View>
         </View>
       </KeyboardAvoidingView>
     </SafeScreen>

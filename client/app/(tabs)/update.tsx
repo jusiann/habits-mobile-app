@@ -9,6 +9,7 @@ import styles from '../../assets/styles/profile.styles';
 import CustomAlert from '../../constants/CustomAlert';
 import SafeScreen from '../../constants/SafeScreen';
 import {getAvatarSource} from '../../constants/avatar.utils';
+import { showConnectionError } from '../../constants/alert.utils';
 
 export default function UpdateProfile() {
   const {user, updateProfile, changePassword, isLoading} = useAuthStore();
@@ -24,14 +25,6 @@ export default function UpdateProfile() {
   const [selectedAvatar, setSelectedAvatar] = React.useState('');
   const [tempProfilePicture, setTempProfilePicture] = React.useState('');
   const [isAvatarSaving, setIsAvatarSaving] = React.useState(false);
-
-
-
-  const generateNewProfilePicture = (avatarNumber) => {
-    const formattedNumber = avatarNumber < 10 ? `0${avatarNumber}` : avatarNumber;
-    setTempProfilePicture(formattedNumber);
-    setSelectedAvatar(`avatar${formattedNumber}`);
-  };
   const [currentPassword, setCurrentPassword] = React.useState('');
   const [newPassword, setNewPassword] = React.useState('');
   const [confirmNewPassword, setConfirmNewPassword] = React.useState('');
@@ -39,6 +32,11 @@ export default function UpdateProfile() {
   const [showNewPassword, setShowNewPassword] = React.useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
   const [hasChanges, setHasChanges] = React.useState(false);
+    const generateNewProfilePicture = (avatarNumber) => {
+    const formattedNumber = avatarNumber < 10 ? `0${avatarNumber}` : avatarNumber;
+    setTempProfilePicture(formattedNumber);
+    setSelectedAvatar(`avatar${formattedNumber}`);
+  };
   const [showAlert, setShowAlert] = React.useState({
     visible: false,
     title: '',
@@ -56,7 +54,18 @@ export default function UpdateProfile() {
                    profilePicture !== (user?.profilePicture || '');
     
     setHasChanges(changes);
-  }, [fullname, gender, height, weight, profilePicture]);
+  }, [fullname, age, gender, height, weight, profilePicture]);
+
+  React.useEffect(() => {
+    if (user) {
+      setFullname(user.fullname || '');
+      setGender(user.gender || '');
+      setAge(user.age?.toString() || '');
+      setHeight(user.height?.toString() || '');
+      setWeight(user.weight?.toString() || '');
+      setProfilePicture(user.profilePicture || '01');
+    }
+  }, [user]);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -71,17 +80,6 @@ export default function UpdateProfile() {
       setIsAvatarSaving(false);
     }, [user])
   );
-
-  React.useEffect(() => {
-    if (user) {
-      setFullname(user.fullname || '');
-      setGender(user.gender || '');
-      setAge(user.age?.toString() || '');
-      setHeight(user.height?.toString() || '');
-      setWeight(user.weight?.toString() || '');
-      setProfilePicture(user.profilePicture || '01');
-    }
-  }, [user]);
 
   const updateProfileAction = async () => {
     try {
@@ -175,14 +173,11 @@ export default function UpdateProfile() {
         });
       }
     } catch (error) {
-      console.error('Update profile error:', error);
-      setShowAlert({
-        visible: true,
-        title: 'Error',
-        message: 'An unexpected error occurred.',
-        type: 'error',
-        buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
-      });
+      if (error.message.includes("Failed to fetch") || error.message.includes("Network request failed")) {
+        showConnectionError(() => {
+          setShowAlert(prev => ({ ...prev, visible: false }));
+        });
+      }
     }
   };
 
@@ -244,14 +239,11 @@ export default function UpdateProfile() {
         });
       }
     } catch (error) {
-      console.error('Change password error:', error);
-      setShowAlert({
-        visible: true,
-        title: 'Error',
-        message: 'An unexpected error occurred.',
-        type: 'error',
-        buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
-      });
+      if (error.message.includes("Failed to fetch") || error.message.includes("Network request failed")) {
+        showConnectionError(() => {
+          setShowAlert(prev => ({ ...prev, visible: false }));
+        });
+      }
     }
   };
 
@@ -265,29 +257,210 @@ export default function UpdateProfile() {
           setTempProfilePicture('');
           setSelectedAvatar('');
         } catch (error) {
-          console.error('Error saving avatar:', error);
-          setShowAlert({
-            visible: true,
-            title: 'Error',
-            message: 'An error occurred while saving the avatar.',
-            type: 'error',
-            buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
-          });
+          if (error.message.includes("Failed to fetch") || error.message.includes("Network request failed")) {
+            showConnectionError(() => {
+              setShowAlert(prev => ({ ...prev, visible: false }));
+            });
+          }
         } finally {
           setIsAvatarSaving(false);
         }
       }
     } catch (error) {
-      console.error('Profile picture change error:', error);
-      setShowAlert({
-        visible: true,
-        title: 'Error',
-        message: 'An unexpected error occurred.',
-        type: 'error',
-        buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
-      });
+      if (error.message.includes("Failed to fetch") || error.message.includes("Network request failed")) {
+        showConnectionError(() => {
+          setShowAlert(prev => ({ ...prev, visible: false }));
+        });
+      }
     }
   };
+
+  const renderPasswordModal = () => (
+    <Modal
+      visible={showPasswordModal}
+      transparent={true}
+      animationType="slide"
+      onRequestClose={() => setShowPasswordModal(false)}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={[styles.modalContent, { margin: 20 }]}> 
+
+          {/* CHANGE PASSWORD */}
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Change Password</Text>
+            <TouchableOpacity onPress={() => setShowPasswordModal(false)}>
+              <Ionicons name="close" size={26} color={COLORS.textPrimary} />
+            </TouchableOpacity>
+          </View>
+
+          {/* CURRENT PASSWORD */}
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Current Password</Text>
+            <View style={styles.inputContainer}>
+              <Ionicons name="lock-closed-outline" size={20} color={COLORS.primary} style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                value={currentPassword}
+                onChangeText={setCurrentPassword}
+                placeholder="Enter your current password"
+                placeholderTextColor={COLORS.placeholderText}
+                secureTextEntry={!showCurrentPassword}
+              />
+              <TouchableOpacity onPress={() => setShowCurrentPassword(!showCurrentPassword)}>
+                <Ionicons 
+                  name={showCurrentPassword ? "eye-outline" : "eye-off-outline"} 
+                  size={20} 
+                  color={COLORS.primary} 
+                  style={styles.inputIcon}
+                />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* NEW PASSWORD */}
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>New Password</Text>
+            <View style={styles.inputContainer}>
+              <Ionicons name="lock-closed-outline" size={20} color={COLORS.primary} style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                value={newPassword}
+                onChangeText={setNewPassword}
+                placeholder="Enter your new password"
+                placeholderTextColor={COLORS.placeholderText}
+                secureTextEntry={!showNewPassword}
+              />
+              <TouchableOpacity onPress={() => setShowNewPassword(!showNewPassword)}>
+                <Ionicons 
+                  name={showNewPassword ? "eye-outline" : "eye-off-outline"} 
+                  size={20} 
+                  color={COLORS.primary} 
+                  style={styles.inputIcon}
+                />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* CONFIRM NEW PASSWORD */}
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Confirm New Password</Text>
+            <View style={styles.inputContainer}>
+              <Ionicons name="lock-closed-outline" size={20} color={COLORS.primary} style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                value={confirmNewPassword}
+                onChangeText={setConfirmNewPassword}
+                placeholder="Confirm your new password"
+                placeholderTextColor={COLORS.placeholderText}
+                secureTextEntry={!showConfirmPassword}
+              />
+              <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
+                <Ionicons 
+                  name={showConfirmPassword ? "eye-outline" : "eye-off-outline"} 
+                  size={20} 
+                  color={COLORS.primary} 
+                  style={styles.inputIcon}
+                />
+              </TouchableOpacity>
+            </View>
+          </View>
+          
+          {/* MODAL BUTTON */}
+          <TouchableOpacity 
+            style={[{
+              height: 48,
+              borderRadius: 12,
+              backgroundColor: COLORS.primary,
+              justifyContent: 'center',
+              alignItems: 'center',
+              marginTop: 16,
+              width: '100%'
+            }, isLoading && styles.modalSaveButtonDisabled]} 
+            onPress={renderChangePassword}
+            disabled={isLoading}
+          >
+            {
+              isLoading ? (
+                <ActivityIndicator color={COLORS.white} size="small" />
+              ) : (
+                <Text style={styles.modalSaveText}>Change Password</Text>
+            )}
+          </TouchableOpacity>
+        </View>
+
+      </View>
+    </Modal>
+  );
+
+  const renderAvatarModal = () => (
+    <Modal
+      visible={showAvatarModal}
+      transparent={true}
+      animationType="slide"
+      onRequestClose={() => setShowAvatarModal(false)}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={[styles.modalContent, { margin: 20 }]}> 
+
+          {/* CHOOSE AVATAR */}
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Choose Avatar</Text>
+            <TouchableOpacity onPress={() => {
+              setShowAvatarModal(false);
+              setTempProfilePicture('');
+              setSelectedAvatar('');
+            }}>
+              <Ionicons name="close" size={26} color={COLORS.textPrimary} />
+            </TouchableOpacity>
+          </View>
+
+          {/* AVATAR LIST */}
+          <View style={styles.avatarGrid}>
+            {Array.from({ length: 9 }, (_, i) => i + 1).map((num) => (
+              <TouchableOpacity
+                key={num}
+                style={styles.avatarItem}
+                onPress={() => generateNewProfilePicture(num)}
+              >
+                <Image
+                  source={getAvatarSource(num < 10 ? `0${num}` : `${num}`, user?.fullname || 'Guest')}
+                  style={styles.avatarImage}
+                />
+                {
+                  selectedAvatar === `avatar${num < 10 ? '0' + num : num}` && (
+                    <View style={{
+                      position: 'absolute',
+                      top: 0,
+                      right: 0,
+                      backgroundColor: COLORS.primary,
+                      borderRadius: 60,
+                      padding: 4
+                    }}>
+                      <Ionicons name="checkmark" size={15} color={COLORS.white} />
+                    </View>
+                )}
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {/* CHANGE PROFILE PICTURE */}
+          <TouchableOpacity
+            style={[styles.saveButton, !selectedAvatar && styles.saveButtonDisabled]}
+            onPress={renderProfilePictureChange}
+            disabled={!selectedAvatar}
+          >
+            {
+              isAvatarSaving ? (
+                  <ActivityIndicator color={COLORS.white} size="small" />
+              ) : (
+                <Text style={styles.saveButtonText}>Choose Avatar</Text>
+            )}
+          </TouchableOpacity>
+        </View>
+        
+      </View>
+    </Modal>
+  );
 
   return (
     <SafeScreen>
@@ -299,81 +472,83 @@ export default function UpdateProfile() {
         buttons={showAlert.buttons}
         onDismiss={() => setShowAlert(previous => ({ ...previous, visible: false }))}
       />
+      <KeyboardAvoidingView 
+        style={{flex:1}}
+        behavior={Platform.OS === "android" ? "padding" : "height"}
+      >
 
-      {/* HEADER WITH BACK AND SAVE BUTTONS */}
-      <View style={{ 
-        flexDirection: 'row', 
-        alignItems: 'center', 
-        justifyContent: 'space-between',
-        paddingHorizontal: 16,
-        paddingVertical: 4,
-        backgroundColor: COLORS.background
-      }}>
-        {/* BACK BUTTON */}
-        <TouchableOpacity 
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 4
-          }}
-          onPress={() => {
-            if (hasChanges) {
-              setShowAlert({
-                visible: true,
-                title: 'Unsaved Changes',
-                message: 'You have unsaved changes. Are you sure you want to leave?',
-                type: 'warning',
-                buttons: [
-                  { text: 'Stay', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'cancel' },
-                  { text: 'Leave', onPress: () => { setShowAlert(previous => ({ ...previous, visible: false })); router.push("/(tabs)/profile"); }, style: 'destructive' }
-                ]
-              })
-            } else {
-              router.push("/(tabs)/profile")
-            }
-          }}
-        >
-          <Ionicons 
-            name="chevron-back" 
-            size={24} 
-            color={COLORS.primary} 
-          />
-          <Text style={{
-            fontSize: 16,
-            fontWeight: '600',
-            color: COLORS.primary
-          }}>
-            Back
-          </Text>
-        </TouchableOpacity>
-        
-        {/* SAVE BUTTON */}
-        <TouchableOpacity
-          style={{
-            opacity: (!hasChanges || isLoading) ? 0.5 : 1
-          }}
-          onPress={updateProfileAction}
-          disabled={!hasChanges || isLoading}
-        >
-          {isLoading ? (
-            <ActivityIndicator size={25} color={COLORS.primary} />
-          ) : (
+        {/* HEADER WITH BACK AND SAVE BUTTONS */}
+        <View style={{ 
+          flexDirection: 'row', 
+          alignItems: 'center', 
+          justifyContent: 'space-between',
+          paddingHorizontal: 16,
+          paddingVertical: 4,
+          backgroundColor: COLORS.background
+        }}>
+
+          {/* BACK BUTTON */}
+          <TouchableOpacity 
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 4
+            }}
+            onPress={() => {
+              if (hasChanges) {
+                setShowAlert({
+                  visible: true,
+                  title: 'Unsaved Changes',
+                  message: 'You have unsaved changes. Are you sure you want to leave?',
+                  type: 'warning',
+                  buttons: [
+                    { text: 'Stay', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'cancel' },
+                    { text: 'Leave', onPress: () => { setShowAlert(previous => ({ ...previous, visible: false })); router.push("/(tabs)/profile"); }, style: 'destructive' }
+                  ]
+                })
+              } else {
+                router.push("/(tabs)/profile")
+              }
+            }}
+          >
+            <Ionicons 
+              name="chevron-back" 
+              size={24} 
+              color={COLORS.primary} 
+            />
             <Text style={{
               fontSize: 16,
               fontWeight: '600',
               color: COLORS.primary
             }}>
-              Save
+              Back
             </Text>
-          )}
-        </TouchableOpacity>
-      </View>
+          </TouchableOpacity>
 
-      <KeyboardAvoidingView 
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
-      >
+          {/* SAVE BUTTON */}
+          <TouchableOpacity
+            style={{
+              opacity: (!hasChanges || isLoading) ? 0.5 : 1
+            }}
+            onPress={updateProfileAction}
+            disabled={!hasChanges || isLoading}
+          >
+            {
+              isLoading ? (
+                <ActivityIndicator size={25} color={COLORS.primary} />
+              ) : (
+                <Text style={{
+                  fontSize: 16,
+                  fontWeight: '600',
+                  color: COLORS.primary
+                }}>
+                  Save
+                </Text>
+            )}
+          </TouchableOpacity>
+
+        </View>
+
         {/* MAIN CONTENT SCROLL VIEW */}
         <ScrollView 
           style={styles.container} 
@@ -381,13 +556,14 @@ export default function UpdateProfile() {
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={{ paddingBottom: 90 }}
         >
+
           {/* PROFILE PICTURE SECTION */}
           <View style={styles.profileSection}>
             <View style={styles.profileImageContainer}>
               <Image 
-            source={getAvatarSource(profilePicture, user?.fullname || 'Guest')} 
-            style={styles.profileImage}
-          />
+                source={getAvatarSource(profilePicture, user?.fullname || 'Guest')} 
+                style={styles.profileImage}
+              />
             </View>
             <TouchableOpacity style={styles.changePictureButton} onPress={() => setShowAvatarModal(true)}>
               <Ionicons name="camera" size={18} color={COLORS.white} />
@@ -395,12 +571,13 @@ export default function UpdateProfile() {
             </TouchableOpacity>
           </View>
 
-          {/* FORM SECTION */}
           <View style={styles.formCard}>
+
             {/* FULL NAME INPUT */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Full Name *</Text>
               <View style={styles.inputContainer}>
+
                 {/* USER ICON */}
                 <Ionicons name="person-outline" size={24} color={COLORS.textSecondary} style={styles.inputIcon} />
                 <TextInput
@@ -417,6 +594,7 @@ export default function UpdateProfile() {
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Gender</Text>
               <View style={styles.genderContainer}>
+
                 {/* GENDER OPTIONS */}
                 <TouchableOpacity 
                   style={[styles.genderOption, gender === 'male' && styles.genderOptionSelected]}
@@ -429,7 +607,7 @@ export default function UpdateProfile() {
                   />
                   <Text style={[styles.genderText, gender === 'male' && styles.genderTextSelected]}>Male</Text>
                 </TouchableOpacity>
-                
+
                 <TouchableOpacity 
                   style={[styles.genderOption, gender === 'female' && styles.genderOptionSelected]}
                   onPress={() => setGender(gender === 'female' ? '' : 'female')}
@@ -441,7 +619,7 @@ export default function UpdateProfile() {
                   />
                   <Text style={[styles.genderText, gender === 'female' && styles.genderTextSelected]}>Female</Text>
                 </TouchableOpacity>
-                
+
                 <TouchableOpacity 
                   style={[styles.genderOption, gender === 'other' && styles.genderOptionSelected]}
                   onPress={() => setGender(gender === 'other' ? '' : 'other')}
@@ -453,6 +631,7 @@ export default function UpdateProfile() {
                   />
                   <Text style={[styles.genderText, gender === 'other' && styles.genderTextSelected]}>Other</Text>
                 </TouchableOpacity>
+
               </View>
             </View>
 
@@ -460,7 +639,8 @@ export default function UpdateProfile() {
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Age</Text>
               <View style={styles.inputContainer}>
-                {/* CALENDAR ICON */}
+
+                {/* ICON */}
                 <Ionicons name="calendar-outline" size={24} color={COLORS.textSecondary} style={styles.inputIcon} />
                 <TextInput
                   style={styles.input}
@@ -477,7 +657,8 @@ export default function UpdateProfile() {
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Height (cm)</Text>
               <View style={styles.inputContainer}>
-                {/* RESIZE ICON */}
+
+                {/* ICON */}
                 <Ionicons name="resize-outline" size={24} color={COLORS.textSecondary} style={styles.inputIcon} />
                 <TextInput
                   style={styles.input}
@@ -494,7 +675,8 @@ export default function UpdateProfile() {
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Weight (kg)</Text>
               <View style={styles.inputContainer}>
-                {/* FITNESS ICON */}
+
+                {/* ICON */}
                 <Ionicons name="fitness-outline" size={24} color={COLORS.textSecondary} style={styles.inputIcon} />
                 <TextInput
                   style={styles.input}
@@ -510,6 +692,7 @@ export default function UpdateProfile() {
 
           {/* ACTIONS SECTION */}
           <View style={styles.actionsCard}>
+
             {/* CHANGE PASSWORD BUTTON */}
             <TouchableOpacity 
               style={styles.actionButton} 
@@ -523,181 +706,14 @@ export default function UpdateProfile() {
             </TouchableOpacity>
           </View>
         </ScrollView>
+ 
+        {
+          renderAvatarModal()
+        } {
+          renderPasswordModal()
+        }
+
       </KeyboardAvoidingView>
-
-      {/* AVATAR SELECTION MODAL */}
-      <Modal
-        visible={showAvatarModal}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={() => setShowAvatarModal(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { margin: 20 }]}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Choose Avatar</Text>
-              <TouchableOpacity onPress={() => {
-                setShowAvatarModal(false);
-                setTempProfilePicture('');
-                setSelectedAvatar('');
-              }}>
-                <Ionicons name="close" size={26} color={COLORS.textPrimary} />
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.avatarGrid}>
-              {Array.from({ length: 9 }, (_, i) => i + 1).map((num) => (
-                <TouchableOpacity
-                  key={num}
-                  style={styles.avatarItem}
-                  onPress={() => generateNewProfilePicture(num)}
-                >
-                  <Image
-                    source={getAvatarSource(num < 10 ? `0${num}` : `${num}`, user?.fullname || 'Guest')}
-                    style={styles.avatarImage}
-                  />
-                  {selectedAvatar === `avatar${num < 10 ? '0' + num : num}` && (
-                    <View style={{
-                      position: 'absolute',
-                      top: 0,
-                      right: 0,
-                      backgroundColor: COLORS.primary,
-                      borderRadius: 60,
-                      padding: 4
-                    }}>
-                      <Ionicons name="checkmark" size={15} color={COLORS.white} />
-                    </View>
-                  )}
-                  </TouchableOpacity>
-              ))}
-            </View>
-
-            <TouchableOpacity
-              style={[styles.saveButton, !selectedAvatar && styles.saveButtonDisabled]}
-              onPress={renderProfilePictureChange}
-              disabled={!selectedAvatar}
-            >
-              {isAvatarSaving ? (
-                <ActivityIndicator color={COLORS.white} size="small" />
-              ) : (
-                <Text style={styles.saveButtonText}>Choose Avatar</Text>
-              )}
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-
-      {/* PASSWORD CHANGE MODAL */}
-      <Modal
-        visible={showPasswordModal}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={() => setShowPasswordModal(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { margin: 20 }]}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Change Password</Text>
-              <TouchableOpacity onPress={() => setShowPasswordModal(false)}>
-                <Ionicons name="close" size={26} color={COLORS.textPrimary} />
-              </TouchableOpacity>
-            </View>
-
-            {/* CURRENT PASSWORD */}
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Current Password</Text>
-              <View style={styles.inputContainer}>
-                <Ionicons name="lock-closed-outline" size={20} color={COLORS.primary} style={styles.inputIcon} />
-                <TextInput
-                  style={styles.input}
-                  value={currentPassword}
-                  onChangeText={setCurrentPassword}
-                  placeholder="Enter your current password"
-                  placeholderTextColor={COLORS.placeholderText}
-                  secureTextEntry={!showCurrentPassword}
-                />
-                <TouchableOpacity onPress={() => setShowCurrentPassword(!showCurrentPassword)}>
-                  <Ionicons 
-                    name={showCurrentPassword ? "eye-outline" : "eye-off-outline"} 
-                    size={20} 
-                    color={COLORS.primary} 
-                    style={styles.inputIcon}
-                  />
-                </TouchableOpacity>
-              </View>
-            </View>
-
-            {/* NEW PASSWORD */}
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>New Password</Text>
-              <View style={styles.inputContainer}>
-                <Ionicons name="lock-closed-outline" size={20} color={COLORS.primary} style={styles.inputIcon} />
-                <TextInput
-                  style={styles.input}
-                  value={newPassword}
-                  onChangeText={setNewPassword}
-                  placeholder="Enter your new password"
-                  placeholderTextColor={COLORS.placeholderText}
-                  secureTextEntry={!showNewPassword}
-                />
-                <TouchableOpacity onPress={() => setShowNewPassword(!showNewPassword)}>
-                  <Ionicons 
-                    name={showNewPassword ? "eye-outline" : "eye-off-outline"} 
-                    size={20} 
-                    color={COLORS.primary} 
-                    style={styles.inputIcon}
-                  />
-                </TouchableOpacity>
-              </View>
-            </View>
-
-            {/* CONFIRM NEW PASSWORD */}
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Confirm New Password</Text>
-              <View style={styles.inputContainer}>
-                <Ionicons name="lock-closed-outline" size={20} color={COLORS.primary} style={styles.inputIcon} />
-                <TextInput
-                  style={styles.input}
-                  value={confirmNewPassword}
-                  onChangeText={setConfirmNewPassword}
-                  placeholder="Confirm your new password"
-                  placeholderTextColor={COLORS.placeholderText}
-                  secureTextEntry={!showConfirmPassword}
-                />
-                <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
-                  <Ionicons 
-                    name={showConfirmPassword ? "eye-outline" : "eye-off-outline"} 
-                    size={20} 
-                    color={COLORS.primary} 
-                    style={styles.inputIcon}
-                  />
-                </TouchableOpacity>
-              </View>
-            </View>
-
-            {/* MODAL BUTTON */}
-            <TouchableOpacity 
-              style={[{
-                height: 48,
-                borderRadius: 12,
-                backgroundColor: COLORS.primary,
-                justifyContent: 'center',
-                alignItems: 'center',
-                marginTop: 16,
-                width: '100%'
-              }, isLoading && styles.modalSaveButtonDisabled]} 
-              onPress={renderChangePassword}
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <ActivityIndicator color={COLORS.white} size="small" />
-              ) : (
-                <Text style={styles.modalSaveText}>Change Password</Text>
-              )}
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
     </SafeScreen>
   );
 }

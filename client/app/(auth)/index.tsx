@@ -23,16 +23,6 @@ export default function Login() {
     buttons: [] as Array<{ text: string; onPress: () => void; style?: 'default' | 'cancel' | 'destructive' }>
   });
 
-  const handleEmailUsernameChange = (text: string) => {
-    if (text.includes("@")) {
-      setEmail(text);
-      setUsername("");
-    } else {
-      setUsername(text);
-      setEmail(""); 
-    }
-  };
-
   const signinAction = async () => {
     try {
       if (!email && !username) {
@@ -67,7 +57,6 @@ export default function Login() {
           buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
         });
       } else {
-        // Show error alert for failed login
         setShowAlert({
           visible: true,
           title: 'Sign In Failed',
@@ -76,9 +65,7 @@ export default function Login() {
           buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
         });
       }
-
     } catch (error) {
-      // Only show connection error if it's a network issue
       if (error.message.includes("Failed to fetch") || error.message.includes("Network request failed")) {
         showConnectionError(() => {
           setShowAlert(prev => ({ ...prev, visible: false }));
@@ -102,10 +89,11 @@ export default function Login() {
         behavior={Platform.OS === "android" ? "padding" : "height"}
       >
         <View style={styles.container}>
+
+        {/* PICTURE */}
         <View style={styles.topIllustration}>
-          {/* PICTURE */}
           <Image
-            source={require("../../assets/images/logos/retro-theme-logo.png")} 
+            source={require("../../assets/images/logos/orange-theme-logo.png")} 
             style={styles.illustrationImage}
             resizeMode="contain"
           />
@@ -113,6 +101,7 @@ export default function Login() {
 
         <View style={styles.card}>
           <View style={styles.formContainer}>
+
             {/* EMAIL OR USERNAME */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Email or Username</Text>
@@ -122,13 +111,21 @@ export default function Login() {
                   size={20} 
                   color={COLORS.primary} 
                   style={styles.inputIcon}
-                  />
+                />
                 <TextInput
                   style={styles.input}
                   placeholder="Enter your email or username"
                   placeholderTextColor={COLORS.placeholderText}
                   value={email || username}
-                  onChangeText={handleEmailUsernameChange}
+                  onChangeText={text => {
+                    if (text.includes("@")) {
+                      setEmail(text);
+                      setUsername("");
+                    } else {
+                      setUsername(text);
+                      setEmail("");
+                    }
+                  }}
                   keyboardType="default"
                   autoCapitalize="none"
                 />
@@ -139,6 +136,7 @@ export default function Login() {
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Password</Text>
               <View style={styles.inputContainer}>
+
                 {/* LEFT ICON */}
                 <Ionicons
                   name="lock-closed-outline"
@@ -146,6 +144,7 @@ export default function Login() {
                   color={COLORS.primary}
                   style={styles.inputIcon}
                 />
+
                 {/* INPUT */}
                 <TextInput
                   style={styles.input}
@@ -177,6 +176,7 @@ export default function Login() {
                 </TouchableOpacity>
               </Link>
             </View>
+
             {/* LOGIN BUTTON */}
             <TouchableOpacity style={[styles.button, {marginTop: 60}]} onPress={signinAction} disabled={isLoading}>
               {
@@ -187,7 +187,8 @@ export default function Login() {
                 )
               }
             </TouchableOpacity>
-            {/* SIGN UP LINK */}
+
+            {/* SIGNUP LINK */}
             <View style={styles.footer}>
               <Text style={styles.footerText}>Don&apos;t have an account ?</Text>
               <Link href="/(auth)/signup" asChild>
@@ -196,6 +197,7 @@ export default function Login() {
                 </TouchableOpacity>
               </Link>
             </View>
+            
           </View>
         </View>
         </View>

@@ -179,6 +179,7 @@ export default function Detail() {
 
   const renderDefaultHabitEdit = () => (
     <View>
+
       {/* DEFAULT HABITS INFORMATION */}
       <View style={styles.formGroup}>
         <View style={[styles.habitCard, styles.selectedHabitCard, { marginVertical: 10, alignSelf: 'stretch' }]}>
@@ -193,43 +194,47 @@ export default function Detail() {
         </View>
 
         {/* DEFAULT HABIT WARNING FOR CHANGES */}
-        {(selectedUnit !== originalUnit || 
-          targetAmount !== habit.targetAmount.toString() || 
-          incrementAmount !== habit.incrementAmount.toString()) && (
-          <View style={{ marginTop: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-            <Ionicons name="warning" size={16} color="orange" style={{ marginTop: -8 }}/> 
-            <Text style={[styles.label, { marginLeft: 5, color: 'orange', fontSize: 12 }]}>
-              These changes will reset your progress for today
-            </Text>
-          </View>
-        )}
+        {
+          (selectedUnit !== originalUnit || 
+            targetAmount !== habit.targetAmount.toString() || 
+            incrementAmount !== habit.incrementAmount.toString()) && (
+              <View style={{ marginTop: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+                <Ionicons name="warning" size={16} color="orange" style={{ marginTop: -8 }}/> 
+                <Text style={[styles.label, { marginLeft: 5, color: 'orange', fontSize: 12 }]}>
+                  These changes will reset your progress for today
+                </Text>
+              </View>
+            )
+        }
       </View>
 
       {/* DEFAULT HABIT UNIT SELECTION */}
-      {habit.availableUnits && habit.availableUnits.length > 0 && (
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>Unit</Text>
-          <View style={styles.unitContainer}>
-            {habit.availableUnits.map((unit: string) => (
-              <TouchableOpacity
-                key={unit}
-                style={[
-                  styles.unitButton,
-                  selectedUnit === unit && styles.selectedUnitButton
-                ]}
-                onPress={() => setSelectedUnit(unit)}
-              >
-                <Text style={[
-                  styles.unitButtonText,
-                  selectedUnit === unit && styles.selectedUnitButtonText
-                ]}>
-                  {unit}
-                </Text>
-              </TouchableOpacity>
-            ))}
+      {
+        habit.availableUnits && habit.availableUnits.length > 0 && (
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Unit</Text>
+            <View style={styles.unitContainer}>
+              {habit.availableUnits.map((unit: string) => (
+                <TouchableOpacity
+                  key={unit}
+                  style={[
+                    styles.unitButton,
+                    selectedUnit === unit && styles.selectedUnitButton
+                  ]}
+                  onPress={() => setSelectedUnit(unit)}
+                >
+                  <Text style={[
+                    styles.unitButtonText,
+                    selectedUnit === unit && styles.selectedUnitButtonText
+                  ]}>
+                    {unit}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
-        </View>
-      )}
+        )
+      }
       
       {/* DEFAULT HABIT TARGET AMOUNT */}
       <View style={styles.formGroup}>
@@ -265,6 +270,7 @@ export default function Detail() {
 
   const renderCustomHabitEdit = () => (
     <View>
+
       {/* CUSTOM HABIT INFORMATION */}
       <View style={styles.formGroup}>
         <Text style={styles.label}>Habit Name</Text>
@@ -336,15 +342,16 @@ export default function Detail() {
       </View>
 
       {/* CUSTOM HABIT WARNING FOR CHANGES */}
-      {(customUnit !== habit.unit || 
-        targetAmount !== habit.targetAmount.toString() || 
-        incrementAmount !== habit.incrementAmount.toString()) && (
-        <View style={{ marginTop: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-          <Ionicons name="warning" size={16} color="orange" style={{ marginTop: -8 }}/> 
-          <Text style={[styles.label, { marginLeft: 5, color: 'orange', fontSize: 12 }]}>
-            These changes will reset your progress for today
-          </Text>
-        </View>
+      {
+        (customUnit !== habit.unit || 
+          targetAmount !== habit.targetAmount.toString() || 
+          incrementAmount !== habit.incrementAmount.toString()) && (
+          <View style={{ marginTop: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+            <Ionicons name="warning" size={16} color="orange" style={{ marginTop: -8 }}/> 
+            <Text style={[styles.label, { marginLeft: 5, color: 'orange', fontSize: 12 }]}>
+              These changes will reset your progress for today
+            </Text>
+          </View>
       )}
     </View>
   );
@@ -442,156 +449,159 @@ export default function Detail() {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-      {!habit ? (
-        <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-          <Text style={styles.title}>Habit not found</Text>
-          <TouchableOpacity style={styles.button} onPress={() => router.back()}>
-            <Text style={styles.buttonText}>Go Back</Text>
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <View style={styles.card}>
-          
-          {/* HEADER SECTION */}
-          <View style={styles.header}>
-            <Text style={styles.title}>Edit Habit</Text>
-            <Text style={styles.subtitle}>
-              {habit.type === 'default' 
-                ? 'Edit settings for your preset habit' 
-                : 'Edit your custom habit'
-              }
-            </Text>
-          </View>
-          
-          <View style={styles.form}>
-            {habit.type === 'default' ? renderDefaultHabitEdit() : renderCustomHabitEdit()}
-          </View>
-          <TouchableOpacity 
-            style={[{
-              marginTop: 20,
-              backgroundColor: '#FF3B30',
-              padding: 12,
-              borderRadius: 8,
-              alignItems: 'center',
-              flexDirection: 'row',
-              justifyContent: 'center',
-              gap: 8,
-              opacity: isDeleteLoading ? 0.5 : 1,
-              width: '100%',
-              elevation: 2,
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.25,
-              shadowRadius: 3.84
-            }]}
-            disabled={isDeleteLoading}
-            onPress={() => {
-              setShowAlert({
-                visible: true,
-                title: 'Delete Habit',
-                 message: 'Are you sure you want to delete this habit? This action cannot be undone.',
-                 type: 'warning',
-                 buttons: [
-                   { text: 'Cancel', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'cancel' },
-                   { 
-                      text: 'Delete', 
-                      onPress: async () => {
-                      setShowAlert(previous => ({ ...previous, visible: false }));
-                      setIsDeleteLoading(true);
-                      try {
-                        const result = await deleteHabit(habit.id);
-                        if (result.success) {
-                          setShowAlert({
-                            visible: true,
-                            title: 'Success',
-                             message: 'Habit deleted successfully!',
-                             type: 'success',
-                             buttons: [{ text: 'OK', onPress: () => { setShowAlert(previous => ({ ...previous, visible: false })); router.back(); }, style: 'default' }]
-                          });
-                        } else {
-                          setShowAlert({
-                            visible: true,
-                            title: 'Delete Failed',
-                            message: result.message || 'Failed to delete habit',
-                            type: 'error',
-                            buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
-                          });
-                        }
-                      } catch (error) {
-                        showConnectionError(() => {
-                          setShowAlert(previous => ({ ...previous, visible: false }));
-                        });
-                      } finally {
-                        setIsDeleteLoading(false);
-                      }
-                    }, 
-                    style: 'destructive' 
-                  }
-                ]
-              });
-            }}
-          >
-            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 8 }}>
-              {isDeleteLoading ? (
-                <ActivityIndicator size={25} color={COLORS.white} />
-              ) : (
-                <>
-                  <Ionicons name="trash-outline" size={20} color={COLORS.white} />
-                  <Text style={{ color: COLORS.white, fontWeight: '600' }}>Delete Habit</Text>
-                </>
-              )}
-            </View>
-          </TouchableOpacity>
-        </View>
-      )}
-      
-      {/* ICON SELECTION MODAL */}
-      {habit && (
-        <Modal
-          visible={showIconModal}
-          transparent={true}
-          animationType="slide"
-          onRequestClose={() => setShowIconModal(false)}
-        >
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-
-              {/* MODAL HEADER */}
-              <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>Choose Icon</Text>
-                <TouchableOpacity onPress={() => setShowIconModal(false)}>
-                  <Ionicons name="close-outline" size={24} color={COLORS.textPrimary} />
+          {
+            !habit ? (
+              <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+                <Text style={styles.title}>Habit not found</Text>
+                <TouchableOpacity style={styles.button} onPress={() => router.back()}>
+                  <Text style={styles.buttonText}>Go Back</Text>
                 </TouchableOpacity>
               </View>
+            ) : (
+              <View style={styles.card}>
+                
+                {/* HEADER SECTION */}
+                <View style={styles.header}>
+                  <Text style={styles.title}>Edit Habit</Text>
+                  <Text style={styles.subtitle}>
+                    {habit.type === 'default' 
+                      ? 'Edit settings for your preset habit' 
+                      : 'Edit your custom habit'
+                    }
+                  </Text>
+                </View>
               
-              {/* ICON GRID */}
-              <ScrollView contentContainerStyle={styles.iconGrid}>
-                {CUSTOM_ICONS.map((icon) => (
-                  <TouchableOpacity
-                    key={icon}
-                    style={[
-                      styles.iconOption,
-                      customIcon === icon && styles.selectedIconOption
-                    ]}
-                    onPress={() => {
-                      setCustomIcon(icon)
-                      setShowIconModal(false)
-                    }}
-                  >
-                    <Ionicons 
-                      name={icon as any} 
-                      size={32} 
-                      color={customIcon === icon ? COLORS.white : COLORS.primary} 
-                    />
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </View>
-          </View>
-        </Modal>
-      )}
+                <View style={styles.form}>
+                  {habit.type === 'default' ? renderDefaultHabitEdit() : renderCustomHabitEdit()}
+                </View>
+                <TouchableOpacity 
+                  style={[{
+                    marginTop: 20,
+                    backgroundColor: '#FF3B30',
+                    padding: 12,
+                    borderRadius: 8,
+                    alignItems: 'center',
+                    flexDirection: 'row',
+                    justifyContent: 'center',
+                    gap: 8,
+                    opacity: isDeleteLoading ? 0.5 : 1,
+                    width: '100%',
+                    elevation: 2,
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.25,
+                    shadowRadius: 3.84
+                  }]}
+                  disabled={isDeleteLoading}
+                  onPress={() => {
+                    setShowAlert({
+                      visible: true,
+                      title: 'Delete Habit',
+                      message: 'Are you sure you want to delete this habit? This action cannot be undone.',
+                      type: 'warning',
+                      buttons: [
+                        { text: 'Cancel', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'cancel' },
+                        { 
+                            text: 'Delete', 
+                            onPress: async () => {
+                            setShowAlert(previous => ({ ...previous, visible: false }));
+                            setIsDeleteLoading(true);
+                            try {
+                              const result = await deleteHabit(habit.id);
+                              if (result.success) {
+                                setShowAlert({
+                                  visible: true,
+                                  title: 'Success',
+                                  message: 'Habit deleted successfully!',
+                                  type: 'success',
+                                  buttons: [{ text: 'OK', onPress: () => { setShowAlert(previous => ({ ...previous, visible: false })); router.back(); }, style: 'default' }]
+                                });
+                              } else {
+                                setShowAlert({
+                                  visible: true,
+                                  title: 'Delete Failed',
+                                  message: result.message || 'Failed to delete habit',
+                                  type: 'error',
+                                  buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+                                });
+                              }
+                            } catch (error) {
+                              showConnectionError(() => {
+                                setShowAlert(previous => ({ ...previous, visible: false }));
+                              });
+                            } finally {
+                              setIsDeleteLoading(false);
+                            }
+                          }, 
+                          style: 'destructive' 
+                        }
+                      ]
+                    });
+                  }}
+                >
+                  <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 8 }}>
+                    {isDeleteLoading ? (
+                      <ActivityIndicator size={25} color={COLORS.white} />
+                    ) : (
+                      <>
+                        <Ionicons name="trash-outline" size={20} color={COLORS.white} />
+                        <Text style={{ color: COLORS.white, fontWeight: '600' }}>Delete Habit</Text>
+                      </>
+                    )}
+                  </View>
+                </TouchableOpacity>
+              </View>
+          )}
+          
+          {/* ICON SELECTION MODAL */}
+          {
+            habit && (
+              <Modal
+                visible={showIconModal}
+                transparent={true}
+                animationType="slide"
+                onRequestClose={() => setShowIconModal(false)}
+              >
+                <View style={styles.modalOverlay}>
+                  <View style={styles.modalContent}>
+
+                    {/* MODAL HEADER */}
+                    <View style={styles.modalHeader}>
+                      <Text style={styles.modalTitle}>Choose Icon</Text>
+                      <TouchableOpacity onPress={() => setShowIconModal(false)}>
+                        <Ionicons name="close-outline" size={24} color={COLORS.textPrimary} />
+                      </TouchableOpacity>
+                    </View>
+                  
+                    {/* ICON GRID */}
+                    <ScrollView contentContainerStyle={styles.iconGrid}>
+                      {
+                        CUSTOM_ICONS.map((icon) => (
+                          <TouchableOpacity
+                            key={icon}
+                            style={[
+                              styles.iconOption,
+                              customIcon === icon && styles.selectedIconOption
+                            ]}
+                            onPress={() => {
+                              setCustomIcon(icon)
+                              setShowIconModal(false)
+                            }}
+                          >
+                            <Ionicons 
+                              name={icon as any} 
+                              size={32} 
+                              color={customIcon === icon ? COLORS.white : COLORS.primary} 
+                            />
+                          </TouchableOpacity>
+                      ))}
+                    </ScrollView>
+                  </View>
+                </View>
+              </Modal>
+          )}
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeScreen>
   );
-}
+};

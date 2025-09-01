@@ -14,7 +14,7 @@ import {showConnectionError} from '../../constants/alert.utils';
 export default function Create() {
   const router = useRouter();
   const {token} = useAuthStore();
-  const {presets, fetchPresets, createHabit, isLoading: storeLoading, error: storeError} = useHabitStore();
+  const {presets, fetchPresets, createHabit, error: storeError} = useHabitStore();
   const [habitType, setHabitType] = React.useState('default');
   const [selectedHabit, setSelectedHabit] = React.useState<any>(null);
   const [customName, setCustomName] = React.useState('');
@@ -49,37 +49,27 @@ export default function Create() {
     }
   }, [selectedHabit, habitType]);
 
-  // Reset form when screen comes into focus
   useFocusEffect(
     React.useCallback(() => {
-      setHabitType('default');
-      setSelectedHabit(null);
-      setCustomName('');
-      setCustomIcon('heart-outline');
-      setCustomUnit('');
-      setTargetAmount('');
-      setIncrementAmount('');
-      setSelectedUnit('');
+      if (habitType === 'default' && selectedHabit) {
+        setCustomName('');
+        setCustomIcon('heart-outline');
+        setCustomUnit('');
+      } else {
+        setHabitType('default');
+        setSelectedHabit(null);
+        setCustomName('');
+        setCustomIcon('heart-outline');
+        setCustomUnit('');
+        setTargetAmount('');
+        setIncrementAmount('');
+        setSelectedUnit('');
+      }
       setShowIconModal(false);
       setIsSaveLoading(false);
       setIsPresetsLoading(false);
     }, [])
   );
-
-  // Reset function for manual use
-  const resetForm = React.useCallback(() => {
-    setHabitType('default');
-    setSelectedHabit(null);
-    setCustomName('');
-    setCustomIcon('heart-outline');
-    setCustomUnit('');
-    setTargetAmount('');
-    setIncrementAmount('');
-    setSelectedUnit('');
-    setShowIconModal(false);
-    setIsSaveLoading(false);
-    setIsPresetsLoading(false);
-  }, []);
 
   const createHabitAction = async () => {
     setIsSaveLoading(true);
@@ -96,6 +86,7 @@ export default function Create() {
           })
           return;
         }
+        
         if (!targetAmount || !incrementAmount || !selectedUnit) {
           setShowAlert({
             visible: true,
@@ -163,13 +154,12 @@ export default function Create() {
 
       const result = await createHabit(habitData)
       if (result.success) {
-        resetForm();
         setShowAlert({
           visible: true,
           title: 'Success',
           message: 'Habit created successfully!',
           type: 'success',
-          buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+          buttons: [{ text: 'OK', onPress: () => { setShowAlert(previous => ({ ...previous, visible: false })); router.back(); }, style: 'default' }]
         });
       } else {
         setShowAlert({
@@ -180,10 +170,13 @@ export default function Create() {
           buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
         })
       }
-    } catch (error: any) {
-      showConnectionError(() => {
-        setIsSaveLoading(false);
-      });
+    } catch (error) {
+      if (error.message.includes("Failed to fetch") || error.message.includes("Network request failed")) {
+        showConnectionError(() => {
+          setShowAlert(prev => ({ ...prev, visible: false }));
+          setIsSaveLoading(false);
+        });
+      }
     } finally {
       setIsSaveLoading(false);
     }
@@ -191,6 +184,7 @@ export default function Create() {
 
   const renderDefaultHabits = () => (
     <View>
+
       {/* DEFAULT HABIT INFORMATION */}
       <View style={styles.formGroup}>
         <Text style={styles.label}>Choose a Default Habit</Text>
@@ -201,6 +195,7 @@ export default function Create() {
             </View>
           ) : storeError ? (
             <View>
+
               {/* ERROR MESSAGE AND RETRY BUTTON */}
               <Text style={[styles.label, { color: 'red' }]}>Failed to load presets: {storeError}</Text>
               <TouchableOpacity 
@@ -219,38 +214,41 @@ export default function Create() {
             <Text style={styles.label}>No presets available</Text>
           ) : (
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{marginVertical: 10}}>
-              {presets.map((habit: any, index: number) => (
+              {
+                presets.map((habit: any, index: number) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={[
+                      styles.habitCard,
+                      selectedHabit?.name === habit.name && styles.selectedHabitCard
+                    ]}
+                    onPress={() => setSelectedHabit(habit)}
+                  >
     
-                <TouchableOpacity
-                  key={index}
-                  style={[
-                    styles.habitCard,
-                    selectedHabit?.name === habit.name && styles.selectedHabitCard
-                  ]}
-                  onPress={() => setSelectedHabit(habit)}
-                >
+                    {/* HABIT ICON */}
+                    <Ionicons 
+                      name={(habit.icon || "heart-outline") as any} 
+                      size={32} 
+                      color={selectedHabit?.name === habit.name ? COLORS.white : COLORS.primary} 
+                    />
     
-                  {/* HABIT ICON */}
-                  <Ionicons 
-                    name={(habit.icon || "heart-outline") as any} 
-                    size={32} 
-                    color={selectedHabit?.name === habit.name ? COLORS.white : COLORS.primary} 
-                  />
-    
-                  {/* HABIT NAME */}
-                  <Text style={[
-                    styles.habitCardText,
-                    selectedHabit?.name === habit.name && styles.selectedHabitCardText
-                  ]}>
-                    {habit.name}
-                  </Text>
-                </TouchableOpacity>
+                    {/* HABIT NAME */}
+                    <Text style={[
+                      styles.habitCardText,
+                      selectedHabit?.name === habit.name && styles.selectedHabitCardText
+                    ]}>
+                      {habit.name}
+                    </Text>
+                  </TouchableOpacity>
               ))}
             </ScrollView>
           )
         }
-        {selectedHabit && (
+        {
+          selectedHabit && (
             <>
+
+              {/* UNIT SELECTOR */}
               <View style={styles.formGroup}>
                 <Text style={styles.label}>Unit</Text>
                 <View style={styles.unitContainer}>
@@ -274,36 +272,36 @@ export default function Create() {
                 </View>
               </View>
                 
-            {/* TARGET AMOUNT INPUT */}
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>Target Amount</Text>
-              <View style={styles.inputContainer}>
-                <TextInput
-                  style={styles.input}
-                  value={targetAmount}
-                  onChangeText={setTargetAmount}
-                  keyboardType="numeric"
-                  placeholder="Enter target amount"
-                  placeholderTextColor={COLORS.textSecondary}
-                />
+              {/* TARGET AMOUNT INPUT */}
+              <View style={styles.formGroup}>
+                <Text style={styles.label}>Target Amount</Text>
+                <View style={styles.inputContainer}>
+                  <TextInput
+                    style={styles.input}
+                    value={targetAmount}
+                    onChangeText={setTargetAmount}
+                    keyboardType="numeric"
+                    placeholder="Enter target amount"
+                    placeholderTextColor={COLORS.textSecondary}
+                  />
+                </View>
               </View>
-            </View>
-            
-            {/* INCREMENT AMOUNT INPUT */}
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>Increment Amount</Text>
-              <View style={styles.inputContainer}>
-                <TextInput
-                  style={styles.input}
-                  value={incrementAmount}
-                  onChangeText={setIncrementAmount}
-                  keyboardType="numeric"
-                  placeholder="Enter increment amount"
-                  placeholderTextColor={COLORS.textSecondary}
-                />
+              
+              {/* INCREMENT AMOUNT INPUT */}
+              <View style={styles.formGroup}>
+                <Text style={styles.label}>Increment Amount</Text>
+                <View style={styles.inputContainer}>
+                  <TextInput
+                    style={styles.input}
+                    value={incrementAmount}
+                    onChangeText={setIncrementAmount}
+                    keyboardType="numeric"
+                    placeholder="Enter increment amount"
+                    placeholderTextColor={COLORS.textSecondary}
+                  />
+                </View>
               </View>
-            </View>
-          </>
+            </>
         )}
       </View>
     </View>
@@ -394,10 +392,9 @@ export default function Create() {
         onDismiss={() => setShowAlert(previous => ({ ...previous, visible: false }))}
       />
       <KeyboardAvoidingView 
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
-      >
+        style={{flex:1}}
+        behavior={Platform.OS === "android" ? "padding" : "height"}
+        >
         {/* HEADER WITH BACK AND SAVE BUTTONS */}
         <View style={{ 
           flexDirection: 'row', 

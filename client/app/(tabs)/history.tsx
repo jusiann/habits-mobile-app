@@ -17,6 +17,7 @@ import {
   DAY_DATA_STRUCTURE,
   STATS_STRUCTURE
 } from '../../constants/habit.constant';
+import { showConnectionError } from '../../constants/alert.utils';
 
 export default function History() {
   const {habitLogsByDate} = useHabitStore();
@@ -29,6 +30,13 @@ export default function History() {
   const [stats, setStats] = React.useState<typeof STATS_STRUCTURE>(DEFAULT_STATS); 
   const [days, setDays] = React.useState<(Date | null)[]>([]);
   const [actions, setActions] = React.useState<any>(null);
+  const [showAlert, setShowAlert] = React.useState({
+      visible: false,
+      title: '',
+      message: '',
+      type: 'info' as 'success' | 'error' | 'warning' | 'info',
+      buttons: [] as Array<{ text: string; onPress: () => void; style?: 'default' | 'cancel' | 'destructive' }>
+    });
   
   React.useEffect(() => {
     const initActions = async () => {
@@ -146,8 +154,11 @@ export default function History() {
             totalCompleted: totalCompletedHabits
           });
         } catch (error) {
-          console.error('Error loading month data:', error);
-          throw error;
+          if (error.message.includes("Failed to fetch") || error.message.includes("Network request failed")) {
+            showConnectionError(() => {
+              setShowAlert(prev => ({ ...prev, visible: false }));
+            });
+          }
         } finally {
           setLoading(false);
         }

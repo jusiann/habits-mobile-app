@@ -1,16 +1,20 @@
 import cron from 'cron';
+import http from 'http';
 import https from 'https';
 
 const job = new cron.CronJob("*/14 * * * *", function () {
-  https
-    .get(process.env.PROXY_URL, (res) => {
-        if(res.statusCode === 200)
-            console.log("GET request successful", res.statusCode);
-        else
-            console.log("GET request failed", res.statusCode);
-    }).on('error', (e) => {
-        console.error("Error with GET request:", e);
-    });
+    const url = process.env.PROXY_URL;
+    const isHttps = url.startsWith('https://');
+    const client = isHttps ? https : http;
+    client
+        .get(url, (res) => {
+            if(res.statusCode === 200)
+                console.log("GET request successful", res.statusCode);
+            else
+                console.log("GET request failed", res.statusCode);
+        }).on('error', (e) => {
+            console.error("Error with GET request:", e);
+        });
 });
 
 export default job;
