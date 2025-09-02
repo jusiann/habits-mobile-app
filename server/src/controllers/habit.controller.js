@@ -2,7 +2,7 @@ import ApiError from '../utils/error.js';
 import Habit from '../models/habit.js';
 import HabitLog from '../models/habit.log.js';
 import User from '../models/user.js';
-import { zonedTimeToUtc, utcToZonedTime } from 'date-fns-tz';
+import * as dfnsTz from 'date-fns-tz';
 
 const HABIT_PRESETS = {
     health: [
@@ -64,7 +64,7 @@ export const getDashboard = async (req, res) => {
         const userTimezone = user?.timezone || 'Europe/Istanbul';
         
         const now = new Date();
-        const nowInUserTZ = utcToZonedTime(now, userTimezone);
+        const nowInUserTZ = dfnsTz.utcToZonedTime(now, userTimezone);
         const todayInUserTZ = new Date(nowInUserTZ.getFullYear(), nowInUserTZ.getMonth(), nowInUserTZ.getDate());
         
         const todayStart = zonedTimeToUtc(todayInUserTZ, userTimezone);

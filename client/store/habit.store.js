@@ -76,7 +76,7 @@ export const useHabitStore = create((set, get) => ({
       error: null 
     });
     try {
-      const isNewDay = get().checkAndResetDaily();
+      const isNewDay = await get().checkAndResetDaily();
       const response = await get().makeRequest('https://habits-mobile-app.onrender.com/api/habits/dashboard', {
         method: 'GET'
       });
@@ -473,9 +473,9 @@ export const useHabitStore = create((set, get) => ({
   */
 
   // CHECK AND RESET DAILY (Local time based version - DEACTIVATED)
-  checkAndResetDaily: () => {
+  checkAndResetDaily: async () => {
     try {
-      const { useAuthStore } = require("./auth.store");
+      const { useAuthStore } = await import("./auth.store");
       const { user } = useAuthStore.getState();
       const timezone = user?.timezone || 'Europe/Istanbul';
       
