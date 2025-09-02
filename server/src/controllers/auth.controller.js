@@ -314,7 +314,6 @@ export const changePassword = async (req, res) => {
         if (!user)
             throw new ApiError("User not found.", 404);
 
-        // Check if new password is the same as current password
         const isSamePassword = await bcrypt.compare(password, user.password);
         if (isSamePassword)
             throw new ApiError("New password must be different from the current password.", 400);
