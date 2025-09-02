@@ -41,6 +41,10 @@ const userSchema = new mongoose.Schema({
         type: String,
         default: '',
     },
+    timezone: {
+        type: String,
+        default: 'Europe/Istanbul',
+    },
     resetCode: {
         type: String
     },

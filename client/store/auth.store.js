@@ -575,7 +575,7 @@ export const useAuthStore = create((set,get) => ({
     },
 
     // UPDATE PROFILE
-    updateProfile: async ({ fullname, gender, height, weight, age, profilePicture, currentPassword, newPassword }) => {
+    updateProfile: async ({ fullname, gender, height, weight, age, profilePicture, timezone, currentPassword, newPassword }) => {
         set({ 
             isLoading: true 
         });
@@ -589,6 +589,7 @@ export const useAuthStore = create((set,get) => ({
                     weight,
                     age,
                     profilePicture,
+                    timezone,
                     currentPassword,
                     newPassword
                 }),
@@ -614,7 +615,8 @@ export const useAuthStore = create((set,get) => ({
                 height: height ? Number(height) : undefined,
                 weight: weight ? Number(weight) : undefined,
                 age: age ? Number(age) : undefined,
-                profilePicture
+                profilePicture,
+                timezone
             };
 
             // DELETE UNDEFINED VALUES

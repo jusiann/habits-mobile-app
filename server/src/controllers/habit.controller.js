@@ -1,6 +1,8 @@
 import ApiError from '../utils/error.js';
 import Habit from '../models/habit.js';
 import HabitLog from '../models/habit.log.js';
+import User from '../models/user.js';
+import { zonedTimeToUtc, utcToZonedTime } from 'date-fns-tz';
 
 const HABIT_PRESETS = {
     health: [
@@ -58,7 +60,16 @@ const HABIT_PRESETS = {
 export const getDashboard = async (req, res) => {
     try {
         const userId = req.user.id;
-        const today = new Date();
+        const user = await User.findById(userId);
+        const userTimezone = user?.timezone || 'Europe/Istanbul';
+        
+        const now = new Date();
+        const nowInUserTZ = utcToZonedTime(now, userTimezone);
+        const todayInUserTZ = new Date(nowInUserTZ.getFullYear(), nowInUserTZ.getMonth(), nowInUserTZ.getDate());
+        
+        const todayStart = zonedTimeToUtc(todayInUserTZ, userTimezone);
+        const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
+        
         if (!req.user || !req.user.id)
             return res.status(401).json({
                 success: false,
@@ -66,7 +77,6 @@ export const getDashboard = async (req, res) => {
                 error: "User not authenticated"
             });
         
-        today.setHours(0, 0, 0, 0);
         const habits = await Habit.find({ 
             userId, 
             isActive: true 
@@ -77,8 +87,8 @@ export const getDashboard = async (req, res) => {
         const todayLogs = await HabitLog.find({
             userId,
             date: {
-                $gte: today,
-                $lt: new Date(today.getTime() + 24 * 60 * 60 * 1000)
+                $gte: todayStart,
+                $lt: todayEnd
             }
         });
 

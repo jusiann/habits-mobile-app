@@ -1,5 +1,6 @@
 import {create} from "zustand";
 import {makeAuthenticatedRequest} from "../constants/api.utils";
+import { getTodayInUserTZ, isNewDayInUserTZ } from "../constants/timezone.utils";
 
 export const useHabitStore = create((set, get) => ({
   habits: [],
@@ -474,17 +475,20 @@ export const useHabitStore = create((set, get) => ({
   // CHECK AND RESET DAILY (Local time based version - DEACTIVATED)
   checkAndResetDaily: () => {
     try {
+      const { useAuthStore } = require("./auth.store");
+      const { user } = useAuthStore.getState();
+      const timezone = user?.timezone || 'Europe/Istanbul';
+      
       const now = new Date();
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-      const lastFetch = get().lastFetchDate ? new Date(get().lastFetchDate).getTime() : null;
+      const todayInTZ = getTodayInUserTZ(timezone);
+      const lastFetch = get().lastFetchDate ? new Date(get().lastFetchDate) : null;
       const currentHabits = get().habits || [];
       
       // DEBUG: HABIT RESET CHECK STARTED
       console.log('🕐 [HABIT RESET] Check started at:', now.toLocaleString('tr-TR'));
       console.log('📊 [HABIT RESET] Current habits count:', currentHabits.length);
-      console.log('📅 [HABIT RESET] Today timestamp:', today);
-      console.log('📅 [HABIT RESET] Last fetch timestamp:', lastFetch);
-      console.log('📅 [HABIT RESET] Last fetch date:', lastFetch ? new Date(lastFetch).toLocaleString('tr-TR') : 'Never');
+      console.log('📅 [HABIT RESET] Today in TZ:', todayInTZ.toLocaleString('tr-TR'));
+      console.log('📅 [HABIT RESET] Last fetch date:', lastFetch ? lastFetch.toLocaleString('tr-TR') : 'Never');
       if (!lastFetch) {
         // DEBUG: FIRST SETUP
         console.log('🆕 [HABIT RESET] First time setup - initializing and resetting habits');
@@ -497,13 +501,13 @@ export const useHabitStore = create((set, get) => ({
         // DEBUG: FIRST SETUP COMPLETED
         console.log('✅ [HABIT RESET] First time setup and reset completed');
         return true;
-      } else if (lastFetch < today) {
+      } else if (isNewDayInUserTZ(lastFetch, timezone)) {
         // DEBUG: NEW DAY DETECTED
         console.log('🔄 [HABIT RESET] New day detected! Resetting habits...');
         console.log('🔄 [HABIT RESET] Reset Date & Time:', now.toLocaleString('tr-TR'));
         console.log('🔄 [HABIT RESET] Previous habits cleared:', currentHabits.length, 'habits');
-        console.log('🔄 [HABIT RESET] Last fetch was:', new Date(lastFetch).toLocaleString('tr-TR'));
-        console.log('🔄 [HABIT RESET] Today is:', new Date(today).toLocaleString('tr-TR'));
+        console.log('🔄 [HABIT RESET] Last fetch was:', lastFetch.toLocaleString('tr-TR'));
+        console.log('🔄 [HABIT RESET] Today is:', todayInTZ.toLocaleString('tr-TR'));
         set({ 
           habits: [], 
           lastFetchDate: now.toISOString() 
@@ -515,8 +519,8 @@ export const useHabitStore = create((set, get) => ({
         // DEBUG: SAME DAY DETECTED
         console.log('⏰ [HABIT RESET] Same day detected - no reset needed');
         console.log('⏰ [HABIT RESET] Current habits will be preserved:', currentHabits.length, 'habits');
-        console.log('⏰ [HABIT RESET] Last fetch was:', new Date(lastFetch).toLocaleString('tr-TR'));
-        console.log('⏰ [HABIT RESET] Today is:', new Date(today).toLocaleString('tr-TR'));
+        console.log('⏰ [HABIT RESET] Last fetch was:', lastFetch.toLocaleString('tr-TR'));
+        console.log('⏰ [HABIT RESET] Today is:', todayInTZ.toLocaleString('tr-TR'));
       }
       return false;
     } catch (error) {

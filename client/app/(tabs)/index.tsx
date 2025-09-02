@@ -9,12 +9,14 @@ import styles from '../../assets/styles/home.styles';
 import COLORS from '../../constants/colors';
 import SafeScreen from '../../constants/SafeScreen';
 import {getAvatarSource} from '../../constants/avatar.utils';
+import {getUserTimezone} from '../../constants/timezone.utils';
 
 export default function Home() {
-  const {user, token} = useAuthStore();
+  const {user, token, updateProfile} = useAuthStore();
   const {habits, fetchHabits, incrementHabit, habitLogsByDate} = useHabitStore();
   const [pressedButton, setPressedButton] = React.useState<string | null>(null);
   const [isLoading, setIsLoading] = React.useState(false);
+
   const getGreeting = () => {
     const currentHour = new Date().getHours();
     if (currentHour >= 6 && currentHour < 12)
@@ -27,15 +29,7 @@ export default function Home() {
       return "Good Night";
   };
 
-  React.useEffect(() => {
-    if (token) {
-      setIsLoading(true);
-      fetchHabits().finally(() => setIsLoading(false));
-      loadHistoryData();
-    }
-  }, [token, fetchHabits]);
-
-  const loadHistoryData = async () => {
+  const loadHistoryData = React.useCallback(async () => {
     try {
       const today = new Date();
       const year = today.getFullYear();
@@ -53,7 +47,21 @@ export default function Home() {
     } catch (error) {
       console.error('Error loading history data:', error);
     }
-  };
+  }, [habitLogsByDate]);
+
+  React.useEffect(() => {
+    if (token) {
+      setIsLoading(true);
+      fetchHabits().finally(() => setIsLoading(false));
+      loadHistoryData();
+
+      // Timezone'u algıla ve backend'e gönder
+      const userTimezone = getUserTimezone();
+      if (user && user.timezone !== userTimezone) {
+        updateProfile({ timezone: userTimezone });
+      }
+    }
+  }, [token, fetchHabits, loadHistoryData, updateProfile, user]);
 
   return (
     <SafeScreen>

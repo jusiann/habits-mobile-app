@@ -89,7 +89,8 @@ export const signUp = async (req, res) => {
                 gender: user.gender,
                 height: user.height,
                 weight: user.weight,
-                age: user.age
+                age: user.age,
+                timezone: user.timezone
             }   
         });
     } catch (error) {
@@ -347,11 +348,11 @@ export const changePassword = async (req, res) => {
 
 export const updateProfile = async (req, res) => {
     try {
-        const { fullname, gender, height, weight, age, profilePicture, currentPassword, newPassword } = req.body;
+        const { fullname, gender, height, weight, age, profilePicture, timezone, currentPassword, newPassword } = req.body;
         const userId = req.user._id;
         
-        if (!fullname && !gender && !height && !weight && !age && !profilePicture && !currentPassword && !newPassword)
-            throw new ApiError("At least one field (fullname, gender, height, weight, age, profilePicture, currentPassword, newPassword) is required.", 400);
+        if (!fullname && !gender && !height && !weight && !age && !profilePicture && !timezone && !currentPassword && !newPassword)
+            throw new ApiError("At least one field (fullname, gender, height, weight, age, profilePicture, timezone, currentPassword, newPassword) is required.", 400);
         
         const user = await User.findById(userId);
         if (!user)
@@ -396,6 +397,9 @@ export const updateProfile = async (req, res) => {
         if (profilePicture)
             updateData.profilePicture = profilePicture;
 
+        if (timezone)
+            updateData.timezone = timezone;
+
         if (currentPassword && newPassword) {
             const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
             if (!isCurrentPasswordValid)
@@ -432,7 +436,8 @@ export const updateProfile = async (req, res) => {
                 height: updatedUser.height,
                 weight: updatedUser.weight,
                 age: updatedUser.age,
-                profilePicture: updatedUser.profilePicture
+                profilePicture: updatedUser.profilePicture,
+                timezone: updatedUser.timezone
             }
         });
     } catch (error) {
@@ -462,7 +467,8 @@ export const getMe = async (req, res) => {
                 height: user.height,
                 weight: user.weight,
                 age: user.age,
-                profilePicture: user.profilePicture
+                profilePicture: user.profilePicture,
+                timezone: user.timezone
             }
         });
     } catch (error) {
