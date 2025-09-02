@@ -52,16 +52,34 @@ export default function Home() {
   React.useEffect(() => {
     if (token) {
       setIsLoading(true);
-      fetchHabits().finally(() => setIsLoading(false));
-      loadHistoryData();
+      fetchHabits().finally(() => {
+        setIsLoading(false);
+      });
+    }
+  }, [token, fetchHabits]);
 
-      // Timezone'u algıla ve backend'e gönder
+  // Sadece alışkanlıklar değiştiğinde loglama
+  React.useEffect(() => {
+    console.log('Habits after fetch:', habits);
+    habits.forEach(habit => {
+      console.log(`Habit: ${habit.name}, Progress:`, habit.todayProgress?.progress, 'Target:', habit.targetAmount);
+    });
+  }, [habits]);
+
+  React.useEffect(() => {
+    if (token) {
+      loadHistoryData();
+    }
+  }, [token, loadHistoryData]);
+
+  React.useEffect(() => {
+    if (user && token) {
       const userTimezone = getUserTimezone();
-      if (user && user.timezone !== userTimezone) {
+      if (user.timezone !== userTimezone) {
         updateProfile({ timezone: userTimezone });
       }
     }
-  }, [token, fetchHabits, loadHistoryData, updateProfile, user]);
+  }, [user, token, updateProfile]);
 
   return (
     <SafeScreen>
@@ -169,7 +187,9 @@ export default function Home() {
                       <View style={styles.habitActions}>
                         <TouchableOpacity 
                           style={styles.actionButton}
-                          onPress={() => token && incrementHabit(habit.id)}
+                          onPress={() => {token && incrementHabit(habit.id)
+                            console.log(`Habit ${habit.id} incremented`);
+                          }}
                         >
                           <Text style={styles.actionButtonText}>+</Text>
                         </TouchableOpacity>

@@ -24,8 +24,8 @@ export const getUserTimezone = () => {
   try {
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
     if (tz) return tz;
-  } catch (_e) {
-    // ignore
+  } catch (error) {
+    console.error("Error getting user timezone:", error);
   }
   return moment.tz.guess();
 };

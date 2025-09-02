@@ -607,28 +607,10 @@ export const useAuthStore = create((set,get) => ({
             if (!response.ok)
                 throw new Error(data.message || data.error || "Profile update failed");
             
-            // UPDATE USER IN STORAGE AND STATE
-            const updatedUser = {
-                ...get().user,
-                fullname,
-                gender,
-                height: height ? Number(height) : undefined,
-                weight: weight ? Number(weight) : undefined,
-                age: age ? Number(age) : undefined,
-                profilePicture,
-                timezone
-            };
 
-            // DELETE UNDEFINED VALUES
-            Object.keys(updatedUser).forEach(key => {
-                if (updatedUser[key] === undefined) {
-                    delete updatedUser[key];
-                }
-            });
-
-            await AsyncStorage.setItem("user", JSON.stringify(updatedUser));
+            await AsyncStorage.setItem("user", JSON.stringify(data.user));
             set({ 
-                user: updatedUser,
+                user: data.user,
                 isLoading: false 
             });
 

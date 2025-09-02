@@ -706,13 +706,8 @@ export default function UpdateProfile() {
             </TouchableOpacity>
           </View>
         </ScrollView>
- 
-        {
-          renderAvatarModal()
-        } {
-          renderPasswordModal()
-        }
-
+        {renderAvatarModal()}
+        {renderPasswordModal()}
       </KeyboardAvoidingView>
     </SafeScreen>
   );
