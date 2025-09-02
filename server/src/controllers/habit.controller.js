@@ -2,7 +2,7 @@ import ApiError from '../utils/error.js';
 import Habit from '../models/habit.js';
 import HabitLog from '../models/habit.log.js';
 import User from '../models/user.js';
-import * as dfnsTz from 'date-fns-tz';
+import moment from 'moment-timezone';
 
 const HABIT_PRESETS = {
     health: [
@@ -62,21 +62,16 @@ export const getDashboard = async (req, res) => {
         const userId = req.user.id;
         const user = await User.findById(userId);
         const userTimezone = user?.timezone || 'Europe/Istanbul';
-        
-        const now = new Date();
-        const nowInUserTZ = dfnsTz.utcToZonedTime(now, userTimezone);
-        const todayInUserTZ = new Date(nowInUserTZ.getFullYear(), nowInUserTZ.getMonth(), nowInUserTZ.getDate());
-        
-        const todayStart = zonedTimeToUtc(todayInUserTZ, userTimezone);
-        const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
-        
+        const now = moment().tz(userTimezone);
+        const todayInUserTZ = new Date(now.year(), now.month(), now.date());
+        const todayStart = moment.tz(todayInUserTZ, userTimezone).toDate();
+        const todayEnd = moment.tz(todayInUserTZ, userTimezone).add(1, 'day').toDate();
         if (!req.user || !req.user.id)
             return res.status(401).json({
                 success: false,
                 message: "Authentication required.",
                 error: "User not authenticated"
             });
-        
         const habits = await Habit.find({ 
             userId, 
             isActive: true 
