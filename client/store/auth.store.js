@@ -266,6 +266,7 @@ export const useAuthStore = create((set,get) => ({
         }); 
     },
 
+    // STOP AUTO REFRESH
     stopAutoRefresh: () => {
         const { refreshTimer } = get();
         if (refreshTimer) {
