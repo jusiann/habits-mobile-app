@@ -52,13 +52,15 @@ export default function Home() {
   React.useEffect(() => {
     if (token) {
       setIsLoading(true);
+      console.log('Home: starting fetchHabits()');
       fetchHabits().finally(() => {
         setIsLoading(false);
+        console.log('Home: fetchHabits() finished, starting loadHistoryData() in background');
+        loadHistoryData().catch(err => console.error('Error loading history data (background):', err));
       });
     }
-  }, [token, fetchHabits]);
+  }, [token, fetchHabits, loadHistoryData]);
 
-  // Sadece alışkanlıklar değiştiğinde loglama
   React.useEffect(() => {
     console.log('Habits after fetch:', habits);
     habits.forEach(habit => {
@@ -66,11 +68,10 @@ export default function Home() {
     });
   }, [habits]);
 
-  React.useEffect(() => {
-    if (token) {
-      loadHistoryData();
-    }
-  }, [token, loadHistoryData]);
+  // React.useEffect(() => {
+  // // History loading is now started after fetchHabits completes to avoid blocking habit display.
+  // // Left intentionally empty to avoid duplicate background runs.
+  // }, [token, loadHistoryData]);
 
   React.useEffect(() => {
     if (user && token) {
