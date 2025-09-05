@@ -112,8 +112,12 @@ export default function History() {
           
           // LOAD ALL DAYS IN THIS MONTH
           for (let day = 1; day <= daysInMonth; day++) {
-            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-            const result = await habitLogsByDate(dateStr);
+            // create a Date object for this local calendar day and let the store
+            // convert it to the user's timezone-aware YYYY-MM-DD when calling API
+            const dateObj = new Date(year, month, day);
+            const dateStrDebug = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            console.debug('[History] requesting logs for date:', dateStrDebug, dateObj.toISOString());
+            const result = await habitLogsByDate(dateObj);
             
             if (result.success && result.data) {
               newMonthData[day] = {

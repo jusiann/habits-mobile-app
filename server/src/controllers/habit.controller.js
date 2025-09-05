@@ -578,7 +578,20 @@ export const getHabitLogsByDate = async (req, res) => {
         
 
         const userTimezone = await resolveUserTimezone(userId);
-        const targetMoment = moment.tz(new Date(date), userTimezone);
+
+        // Defensive parsing: accept YYYY-MM-DD or ISO datetimes
+        let targetMoment;
+        if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+            // interpret local date as start of day in user's timezone
+            targetMoment = moment.tz(date + 'T00:00:00', userTimezone);
+        } else {
+            targetMoment = moment.tz(date, userTimezone);
+        }
+
+        if (!targetMoment || !targetMoment.isValid()) {
+            return res.status(400).json({ success: false, message: 'Invalid date parameter. Use YYYY-MM-DD or ISO datetime.' });
+        }
+
         const targetDate = targetMoment.toDate();
         const { start: startOfDay, end: endOfDay } = tzDayRange(targetMoment, userTimezone);
 

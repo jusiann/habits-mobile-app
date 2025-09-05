@@ -1,5 +1,5 @@
 import {create} from "zustand";
-import {makeAuthenticatedRequest} from "../constants/api.utils";
+import {makeAuthenticatedRequest, API_ENDPOINTS} from "../constants/api.utils";
 import { getTodayInUserTZ, isNewDayInUserTZ } from "../constants/timezone.utils";
 
 export const useHabitStore = create((set, get) => ({
@@ -377,7 +377,7 @@ export const useHabitStore = create((set, get) => ({
       error: null 
     });
 
-    // normalize incoming date and make it timezone-aware (user's TZ)
+      // normalize incoming date and make it timezone-aware (user's TZ)
     try {
       const { useAuthStore } = await import("./auth.store");
       const { user } = useAuthStore.getState();
@@ -385,19 +385,25 @@ export const useHabitStore = create((set, get) => ({
 
       // helper: get YYYY-MM-DD string for a Date in user's TZ
       const dateToLocalYYYYMMDD = (d, tz) => {
-        // en-CA produces YYYY-MM-DD which is convenient
         return new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit' }).format(d);
       };
 
-      // parse incoming `date` param into a Date object
-      const requestDateRaw = new Date(date);
-      // build a date-string representing that day in user's timezone
-      const localDateStr = dateToLocalYYYYMMDD(requestDateRaw, timezone);
-      // build start/end of that day in client's local JS time (for comparisons/caching)
-      const startOfLocalDay = new Date(`${localDateStr}T00:00:00`);
-      const endOfLocalDay = new Date(startOfLocalDay.getTime() + 24 * 60 * 60 * 1000 - 1);
+      let localDateStr;
+      let requestDate;
 
-      const requestDate = startOfLocalDay;
+      // if caller passed a plain YYYY-MM-DD string, use it directly (avoid parsing inconsistencies)
+      if (typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
+        localDateStr = date;
+        requestDate = new Date(`${localDateStr}T00:00:00`);
+      } else {
+        // parse incoming `date` param into a Date object and format for user's tz
+        const requestDateRaw = new Date(date);
+        localDateStr = dateToLocalYYYYMMDD(requestDateRaw, timezone);
+        // build start/end of that day in client's local JS time (for comparisons/caching)
+        requestDate = new Date(`${localDateStr}T00:00:00`);
+      }
+      const startOfLocalDay = new Date(requestDate);
+      const endOfLocalDay = new Date(startOfLocalDay.getTime() + 24 * 60 * 60 * 1000 - 1);
       const today = new Date();
       const cacheKey = `${requestDate.getFullYear()}-${requestDate.getMonth()}`;
 
@@ -408,10 +414,11 @@ export const useHabitStore = create((set, get) => ({
         return get().monthlyCache[cacheKey][requestDate.getDate()];
       }
 
-      // call API using the user's localDate (YYYY-MM-DD) so server gets user's-day intent
-      const response = await get().makeRequest(`https://habits-mobile-app.onrender.com/api/habits/logs-by-date?date=${localDateStr}`, {
-        method: 'GET'
-      });
+  // call API using the user's localDate (YYYY-MM-DD) so server gets user's-day intent
+  // prefer centralized endpoint helper so base URL is consistent with other calls
+  const url = API_ENDPOINTS.HABITS.LOGS_BY_DATE(localDateStr);
+  console.debug('[habitLogsByDate] requesting URL:', url);
+  const response = await get().makeRequest(url, { method: 'GET' });
 
       let data;
       try {
@@ -421,7 +428,8 @@ export const useHabitStore = create((set, get) => ({
         throw new Error("Invalid server response format");
       }
 
-      if (response.ok) {
+  // If server returned OK, handle as before
+  if (response.ok) {
         // keep only habits that existed on that local day (compare createdAt <= endOfLocalDay)
         const activeHabits = data.data.habits.filter(habit => {
           if (habit.status === 'never_started') return false;
@@ -440,7 +448,7 @@ export const useHabitStore = create((set, get) => ({
           }
         };
 
-        // IF NOT TODAY, CACHE THE RESULT (cache key uses user's local day)
+  // IF NOT TODAY, CACHE THE RESULT (cache key uses user's local day)
         if (!isSameDay(requestDate, today)) {
           const currentCache = { ...get().monthlyCache };
           if (!currentCache[cacheKey]) {
@@ -450,9 +458,63 @@ export const useHabitStore = create((set, get) => ({
           set({ monthlyCache: currentCache });
         }
 
-        return result;
+  return result;
       } else {
-        throw new Error(data.message || data.error || "Failed to fetch habit logs");
+  // helpful debug info for server-side errors seen in production
+  console.debug('[habitLogsByDate] response not ok:', response.status, data);
+
+  // Retry with ISO datetime if server indicates missing/undefined 'targetDate' (server bug on some deployments)
+  try {
+    const serverMessage = (data && data.message) || '';
+    if (response.status === 500 && serverMessage.toLowerCase().includes('targetdate')) {
+      const isoDate = new Date(`${localDateStr}T00:00:00Z`).toISOString();
+      const fallbackUrl = API_ENDPOINTS.HABITS.LOGS_BY_DATE(encodeURIComponent(isoDate));
+      console.debug('[habitLogsByDate] detected targetDate error, retrying with ISO date:', isoDate, fallbackUrl);
+      const fallbackResp = await get().makeRequest(fallbackUrl, { method: 'GET' });
+      let fallbackData;
+      try {
+        fallbackData = await fallbackResp.json();
+      } catch (parseError) {
+        console.error('[habitLogsByDate] JSON parse error on fallback:', parseError);
+        throw new Error('Invalid server response format (fallback)');
+      }
+
+      if (fallbackResp.ok) {
+        const activeHabits = fallbackData.data.habits.filter(habit => {
+          if (habit.status === 'never_started') return false;
+          const createdAt = new Date(habit.createdAt).getTime();
+          return createdAt <= endOfLocalDay.getTime();
+        });
+
+        const summary = fallbackData.data.summary;
+        const fallbackResult = {
+          success: true,
+          data: {
+            summary: { ...summary },
+            habits: activeHabits
+          }
+        };
+
+        // cache fallback result if not today
+        if (!isSameDay(requestDate, today)) {
+          const currentCache = { ...get().monthlyCache };
+          if (!currentCache[cacheKey]) currentCache[cacheKey] = {};
+          currentCache[cacheKey][requestDate.getDate()] = fallbackResult;
+          set({ monthlyCache: currentCache });
+        }
+
+        return fallbackResult;
+      }
+    }
+  } catch (retryError) {
+    console.warn('[habitLogsByDate] fallback attempt failed:', retryError?.message || retryError);
+  }
+
+  // final: return structured error for UI to display/log
+  return {
+    success: false,
+    message: data.message || data.error || "Failed to fetch habit logs"
+  };
       }
     } catch (error) {
       set({ 
