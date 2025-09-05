@@ -3,6 +3,7 @@ import Habit from '../models/habit.js';
 import HabitLog from '../models/habit.log.js';
 import User from '../models/user.js';
 import moment from 'moment-timezone';
+import { DEFAULT_TZ, resolveUserTimezone, tzDayRange } from '../utils/timezone.js';
 
 const HABIT_PRESETS = {
     health: [
@@ -60,12 +61,9 @@ const HABIT_PRESETS = {
 export const getDashboard = async (req, res) => {
     try {
         const userId = req.user.id;
-        const user = await User.findById(userId);
-        const userTimezone = user?.timezone || 'Europe/Istanbul';
-        const now = moment().tz(userTimezone);
-        const todayInUserTZ = new Date(now.year(), now.month(), now.date());
-        const todayStart = moment.tz(todayInUserTZ, userTimezone).toDate();
-        const todayEnd = moment.tz(todayInUserTZ, userTimezone).add(1, 'day').toDate();
+    const user = await User.findById(userId);
+    const userTimezone = user?.timezone || DEFAULT_TZ;
+    const { start: todayStart, end: todayEnd } = tzDayRange(undefined, userTimezone);
         if (!req.user || !req.user.id)
             return res.status(401).json({
                 success: false,
@@ -226,18 +224,18 @@ export const detailHabit = async (req, res) => {
     try {
         const userId = req.user.id;
         const habitId = req.params.id;
-        const today = new Date();
         const habit = await Habit.findOne({ _id: habitId, userId, isActive: true });
         if (!habit)
             throw new ApiError("Habit not found.", 404);
 
-        today.setHours(0, 0, 0, 0);
+        const userTimezone = await resolveUserTimezone(userId);
+        const { start: todayStartLog, end: todayEndLog } = tzDayRange(undefined, userTimezone);
         const todayLog = await HabitLog.findOne({
             habitId,
             userId,
             date: {
-                $gte: today,
-                $lt: new Date(today.getTime() + 24 * 60 * 60 * 1000)
+                $gte: todayStartLog,
+                $lt: todayEndLog
             }
         });
 
@@ -345,17 +343,15 @@ export const updateHabit = async (req, res) => {
         }
 
         if (shouldResetProgress) {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            const todayEnd = new Date(today);
-            todayEnd.setHours(23, 59, 59, 999);
-            
+            const userTimezone = await resolveUserTimezone(userId);
+            const { start: todayStartDel, end: todayEndDel } = tzDayRange(undefined, userTimezone);
+
             await HabitLog.deleteMany({
                 habitId: habitId,
                 userId: userId,
                 date: {
-                    $gte: today,
-                    $lte: todayEnd
+                    $gte: todayStartDel,
+                    $lt: todayEndDel
                 }
             });
         }
@@ -416,29 +412,29 @@ export const deleteHabit = async (req, res) => {
 
 export const getIncrementHabit = async (req, res) => {
     try {
-        const userId = req.user.id;
-        const habitId = req.params.id;
-        const today = new Date();
-        
-        const habit = await Habit.findOne({ _id: habitId, userId, isActive: true });
+    const userId = req.user.id;
+    const habitId = req.params.id;
+
+    const habit = await Habit.findOne({ _id: habitId, userId, isActive: true });
         if (!habit)
             throw new ApiError("Habit not found.", 404);
 
         const incrementValue = habit.incrementAmount;
-        today.setHours(0, 0, 0, 0);
-        
+        const userTimezone = await resolveUserTimezone(userId);
+        const { start: dayDate } = tzDayRange(undefined, userTimezone);
+
         const updatedLog = await HabitLog.findOneAndUpdate(
             {
                 habitId,
                 userId,
-                date: today
+                date: dayDate
             },
             {
                 $inc: { value: incrementValue },
                 $setOnInsert: {
                     habitId,
                     userId,
-                    date: today
+                    date: dayDate
                 }
             },
             {
@@ -488,33 +484,26 @@ export const getHabitProgress = async (req, res) => {
         if (!habit)
             throw new ApiError("Habit not found.", 404);
         
+        const userTimezone = await resolveUserTimezone(userId);
         let dateFilter = {};
         if (startDate && endDate) {
-            dateFilter = {
-                date: { 
-                    $gte: new Date(startDate),
-                    $lte: new Date(endDate)
-                }
-            };
+            // treat provided ISO dates as in user's timezone start/end of day
+            const { start: s } = tzDayRange(new Date(startDate), userTimezone);
+            const { end: e } = tzDayRange(new Date(endDate), userTimezone);
+            dateFilter = { date: { $gte: s, $lte: e } };
         } else if (year && month) {
-            const startOfMonth = new Date(year, month - 1, 1);
-            const endOfMonth = new Date(year, month, 0);
-            dateFilter = {
-                date: {
-                    $gte: startOfMonth,
-                    $lte: endOfMonth
-                }
-            };
+            // start at first day of month in user's tz
+            const startOfMonth = moment.tz({ year: Number(year), month: Number(month) - 1, day: 1 }, userTimezone);
+            const { start: s } = tzDayRange(startOfMonth, userTimezone);
+            const endOfMonthMoment = startOfMonth.clone().endOf('month');
+            const { end: e } = tzDayRange(endOfMonthMoment, userTimezone);
+            dateFilter = { date: { $gte: s, $lte: e } };
         } else {
-            const now = new Date();
-            const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-            const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-            dateFilter = {
-                date: {
-                    $gte: startOfMonth,
-                    $lte: endOfMonth
-                }
-            };
+            const now = moment.tz(userTimezone);
+            const { start: s } = tzDayRange(now, userTimezone);
+            const endOfMonthMoment = now.clone().endOf('month');
+            const { end: e } = tzDayRange(endOfMonthMoment, userTimezone);
+            dateFilter = { date: { $gte: s, $lte: e } };
         }
 
         const habitLogs = await HabitLog.find({
@@ -588,9 +577,9 @@ export const getHabitLogsByDate = async (req, res) => {
             throw new ApiError("Date parameter is required.", 400);
         
 
-        const targetDate = new Date(date);
-        const startOfDay = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
-        const endOfDay = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate() + 1);
+    const userTimezone = await resolveUserTimezone(userId);
+    const targetMoment = moment.tz(new Date(date), userTimezone);
+    const { start: startOfDay, end: endOfDay } = tzDayRange(targetMoment, userTimezone);
 
         const habitLogs = await HabitLog.find({
             userId,

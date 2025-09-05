@@ -168,49 +168,159 @@ export const useHabitStore = create((set, get) => ({
     }
   },
 
-  // INCREMENT HABIT
+// INCREMENT HABIT
   incrementHabit: async (habitId) => {
-    set({ 
-      isLoading: true, 
-      error: null 
+    set({
+      isLoading: true,
+      error: null
     });
+
+    const pad = (n) => String(n).padStart(2, '0');
+    const formatDate = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+
     try {
-      const response = await get().makeRequest(`https://habits-mobile-app.onrender.com/api/habits/${habitId}/increment`, {
-        method: 'POST'
-      });
+      const { useAuthStore } = await import("./auth.store");
+      const { user } = useAuthStore.getState();
+      const timezone = user?.timezone || 'Europe/Istanbul';
 
-      let data;
-      try {
-        data = await response.json();
-      } catch (parseError) {
-        console.error("JSON parse error:", parseError);
-        throw new Error("Invalid server response format");
+      // now in user's TZ
+      const nowInTZ = getTodayInUserTZ(timezone); // expects Date
+
+      // build three candidate dates to try:
+      // 1) user's TZ date (current)
+      // 2) previous day in user's TZ (covers server-side day-offset cases)
+      // 3) UTC date (if backend is using UTC day)
+      const prevDayInTZ = new Date(nowInTZ.getTime() - 24 * 60 * 60 * 1000);
+      const now = new Date();
+      const utcDateObj = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+
+      const candidates = [
+        { dateObj: nowInTZ, timeIso: nowInTZ.toISOString() },
+        { dateObj: prevDayInTZ, timeIso: new Date(prevDayInTZ.getTime()).toISOString() },
+        { dateObj: utcDateObj, timeIso: new Date().toISOString() } // use actual current ISO for UTC attempt
+      ];
+
+      let lastError = null;
+      for (const candidate of candidates) {
+        const localDate = formatDate(candidate.dateObj);
+        const localIso = candidate.timeIso;
+
+        try {
+          const response = await get().makeRequest(`https://habits-mobile-app.onrender.com/api/habits/${habitId}/increment?localDate=${localDate}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              localTime: localIso,
+              timezone
+            })
+          });
+
+          let data;
+          try {
+            data = await response.json();
+          } catch (parseError) {
+            console.error("JSON parse error on increment attempt:", parseError);
+            // try next candidate
+            lastError = new Error("Invalid server response format");
+            continue;
+          }
+
+          if (response.ok) {
+            await get().fetchHabits();
+            return {
+              success: true,
+              data: data.data
+            };
+          } else {
+            // record and try next candidate
+            lastError = new Error(data.message || data.error || `Failed to increment habit (date ${localDate})`);
+            continue;
+          }
+        } catch (err) {
+          // network / auth error -> try next candidate
+          console.warn(`Increment attempt failed for date ${formatDate(candidate.dateObj)}:`, err.message || err);
+          lastError = err;
+          continue;
+        }
       }
 
-      if (response.ok) {
-        await get().fetchHabits();
-        return { 
-          success: true, 
-          data: data.data 
-        };
-      } else {
-        throw new Error(data.message || data.error || "Failed to increment habit");
-      }
+      // all attempts failed
+      throw lastError || new Error("Failed to increment habit after retries");
     } catch (error) {
-      set({ 
-        error: error.message || 'Network error', 
-        isLoading: false 
+      set({
+        error: error.message || 'Network error',
+        isLoading: false
       });
-      return { 
-        success: false, 
-        message: error.message || 'Network error. Please try again.' 
+      return {
+        success: false,
+        message: error.message || 'Network error. Please try again.'
       };
     } finally {
-      set({ 
-        isLoading: false 
+      set({
+        isLoading: false
       });
     }
   },
+
+  // INCREMENT HABIT
+  // incrementHabit: async (habitId) => {
+  //   set({ 
+  //     isLoading: true, 
+  //     error: null 
+  //   });
+  //   try {
+  //     // get user's timezone
+  //     const { useAuthStore } = await import("./auth.store");
+  //     const { user } = useAuthStore.getState();
+  //     const timezone = user?.timezone || 'Europe/Istanbul';
+
+  //     // get current time in user's TZ (ISO) and a YYYY-MM-DD local date fallback
+  //     const nowInTZ = getTodayInUserTZ(timezone); // expects Date
+  //     const localIso = nowInTZ.toISOString();
+  //     const localDate = `${nowInTZ.getFullYear()}-${String(nowInTZ.getMonth()+1).padStart(2,'0')}-${String(nowInTZ.getDate()).padStart(2,'0')}`;
+
+  //     const response = await get().makeRequest(`https://habits-mobile-app.onrender.com/api/habits/${habitId}/increment?localDate=${localDate}`, {
+  //       method: 'POST',
+  //       headers: { 'Content-Type': 'application/json' },
+  //       body: JSON.stringify({
+  //         localTime: localIso,
+  //         timezone
+  //       })
+  //     });
+
+  //     let data;
+  //     try {
+  //       data = await response.json();
+  //     } catch (parseError) {
+  //       console.error("JSON parse error:", parseError);
+  //       throw new Error("Invalid server response format");
+  //     }
+
+  //     if (response.ok) {
+  //       await get().fetchHabits();
+  //       return { 
+  //         success: true, 
+  //         data: data.data 
+  //       };
+  //     } else {
+  //       throw new Error(data.message || data.error || "Failed to increment habit");
+  //     }
+  //   } catch (error) {
+  //     set({ 
+  //       error: error.message || 'Network error', 
+  //       isLoading: false 
+  //     });
+  //     return { 
+  //       success: false, 
+  //       message: error.message || 'Network error. Please try again.' 
+  //     };
+  //   } finally {
+  //     set({ 
+  //       isLoading: false 
+  //     });
+  //   }
+  // },
+
 
   // UPDATE HABIT
   updateHabit: async (habitId, updateData) => {
@@ -257,7 +367,6 @@ export const useHabitStore = create((set, get) => ({
     }
   },
 
-  // FETCH HABIT LOGS BY DATE
   habitLogsByDate: async (date) => {
     // IF TODAY, RETURN FROM CACHE
     const isSameDay = (date1, date2) => {
@@ -267,23 +376,43 @@ export const useHabitStore = create((set, get) => ({
       isLoading: true, 
       error: null 
     });
-  
-    const requestDate = new Date(date);
-    const today = new Date();
-    const cacheKey = `${requestDate.getFullYear()}-${requestDate.getMonth()}`;
-  
-    if (!isSameDay(requestDate, today) && get().monthlyCache[cacheKey]?.[requestDate.getDate()]) {
-      set({ 
-        isLoading: false 
-      });
-      return get().monthlyCache[cacheKey][requestDate.getDate()];
-    }
-  
+
+    // normalize incoming date and make it timezone-aware (user's TZ)
     try {
-      const response = await get().makeRequest(`https://habits-mobile-app.onrender.com/api/habits/logs-by-date?date=${date}`, {
+      const { useAuthStore } = await import("./auth.store");
+      const { user } = useAuthStore.getState();
+      const timezone = user?.timezone || 'Europe/Istanbul';
+
+      // helper: get YYYY-MM-DD string for a Date in user's TZ
+      const dateToLocalYYYYMMDD = (d, tz) => {
+        // en-CA produces YYYY-MM-DD which is convenient
+        return new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit' }).format(d);
+      };
+
+      // parse incoming `date` param into a Date object
+      const requestDateRaw = new Date(date);
+      // build a date-string representing that day in user's timezone
+      const localDateStr = dateToLocalYYYYMMDD(requestDateRaw, timezone);
+      // build start/end of that day in client's local JS time (for comparisons/caching)
+      const startOfLocalDay = new Date(`${localDateStr}T00:00:00`);
+      const endOfLocalDay = new Date(startOfLocalDay.getTime() + 24 * 60 * 60 * 1000 - 1);
+
+      const requestDate = startOfLocalDay;
+      const today = new Date();
+      const cacheKey = `${requestDate.getFullYear()}-${requestDate.getMonth()}`;
+
+      if (!isSameDay(requestDate, today) && get().monthlyCache[cacheKey]?.[requestDate.getDate()]) {
+        set({ 
+          isLoading: false 
+        });
+        return get().monthlyCache[cacheKey][requestDate.getDate()];
+      }
+
+      // call API using the user's localDate (YYYY-MM-DD) so server gets user's-day intent
+      const response = await get().makeRequest(`https://habits-mobile-app.onrender.com/api/habits/logs-by-date?date=${localDateStr}`, {
         method: 'GET'
       });
-  
+
       let data;
       try {
         data = await response.json();
@@ -292,15 +421,14 @@ export const useHabitStore = create((set, get) => ({
         throw new Error("Invalid server response format");
       }
 
-      // REMOVE IT
-      console.log(`API Response for date ${date}`);
-
       if (response.ok) {
-        const activeHabits = data.data.habits.filter(habit => 
-          habit.status !== 'never_started' && 
-          new Date(habit.createdAt).toDateString() <= new Date(date).toDateString()
-        );
-  
+        // keep only habits that existed on that local day (compare createdAt <= endOfLocalDay)
+        const activeHabits = data.data.habits.filter(habit => {
+          if (habit.status === 'never_started') return false;
+          const createdAt = new Date(habit.createdAt).getTime();
+          return createdAt <= endOfLocalDay.getTime();
+        });
+
         const summary = data.data.summary;
         const result = { 
           success: true, 
@@ -311,8 +439,8 @@ export const useHabitStore = create((set, get) => ({
             habits: activeHabits
           }
         };
-  
-        // IF NOT TODAY, CACHE THE RESULT
+
+        // IF NOT TODAY, CACHE THE RESULT (cache key uses user's local day)
         if (!isSameDay(requestDate, today)) {
           const currentCache = { ...get().monthlyCache };
           if (!currentCache[cacheKey]) {
@@ -321,7 +449,7 @@ export const useHabitStore = create((set, get) => ({
           currentCache[cacheKey][requestDate.getDate()] = result;
           set({ monthlyCache: currentCache });
         }
-  
+
         return result;
       } else {
         throw new Error(data.message || data.error || "Failed to fetch habit logs");
@@ -341,6 +469,91 @@ export const useHabitStore = create((set, get) => ({
       });
     }
   },
+
+  // FETCH HABIT LOGS BY DATE
+  // habitLogsByDate: async (date) => {
+  //   // IF TODAY, RETURN FROM CACHE
+  //   const isSameDay = (date1, date2) => {
+  //     return date1.toDateString() === date2.toDateString();
+  //   };
+  //   set({ 
+  //     isLoading: true, 
+  //     error: null 
+  //   });
+  
+  //   const requestDate = new Date(date);
+  //   const today = new Date();
+  //   const cacheKey = `${requestDate.getFullYear()}-${requestDate.getMonth()}`;
+  
+  //   if (!isSameDay(requestDate, today) && get().monthlyCache[cacheKey]?.[requestDate.getDate()]) {
+  //     set({ 
+  //       isLoading: false 
+  //     });
+  //     return get().monthlyCache[cacheKey][requestDate.getDate()];
+  //   }
+  
+  //   try {
+  //     const response = await get().makeRequest(`https://habits-mobile-app.onrender.com/api/habits/logs-by-date?date=${date}`, {
+  //       method: 'GET'
+  //     });
+  
+  //     let data;
+  //     try {
+  //       data = await response.json();
+  //     } catch (parseError) {
+  //       console.error("JSON parse error:", parseError);
+  //       throw new Error("Invalid server response format");
+  //     }
+
+  //     // REMOVE IT
+  //     console.log(`API Response for date ${date}`);
+
+  //     if (response.ok) {
+  //       const activeHabits = data.data.habits.filter(habit => 
+  //         habit.status !== 'never_started' && 
+  //         new Date(habit.createdAt).toDateString() <= new Date(date).toDateString()
+  //       );
+  
+  //       const summary = data.data.summary;
+  //       const result = { 
+  //         success: true, 
+  //         data: {
+  //           summary: {
+  //             ...summary
+  //           },
+  //           habits: activeHabits
+  //         }
+  //       };
+  
+  //       // IF NOT TODAY, CACHE THE RESULT
+  //       if (!isSameDay(requestDate, today)) {
+  //         const currentCache = { ...get().monthlyCache };
+  //         if (!currentCache[cacheKey]) {
+  //           currentCache[cacheKey] = {};
+  //         }
+  //         currentCache[cacheKey][requestDate.getDate()] = result;
+  //         set({ monthlyCache: currentCache });
+  //       }
+  
+  //       return result;
+  //     } else {
+  //       throw new Error(data.message || data.error || "Failed to fetch habit logs");
+  //     }
+  //   } catch (error) {
+  //     set({ 
+  //       error: error.message || 'Network error', 
+  //       isLoading: false 
+  //     });
+  //     return { 
+  //       success: false, 
+  //       message: error.message || 'Network error. Please try again.' 
+  //     };
+  //   } finally {
+  //     set({ 
+  //       isLoading: false 
+  //     });
+  //   }
+  // },
 
   // FETCH HABIT PROGRESS
   habitProgress: async (habitId, params = {}) => {
