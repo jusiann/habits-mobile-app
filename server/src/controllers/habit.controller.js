@@ -577,9 +577,10 @@ export const getHabitLogsByDate = async (req, res) => {
             throw new ApiError("Date parameter is required.", 400);
         
 
-    const userTimezone = await resolveUserTimezone(userId);
-    const targetMoment = moment.tz(new Date(date), userTimezone);
-    const { start: startOfDay, end: endOfDay } = tzDayRange(targetMoment, userTimezone);
+        const userTimezone = await resolveUserTimezone(userId);
+        const targetMoment = moment.tz(new Date(date), userTimezone);
+        const targetDate = targetMoment.toDate();
+        const { start: startOfDay, end: endOfDay } = tzDayRange(targetMoment, userTimezone);
 
         const habitLogs = await HabitLog.find({
             userId,
