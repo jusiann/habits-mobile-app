@@ -121,14 +121,14 @@ export default function TabLayout() {
           }}
         />
         <Tabs.Screen
-          name="challenge"
+          name="goals"
           options={{
-            title: "Challenge",
+            title: "Goals",
             tabBarIcon: ({ focused }) => (
               <TabIcon
                 focused={focused}
                 iconName="trophy-outline"
-                title="Challenge"
+                title="Goals"
               />
             ),
           }}

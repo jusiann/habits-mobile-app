@@ -14,7 +14,6 @@ export async function resolveUserTimezone(userId) {
 }
 
 export function tzDayRange(input, tz) {
-    // input can be a Date, ISO string or a moment; if input is falsy, use current time in tz
     const m = moment.isMoment(input) ? input.clone().tz(tz) : moment.tz(input || undefined, tz);
     const start = m.clone().startOf('day').toDate();
     const end = m.clone().add(1, 'day').startOf('day').toDate();

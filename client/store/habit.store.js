@@ -27,21 +27,20 @@ export const useHabitStore = create((set, get) => ({
       error: null 
     });
     try {
-      const response = await get().makeRequest('https://habits-mobile-app.onrender.com/api/habits/presets', {
+      const response = await get().makeRequest(API_ENDPOINTS.HABITS.PRESETS, {
         method: 'GET'
       });
 
       let data;
       try {
         data = await response.json();
-      } catch (parseError) {
-        console.error("JSON parse error:", parseError);
+      } catch (error) {
+        console.error("JSON parse error:", error);
         throw new Error("Invalid server response format");
       }
 
       if (response.ok) {
         const cleanPresets = data.data.presets.health || [];
-        
         set({ 
           presets: cleanPresets, 
           isLoading: false 
@@ -76,8 +75,7 @@ export const useHabitStore = create((set, get) => ({
       error: null 
     });
     try {
-      const isNewDay = await get().checkAndResetDaily();
-      const response = await get().makeRequest('https://habits-mobile-app.onrender.com/api/habits/dashboard', {
+      const response = await get().makeRequest(API_ENDPOINTS.HABITS.DASHBOARD, {
         method: 'GET'
       });
 
@@ -95,10 +93,6 @@ export const useHabitStore = create((set, get) => ({
           habits: cleanHabits, 
           isLoading: false 
         });
-        
-        if (isNewDay) {
-          console.log('Habits refreshed for new day');
-        }
         
         return { 
           success: true, 
@@ -130,7 +124,7 @@ export const useHabitStore = create((set, get) => ({
       error: null 
     });
     try {
-      const response = await get().makeRequest('https://habits-mobile-app.onrender.com/api/habits/add', {
+  const response = await get().makeRequest(API_ENDPOINTS.HABITS.ADD, {
         method: 'POST',
         body: JSON.stringify(habitData)
       });
@@ -138,8 +132,8 @@ export const useHabitStore = create((set, get) => ({
       let data;
       try {
         data = await response.json();
-      } catch (parseError) {
-        console.error("JSON parse error:", parseError);
+      } catch (error) {
+        console.error("JSON parse error:", error);
         throw new Error("Invalid server response format");
       }
 
@@ -168,45 +162,36 @@ export const useHabitStore = create((set, get) => ({
     }
   },
 
-// INCREMENT HABIT
+  // INCREMENT HABIT
   incrementHabit: async (habitId) => {
     set({
       isLoading: true,
       error: null
     });
-
-    const pad = (n) => String(n).padStart(2, '0');
-    const formatDate = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-
     try {
-      const { useAuthStore } = await import("./auth.store");
-      const { user } = useAuthStore.getState();
+      const {useAuthStore} = await import("./auth.store");
+      const {user} = useAuthStore.getState();
       const timezone = user?.timezone || 'Europe/Istanbul';
 
-      // now in user's TZ
-      const nowInTZ = getTodayInUserTZ(timezone); // expects Date
+      const pad = (n) => String(n).padStart(2, '0');
+      const formatDate = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 
-      // build three candidate dates to try:
-      // 1) user's TZ date (current)
-      // 2) previous day in user's TZ (covers server-side day-offset cases)
-      // 3) UTC date (if backend is using UTC day)
+      const nowInTZ = getTodayInUserTZ(timezone);
       const prevDayInTZ = new Date(nowInTZ.getTime() - 24 * 60 * 60 * 1000);
       const now = new Date();
       const utcDateObj = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
 
-      const candidates = [
-        { dateObj: nowInTZ, timeIso: nowInTZ.toISOString() },
-        { dateObj: prevDayInTZ, timeIso: new Date(prevDayInTZ.getTime()).toISOString() },
-        { dateObj: utcDateObj, timeIso: new Date().toISOString() } // use actual current ISO for UTC attempt
-      ];
+      const candidates = [{ 
+        dateObj: nowInTZ, timeIso: nowInTZ.toISOString() }, { 
+        dateObj: prevDayInTZ, timeIso: new Date(prevDayInTZ.getTime()).toISOString() }, { 
+        dateObj: utcDateObj, timeIso: new Date().toISOString() }];
 
-      let lastError = null;
       for (const candidate of candidates) {
         const localDate = formatDate(candidate.dateObj);
         const localIso = candidate.timeIso;
 
         try {
-          const response = await get().makeRequest(`https://habits-mobile-app.onrender.com/api/habits/${habitId}/increment?localDate=${localDate}`, {
+          const response = await get().makeRequest(`${API_ENDPOINTS.HABITS.INCREMENT(habitId)}?localDate=${localDate}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -220,8 +205,7 @@ export const useHabitStore = create((set, get) => ({
             data = await response.json();
           } catch (parseError) {
             console.error("JSON parse error on increment attempt:", parseError);
-            // try next candidate
-            lastError = new Error("Invalid server response format");
+            new Error("Invalid server response format");
             continue;
           }
 
@@ -232,29 +216,26 @@ export const useHabitStore = create((set, get) => ({
               data: data.data
             };
           } else {
-            // record and try next candidate
-            lastError = new Error(data.message || data.error || `Failed to increment habit (date ${localDate})`);
+            new Error(data.message || data.error || `Failed to increment habit (date ${localDate})`);
             continue;
           }
         } catch (err) {
-          // network / auth error -> try next candidate
-          console.warn(`Increment attempt failed for date ${formatDate(candidate.dateObj)}:`, err.message || err);
-          lastError = err;
+          console.warn(`Increment attempt failed for date ${formatDate(candidate.dateObj)}:`, err?.message || err);
           continue;
         }
       }
 
-      // all attempts failed
-      throw lastError || new Error("Failed to increment habit after retries");
+      return { 
+        success: false, 
+        message: 'All increment attempts failed' 
+      };
     } catch (error) {
       set({
         error: error.message || 'Network error',
         isLoading: false
       });
-      return {
-        success: false,
-        message: error.message || 'Network error. Please try again.'
-      };
+      return { 
+        success: false, message: error.message || 'Network error. Please try again.' };
     } finally {
       set({
         isLoading: false
@@ -323,13 +304,14 @@ export const useHabitStore = create((set, get) => ({
 
 
   // UPDATE HABIT
+  
   updateHabit: async (habitId, updateData) => {
     set({ 
       isLoading: true, 
       error: null 
     });
     try {
-      const response = await get().makeRequest(`https://habits-mobile-app.onrender.com/api/habits/${habitId}`, {
+      const response = await get().makeRequest(API_ENDPOINTS.HABITS.UPDATE(habitId), {
         method: 'PATCH',
         body: JSON.stringify(updateData)
       });
@@ -368,40 +350,31 @@ export const useHabitStore = create((set, get) => ({
   },
 
   habitLogsByDate: async (date) => {
-    // IF TODAY, RETURN FROM CACHE
-    const isSameDay = (date1, date2) => {
-      return date1.toDateString() === date2.toDateString();
-    };
     set({ 
       isLoading: true, 
       error: null 
     });
 
-      // normalize incoming date and make it timezone-aware (user's TZ)
     try {
-      const { useAuthStore } = await import("./auth.store");
-      const { user } = useAuthStore.getState();
+      const {useAuthStore} = await import('./auth.store');
+      const {user} = useAuthStore.getState();
       const timezone = user?.timezone || 'Europe/Istanbul';
 
-      // helper: get YYYY-MM-DD string for a Date in user's TZ
-      const dateToLocalYYYYMMDD = (d, tz) => {
-        return new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit' }).format(d);
-      };
+      const isSameDay = (d1, d2) => d1.toDateString() === d2.toDateString();
+      const dateToLocalYYYYMMDD = (d, tz) => new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit' }).format(d);
 
       let localDateStr;
       let requestDate;
 
-      // if caller passed a plain YYYY-MM-DD string, use it directly (avoid parsing inconsistencies)
       if (typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
         localDateStr = date;
         requestDate = new Date(`${localDateStr}T00:00:00`);
       } else {
-        // parse incoming `date` param into a Date object and format for user's tz
         const requestDateRaw = new Date(date);
         localDateStr = dateToLocalYYYYMMDD(requestDateRaw, timezone);
-        // build start/end of that day in client's local JS time (for comparisons/caching)
         requestDate = new Date(`${localDateStr}T00:00:00`);
       }
+
       const startOfLocalDay = new Date(requestDate);
       const endOfLocalDay = new Date(startOfLocalDay.getTime() + 24 * 60 * 60 * 1000 - 1);
       const today = new Date();
@@ -414,11 +387,8 @@ export const useHabitStore = create((set, get) => ({
         return get().monthlyCache[cacheKey][requestDate.getDate()];
       }
 
-  // call API using the user's localDate (YYYY-MM-DD) so server gets user's-day intent
-  // prefer centralized endpoint helper so base URL is consistent with other calls
-  const url = API_ENDPOINTS.HABITS.LOGS_BY_DATE(localDateStr);
-  console.debug('[habitLogsByDate] requesting URL:', url);
-  const response = await get().makeRequest(url, { method: 'GET' });
+      const url = API_ENDPOINTS.HABITS.LOGS_BY_DATE(localDateStr);
+      const response = await get().makeRequest(url, { method: 'GET' });
 
       let data;
       try {
@@ -428,108 +398,73 @@ export const useHabitStore = create((set, get) => ({
         throw new Error("Invalid server response format");
       }
 
-  // If server returned OK, handle as before
-  if (response.ok) {
-        // keep only habits that existed on that local day (compare createdAt <= endOfLocalDay)
-        const activeHabits = data.data.habits.filter(habit => {
+      if (response.ok) {
+        const activeHabits = (data.data.habits || []).filter(habit => {
           if (habit.status === 'never_started') return false;
           const createdAt = new Date(habit.createdAt).getTime();
           return createdAt <= endOfLocalDay.getTime();
         });
 
-        const summary = data.data.summary;
-        const result = { 
-          success: true, 
-          data: {
-            summary: {
-              ...summary
-            },
-            habits: activeHabits
-          }
-        };
+        const summary = data.data.summary || {};
+        const result = { success: true, data: { summary: { ...summary }, habits: activeHabits } };
 
-  // IF NOT TODAY, CACHE THE RESULT (cache key uses user's local day)
         if (!isSameDay(requestDate, today)) {
           const currentCache = { ...get().monthlyCache };
-          if (!currentCache[cacheKey]) {
-            currentCache[cacheKey] = {};
-          }
+          if (!currentCache[cacheKey]) currentCache[cacheKey] = {};
           currentCache[cacheKey][requestDate.getDate()] = result;
           set({ monthlyCache: currentCache });
         }
 
-  return result;
-      } else {
-  // helpful debug info for server-side errors seen in production
-  console.debug('[habitLogsByDate] response not ok:', response.status, data);
-
-  // Retry with ISO datetime if server indicates missing/undefined 'targetDate' (server bug on some deployments)
-  try {
-    const serverMessage = (data && data.message) || '';
-    if (response.status === 500 && serverMessage.toLowerCase().includes('targetdate')) {
-      const isoDate = new Date(`${localDateStr}T00:00:00Z`).toISOString();
-      const fallbackUrl = API_ENDPOINTS.HABITS.LOGS_BY_DATE(encodeURIComponent(isoDate));
-      console.debug('[habitLogsByDate] detected targetDate error, retrying with ISO date:', isoDate, fallbackUrl);
-      const fallbackResp = await get().makeRequest(fallbackUrl, { method: 'GET' });
-      let fallbackData;
-      try {
-        fallbackData = await fallbackResp.json();
-      } catch (parseError) {
-        console.error('[habitLogsByDate] JSON parse error on fallback:', parseError);
-        throw new Error('Invalid server response format (fallback)');
-      }
-
-      if (fallbackResp.ok) {
-        const activeHabits = fallbackData.data.habits.filter(habit => {
-          if (habit.status === 'never_started') return false;
-          const createdAt = new Date(habit.createdAt).getTime();
-          return createdAt <= endOfLocalDay.getTime();
-        });
-
-        const summary = fallbackData.data.summary;
-        const fallbackResult = {
-          success: true,
-          data: {
-            summary: { ...summary },
-            habits: activeHabits
-          }
-        };
-
-        // cache fallback result if not today
-        if (!isSameDay(requestDate, today)) {
-          const currentCache = { ...get().monthlyCache };
-          if (!currentCache[cacheKey]) currentCache[cacheKey] = {};
-          currentCache[cacheKey][requestDate.getDate()] = fallbackResult;
-          set({ monthlyCache: currentCache });
-        }
-
-        return fallbackResult;
-      }
-    }
-  } catch (retryError) {
-    console.warn('[habitLogsByDate] fallback attempt failed:', retryError?.message || retryError);
-  }
-
-  // final: return structured error for UI to display/log
-  return {
-    success: false,
-    message: data.message || data.error || "Failed to fetch habit logs"
-  };
+        return result;
       }
     } catch (error) {
-      set({ 
-        error: error.message || 'Network error', 
-        isLoading: false 
-      });
-      return { 
-        success: false, 
-        message: error.message || 'Network error. Please try again.' 
-      };
-    } finally {
-      set({ 
-        isLoading: false 
-      });
+      console.error('[habitLogsByDate] Error:', error);
     }
+
+    // IF SERVER RETURNED TARGETDATE ERROR
+    //   try {
+    //     const serverMessage = (data && data.message) || '';
+    //     if (response.status === 500 && serverMessage.toLowerCase().includes('targetdate')) {
+    //       const isoDate = new Date(`${localDateStr}T00:00:00Z`).toISOString();
+    //       const fallbackUrl = API_ENDPOINTS.HABITS.LOGS_BY_DATE(encodeURIComponent(isoDate));
+    //       const fallbackResp = await get().makeRequest(fallbackUrl, { method: 'GET' });
+    //       let fallbackData;
+    //       try { fallbackData = await fallbackResp.json(); } catch (parseError) {
+    //         console.error('[habitLogsByDate] JSON parse error on fallback:', parseError);
+    //         throw new Error('Invalid server response format (fallback)');
+    //       }
+
+    //       if (fallbackResp.ok) {
+    //         const activeHabits = (fallbackData.data.habits || []).filter(habit => {
+    //           if (habit.status === 'never_started') return false;
+    //           const createdAt = new Date(habit.createdAt).getTime();
+    //           return createdAt <= endOfLocalDay.getTime();
+    //         });
+
+    //         const summary = fallbackData.data.summary || {};
+    //         const fallbackResult = { success: true, data: { summary: { ...summary }, habits: activeHabits } };
+
+    //         if (!isSameDay(requestDate, today)) {
+    //           const currentCache = { ...get().monthlyCache };
+    //           if (!currentCache[cacheKey]) currentCache[cacheKey] = {};
+    //           currentCache[cacheKey][requestDate.getDate()] = fallbackResult;
+    //           set({ monthlyCache: currentCache });
+    //         }
+
+    //         return fallbackResult;
+    //       }
+    //     }
+    //   } catch (retryError) {
+    //     console.warn('[habitLogsByDate] fallback attempt failed:', retryError?.message || retryError);
+    //   }
+
+    //   return { success: false, message: data?.message || data?.error || 'Failed to fetch habit logs' };
+    // } catch (error) {
+    //   set({ error: error.message || 'Network error' });
+    //   return { success: false, message: error.message || 'Network error. Please try again.' };
+    // } finally {
+    //   set({ isLoading: false });
+    // }
   },
 
   // FETCH HABIT LOGS BY DATE
@@ -618,6 +553,7 @@ export const useHabitStore = create((set, get) => ({
   // },
 
   // FETCH HABIT PROGRESS
+  
   habitProgress: async (habitId, params = {}) => {
     set({ 
       isLoading: true, 
@@ -625,8 +561,7 @@ export const useHabitStore = create((set, get) => ({
     });
     try {
       const queryParams = new URLSearchParams(params).toString();
-      const url = `https://habits-mobile-app.onrender.com/api/habits/${habitId}/progress${queryParams ? `?${queryParams}` : ''}`;
-      
+      const url = API_ENDPOINTS.HABITS.PROGRESS(habitId, queryParams);
       const response = await get().makeRequest(url, {
         method: 'GET'
       });
@@ -683,7 +618,7 @@ export const useHabitStore = create((set, get) => ({
       error: null 
     });
     try {
-      const response = await get().makeRequest(`https://habits-mobile-app.onrender.com/api/habits/${habitId}`, {
+      const response = await get().makeRequest(API_ENDPOINTS.HABITS.DELETE(habitId), {
         method: 'DELETE'
       });
 
@@ -755,57 +690,24 @@ export const useHabitStore = create((set, get) => ({
       const timezone = user?.timezone || 'Europe/Istanbul';
       
       const now = new Date();
-      const todayInTZ = getTodayInUserTZ(timezone);
       const lastFetch = get().lastFetchDate ? new Date(get().lastFetchDate) : null;
-      const currentHabits = get().habits || [];
       
-      // DEBUG: HABIT RESET CHECK STARTED
-      console.log('🕐 [HABIT RESET] Check started at:', now.toLocaleString('tr-TR'));
-      console.log('📊 [HABIT RESET] Current habits count:', currentHabits.length);
-      console.log('📅 [HABIT RESET] Today in TZ:', todayInTZ.toLocaleString('tr-TR'));
-      console.log('📅 [HABIT RESET] Last fetch date:', lastFetch ? lastFetch.toLocaleString('tr-TR') : 'Never');
       if (!lastFetch) {
-        // DEBUG: FIRST SETUP
-        console.log('🆕 [HABIT RESET] First time setup - initializing and resetting habits');
-        console.log('🆕 [HABIT RESET] Setup Date & Time:', now.toLocaleString('tr-TR'));
-        console.log('🆕 [HABIT RESET] Clearing any existing habits:', currentHabits.length, 'habits');
         set({ 
           habits: [],
           lastFetchDate: now.toISOString() 
         });
-        // DEBUG: FIRST SETUP COMPLETED
-        console.log('✅ [HABIT RESET] First time setup and reset completed');
         return true;
       } else if (isNewDayInUserTZ(lastFetch, timezone)) {
-        // DEBUG: NEW DAY DETECTED
-        console.log('🔄 [HABIT RESET] New day detected! Resetting habits...');
-        console.log('🔄 [HABIT RESET] Reset Date & Time:', now.toLocaleString('tr-TR'));
-        console.log('🔄 [HABIT RESET] Previous habits cleared:', currentHabits.length, 'habits');
-        console.log('🔄 [HABIT RESET] Last fetch was:', lastFetch.toLocaleString('tr-TR'));
-        console.log('🔄 [HABIT RESET] Today is:', todayInTZ.toLocaleString('tr-TR'));
         set({ 
           habits: [], 
           lastFetchDate: now.toISOString() 
         });
-        // DEBUG: RESET COMPLETED
-        console.log('✅ [HABIT RESET] Reset completed successfully');
         return true;
       } else {
-        // DEBUG: SAME DAY DETECTED
-        console.log('⏰ [HABIT RESET] Same day detected - no reset needed');
-        console.log('⏰ [HABIT RESET] Current habits will be preserved:', currentHabits.length, 'habits');
-        console.log('⏰ [HABIT RESET] Last fetch was:', lastFetch.toLocaleString('tr-TR'));
-        console.log('⏰ [HABIT RESET] Today is:', todayInTZ.toLocaleString('tr-TR'));
       }
       return false;
-    } catch (error) {
-      // DEBUG: ERROR OCCURRED
-      console.error('❌ [HABIT RESET] Error in checkAndResetDaily:', error);
-      console.error('❌ [HABIT RESET] Error details:', {
-        message: error.message,
-        stack: error.stack,
-        timestamp: new Date().toLocaleString('tr-TR')
-      });
+    } catch (_error) {
       return false;
     }
   },
@@ -876,6 +778,7 @@ export const useHabitStore = create((set, get) => ({
   // },
 
   // CLEAR STORE
+  
   clearStore: () => {
     set({
       monthlyCache: {},
@@ -885,5 +788,115 @@ export const useHabitStore = create((set, get) => ({
       error: null,
       lastFetchDate: null
     });
+  },
+
+  // LOAD MONTH DATA (Optimized with cache)
+  loadMonthData: async (date) => {
+    set({ 
+      isLoading: true, 
+      error: null 
+    });
+
+    try {
+      const year = date.getFullYear();
+      const month = date.getMonth();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const cacheKey = `${year}-${month}`;
+      const newMonthData = {};
+      const today = new Date();
+      const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month;
+
+      let totalDaysWithData = 0;
+      let totalCompletionRateSum = 0;
+      let totalCompletedHabits = 0;
+      let currentStreakCount = 0;
+      let streakBroken = false;
+
+      let cachedDays = 0;
+      let apiDays = 0;
+
+      const isSameDay = (d1, d2) => d1.toDateString() === d2.toDateString();
+
+      // LOAD ALL DAYS IN THIS MONTH
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dateObj = new Date(year, month, day);
+        const cacheEntry = get().monthlyCache[cacheKey]?.[day];
+
+        let result;
+        const isToday = isSameDay(dateObj, today);
+        if (cacheEntry && !isToday) {
+          // Use cache (except for today)
+          result = cacheEntry;
+          cachedDays++;
+          console.log(`[LoadMonthData] Day ${day}: Loaded from cache`);
+        } else {
+          // Load from API (always for today, or if no cache)
+          console.log(`[LoadMonthData] Day ${day}: Loading from API...`);
+          result = await get().habitLogsByDate(dateObj);
+          apiDays++;
+          console.log(`[LoadMonthData] Day ${day}: Loaded from API`);
+        }
+
+        if (result.success && result.data) {
+          newMonthData[day] = {
+            summary: result.data.summary
+          };
+          
+          const summary = result.data.summary;
+          
+          // ONLY COUNT DAYS WITH HABIT DATA
+          if (summary.completionRate > 0) {
+            totalDaysWithData++;
+            
+            // USE BACKEND COMPLETION RATE DIRECTLY
+            const dailyCompletionRate = summary.completionRate;
+            totalCompletionRateSum += dailyCompletionRate;
+            totalCompletedHabits += summary.completedHabits;
+            
+            // CALC CURRENT STREAK
+            if (summary.completedHabits > 0) {
+              if (!streakBroken) {
+                currentStreakCount++;
+              } else {
+                currentStreakCount = 1;
+                streakBroken = false;
+              }
+            } else {
+              streakBroken = true;
+            }
+          } 
+        }
+      }
+
+      const stats = {
+        currentStreak: currentStreakCount,
+        completionRate: daysInMonth > 0 ? Math.round(totalCompletionRateSum / daysInMonth) : 0,
+        totalCompletedDays: totalDaysWithData,
+        totalCompleted: totalCompletedHabits
+      };
+
+      return { 
+        success: true, 
+        data: { 
+          monthData: newMonthData, 
+          stats,
+          cachedDays,
+          apiDays
+        } 
+      };
+    } catch (error) {
+      set({ 
+        error: error.message || 'Network error', 
+        isLoading: false 
+      });
+      return { 
+        success: false, 
+        message: error.message || 'Network error. Please try again.' 
+      };
+    } finally {
+      set({ 
+        isLoading: false 
+      });
+    }
   }
 }));

@@ -43,7 +43,7 @@ export default function Home() {
       }
 
       await Promise.all(loadPromises);
-      console.log('History data loaded successfully');
+      console.log('History data loaded successfully for the month');
     } catch (error) {
       console.error('Error loading history data:', error);
     }
@@ -68,10 +68,9 @@ export default function Home() {
     });
   }, [habits]);
 
-  // React.useEffect(() => {
-  // // History loading is now started after fetchHabits completes to avoid blocking habit display.
-  // // Left intentionally empty to avoid duplicate background runs.
-  // }, [token, loadHistoryData]);
+  React.useEffect(() => {
+
+  }, [token, loadHistoryData]);
 
   React.useEffect(() => {
     if (user && token) {

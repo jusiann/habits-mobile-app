@@ -2,6 +2,7 @@ import ApiError from '../utils/error.js';
 import Habit from '../models/habit.js';
 import HabitLog from '../models/habit.log.js';
 import User from '../models/user.js';
+import Goal from '../models/goal.js';
 import moment from 'moment-timezone';
 import { DEFAULT_TZ, resolveUserTimezone, tzDayRange } from '../utils/timezone.js';
 
@@ -58,7 +59,9 @@ const HABIT_PRESETS = {
     ]
 };
 
-export const getDashboard = async (req, res) => {
+
+// HOME PAGE
+export const getDashboardHabits = async (req, res) => {
     try {
         const userId = req.user.id;
     const user = await User.findById(userId);
@@ -473,7 +476,7 @@ export const getIncrementHabit = async (req, res) => {
 };
 
 
-
+// HISTORY PAGE
 export const getHabitProgress = async (req, res) => {
     try {
         const {habitId} = req.params;
@@ -565,8 +568,6 @@ export const getHabitProgress = async (req, res) => {
         });
     }
 };
-
-
 
 export const getHabitLogsByDate = async (req, res) => {
     try {
@@ -665,7 +666,7 @@ export const getHabitLogsByDate = async (req, res) => {
 };
 
 
-
+// PRESETS
 export const getHabitPresets = async (req, res) => {
     try {
         res.status(200).json({
@@ -703,5 +704,109 @@ export const getHabitPresetsByCategory = async (req, res) => {
             success: false,
             message: error.message || "Failed to get category presets"
         });
+    }
+};
+
+
+
+// GOALS PAGE
+export const getDashboardGoals = async (req, res) => {
+    try {
+        if (!req.user || !req.user.id)
+            return res.status(401).json({ success: false, message: 'Authentication required.' });
+
+        const userId = req.user.id;
+        const goals = await Goal.find({ userId }).sort({ createdAt: -1 }).populate('habitId', 'name icon');
+
+        const payload = goals.map(g => ({
+            id: g._id,
+            type: g.type,
+            habit: g.habitId ? { id: g.habitId._id, name: g.habitId.name, icon: g.habitId.icon } : null,
+            repeat: g.repeat || null,
+            metric: g.metric || null,
+            value: g.value || null,
+            progress: g.progress,
+            completed: g.completed,
+            createdAt: g.createdAt,
+            updatedAt: g.updatedAt
+        }));
+
+    res.status(200).json({ success: true, message: 'Goals retrieved successfully', data: payload });
+    } catch (error) {
+    res.status(error.statusCode || 500).json({ success: false, message: error.message || 'Failed to get goals' });
+    }
+};
+
+export const createGoal = async (req, res) => {
+    try {
+        if (!req.user || !req.user.id)
+            return res.status(401).json({ success: false, message: 'Authentication required.' });
+
+        const userId = req.user.id;
+        const { type, habitId, repeat, metric, value } = req.body;
+
+    if (!type) throw new ApiError('Type is required.', 400);
+
+        const goalData = { userId, type };
+
+        if (type === 'complete') {
+            if (!habitId) throw new ApiError('habitId is required for complete goals.', 400);
+            if (!repeat || repeat <= 0) throw new ApiError('repeat (number > 0) is required for complete goals.', 400);
+
+            const habit = await Habit.findOne({ _id: habitId, userId, isActive: true });
+            if (!habit) throw new ApiError('Selected preset habit not found or not accessible.', 404);
+
+            goalData.habitId = habitId;
+            goalData.repeat = repeat;
+        } else if (type === 'reach') {
+            if (!metric) throw new ApiError('metric is required for reach goals.', 400);
+            if (!['streak', 'rate'].includes(metric)) throw new ApiError('metric must be "streak" or "rate".', 400);
+            if (value === undefined || value === null) throw new ApiError('value is required for reach goals.', 400);
+            if (value <= 0) throw new ApiError('value must be greater than 0.', 400);
+
+            goalData.metric = metric;
+            goalData.value = value;
+        } else if (type === 'maintain') {
+            // ileride dolacaktır
+        } else {
+            throw new ApiError('Invalid goal type.', 400);
+        }
+
+        const newGoal = new Goal(goalData);
+        await newGoal.save();
+
+        res.status(201).json({
+            success: true,
+            message: 'Goal created successfully',
+            data: {
+                id: newGoal._id,
+                type: newGoal.type,
+                habitId: newGoal.habitId || null,
+                repeat: newGoal.repeat || null,
+                metric: newGoal.metric || null,
+                value: newGoal.value || null,
+                progress: newGoal.progress,
+                completed: newGoal.completed,
+                createdAt: newGoal.createdAt
+            }
+        });
+    } catch (error) {
+        res.status(error.statusCode || 500).json({ success: false, message: error.message || 'Goal creation failed.' });
+    }
+};
+
+export const deleteGoal = async (req, res) => {
+    try {
+        if (!req.user || !req.user.id)
+            return res.status(401).json({ success: false, message: 'Authentication required.' });
+
+        const userId = req.user.id;
+        const goalId = req.params.id;
+        const goal = await Goal.findOne({ _id: goalId, userId });
+    if (!goal) throw new ApiError('Goal not found.', 404);
+    await Goal.deleteOne({ _id: goalId });
+    res.status(200).json({ success: true, message: 'Goal deleted successfully' });
+    } catch (error) {
+    res.status(error.statusCode || 500).json({ success: false, message: error.message || 'Goal deletion failed.' });
     }
 };

@@ -20,7 +20,7 @@ import {
 import { showConnectionError } from '../../constants/alert.utils';
 
 export default function History() {
-  const {habitLogsByDate} = useHabitStore();
+  const {loadMonthData: loadMonthDataFromStore} = useHabitStore();
   const {user} = useAuthStore();
   const navigation = useNavigation();
   const [currentDate, setCurrentDate] = React.useState<Date>(new Date());
@@ -30,22 +30,7 @@ export default function History() {
   const [stats, setStats] = React.useState<typeof STATS_STRUCTURE>(DEFAULT_STATS); 
   const [days, setDays] = React.useState<(Date | null)[]>([]);
   const [actions, setActions] = React.useState<any>(null);
-  const [showAlert, setShowAlert] = React.useState({
-      visible: false,
-      title: '',
-      message: '',
-      type: 'info' as 'success' | 'error' | 'warning' | 'info',
-      buttons: [] as Array<{ text: string; onPress: () => void; style?: 'default' | 'cancel' | 'destructive' }>
-    });
   
-  React.useEffect(() => {
-    const initActions = async () => {
-      const result = await historyAction();
-      setActions(result);
-    };
-    initActions();
-  }, []);
-
   React.useEffect(() => {
     if (!actions) 
       return;
@@ -68,7 +53,7 @@ export default function History() {
     return () => navigationListener();
   }, [navigation, currentDate, actions]);
 
-  const historyAction = async () => {  
+  const historyAction = React.useCallback(async () => {  
     try {
       // GETTING MONTH'S DAYS
       const getDaysInMonth = (date: Date): (Date | null)[] => {
@@ -99,69 +84,14 @@ export default function History() {
       const loadMonthData = async (date: Date): Promise<void> => {
         try {
           setLoading(true);
-          const year = date.getFullYear();
-          const month = date.getMonth();
-          const daysInMonth = new Date(year, month + 1, 0).getDate();
-          const newMonthData: {[key: number]: typeof DAY_DATA_STRUCTURE} = {};
-          
-          let totalDaysWithData = 0;
-          let totalCompletionRateSum = 0;
-          let totalCompletedHabits = 0;
-          let currentStreakCount = 0;
-          let streakBroken = false;
-          
-          // LOAD ALL DAYS IN THIS MONTH
-          for (let day = 1; day <= daysInMonth; day++) {
-            // create a Date object for this local calendar day and let the store
-            // convert it to the user's timezone-aware YYYY-MM-DD when calling API
-            const dateObj = new Date(year, month, day);
-            const dateStrDebug = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-            console.debug('[History] requesting logs for date:', dateStrDebug, dateObj.toISOString());
-            const result = await habitLogsByDate(dateObj);
-            
-            if (result.success && result.data) {
-              newMonthData[day] = {
-                summary: result.data.summary
-              };
-              
-              const summary = result.data.summary;
-              
-              // ONLY COUNT DAYS WITH HABIT DATA
-              if (summary.completionRate > 0) {
-                totalDaysWithData++;
-                
-                // USE BACKEND COMPLETION RATE DIRECTLY
-                const dailyCompletionRate = summary.completionRate;
-                totalCompletionRateSum += dailyCompletionRate;
-                totalCompletedHabits += summary.completedHabits;
-                
-                // CALC CURRENT STREAK
-                if (summary.completedHabits > 0) {
-                  if (!streakBroken) {
-                    currentStreakCount++;
-                  } else {
-                    currentStreakCount = 1;
-                    streakBroken = false;
-                  }
-                } else {
-                  streakBroken = true;
-                }
-              } 
-            }
+          const result = await loadMonthDataFromStore(date); // Use store's loadMonthData
+          if (result.success) {
+            setMonthData(result.data.monthData);
+            setStats(result.data.stats);
           }
-          
-          setMonthData(newMonthData);
-          setStats({
-            currentStreak: currentStreakCount,
-            completionRate: daysInMonth > 0 ? Math.round(totalCompletionRateSum / daysInMonth) : 0,
-            totalCompletedDays: totalDaysWithData,
-            totalCompleted: totalCompletedHabits
-          });
         } catch (error) {
           if (error.message.includes("Failed to fetch") || error.message.includes("Network request failed")) {
-            showConnectionError(() => {
-              setShowAlert(prev => ({ ...prev, visible: false }));
-            });
+            showConnectionError(() => {});
           }
         } finally {
           setLoading(false);
@@ -176,7 +106,15 @@ export default function History() {
       console.error('Error in historyAction:', error);
       throw error;
     }
-  };
+  }, [loadMonthDataFromStore]);
+
+  React.useEffect(() => {
+    const initActions = async () => {
+      const result = await historyAction();
+      setActions(result);
+    };
+    initActions();
+  }, [historyAction]);
 
   return (
     <SafeScreen>
