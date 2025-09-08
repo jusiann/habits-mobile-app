@@ -261,6 +261,7 @@ export default function CreateGoal() {
             {/* REACH TYPE INPUTS */}
             {type === 'reach' && (
               <View style={{ marginTop: 12 }}>
+                
                 {/* METRIC SELECTION */}
                 <Text style={styles.label}>Metric</Text>
                 <View style={styles.unitContainer}>

@@ -214,13 +214,13 @@ export default function Goals() {
                         // For rate: use overall completion rate from monthStats
                         const currentRate = monthStats?.completionRate || 0;
                         progress = target > 0 ? Math.min(currentRate / target, 1) : 0;
-                        console.log(`Goal ${g.id} (reach rate): currentRate=${currentRate}, target=${target}, progress=${progress}`);
+                        console.log(`Goal ${g.id} (reach rate): currentRate=${currentRate}, target=${target}, progress=${progress}, monthStats=`, monthStats);
                         
                       } else if (g.metric === 'streak') {
                         // For streak: use current streak from monthStats
                         const currentStreak = monthStats?.currentStreak || 0;
                         progress = target > 0 ? Math.min(currentStreak / target, 1) : 0;
-                        console.log(`Goal ${g.id} (reach streak): currentStreak=${currentStreak}, target=${target}, progress=${progress}`);
+                        console.log(`Goal ${g.id} (reach streak): currentStreak=${currentStreak}, target=${target}, progress=${progress}, monthStats=`, monthStats);
                       }
                     } else if (g.type === 'maintain') {
                       // For maintain goals, use overall completion rate from monthStats

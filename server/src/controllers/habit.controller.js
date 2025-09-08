@@ -398,7 +398,6 @@ export const deleteHabit = async (req, res) => {
 
 
         await Habit.deleteOne({ _id: habitId, userId });
-        //opsiyonel  
         await HabitLog.deleteMany({ habitId, userId });
 
         res.status(200).json({
@@ -713,7 +712,10 @@ export const getHabitPresetsByCategory = async (req, res) => {
 export const getDashboardGoals = async (req, res) => {
     try {
         if (!req.user || !req.user.id)
-            return res.status(401).json({ success: false, message: 'Authentication required.' });
+            return res.status(401).json({ 
+                success: false, 
+                message: 'Authentication required.' 
+            });
 
         const userId = req.user.id;
         const goals = await Goal.find({ userId }).sort({ createdAt: -1 }).populate('habitId', 'name icon');
@@ -746,18 +748,25 @@ export const getDashboardGoals = async (req, res) => {
 export const createGoal = async (req, res) => {
     try {
         if (!req.user || !req.user.id)
-            return res.status(401).json({ success: false, message: 'Authentication required.' });
+            return res.status(401).json({ 
+                success: false, 
+                message: 'Authentication required.' 
+            });
 
         const userId = req.user.id;
         const { type, habitId, repeat, metric, value } = req.body;
 
-    if (!type) throw new ApiError('Type is required.', 400);
+    if (!type) 
+        throw new ApiError('Type is required.', 400);
 
         const goalData = { userId, type };
 
         if (type === 'complete') {
-            if (!habitId) throw new ApiError('habitId is required for complete goals.', 400);
-            if (!repeat || repeat <= 0) throw new ApiError('repeat (number > 0) is required for complete goals.', 400);
+            if (!habitId) 
+                throw new ApiError('habitId is required for complete goals.', 400);
+            
+            if (!repeat || repeat <= 0) 
+                throw new ApiError('repeat (number > 0) is required for complete goals.', 400);
 
             const habit = await Habit.findOne({ _id: habitId, userId, isActive: true });
             if (!habit) throw new ApiError('Selected preset habit not found or not accessible.', 404);
@@ -765,15 +774,22 @@ export const createGoal = async (req, res) => {
             goalData.habitId = habitId;
             goalData.repeat = repeat;
         } else if (type === 'reach') {
-            if (!metric) throw new ApiError('metric is required for reach goals.', 400);
-            if (!['streak', 'rate'].includes(metric)) throw new ApiError('metric must be "streak" or "rate".', 400);
-            if (value === undefined || value === null) throw new ApiError('value is required for reach goals.', 400);
-            if (value <= 0) throw new ApiError('value must be greater than 0.', 400);
+            if (!metric) 
+                throw new ApiError('metric is required for reach goals.', 400);
+
+            if (!['streak', 'rate'].includes(metric)) 
+                throw new ApiError('metric must be "streak" or "rate".', 400);
+            
+            if (value === undefined || value === null) 
+                throw new ApiError('value is required for reach goals.', 400);
+            
+            if (value <= 0) 
+                throw new ApiError('value must be greater than 0.', 400);
 
             goalData.metric = metric;
             goalData.value = value;
         } else if (type === 'maintain') {
-            // ileride dolacaktır
+            // COMMING SOON
         } else {
             throw new ApiError('Invalid goal type.', 400);
         }
@@ -797,7 +813,10 @@ export const createGoal = async (req, res) => {
             }
         });
     } catch (error) {
-        res.status(error.statusCode || 500).json({ success: false, message: error.message || 'Goal creation failed.' });
+        res.status(error.statusCode || 500).json({ 
+            success: false, 
+            message: error.message || 'Goal creation failed.' 
+        });
     }
 };
 
@@ -809,10 +828,19 @@ export const deleteGoal = async (req, res) => {
         const userId = req.user.id;
         const goalId = req.params.id;
         const goal = await Goal.findOne({ _id: goalId, userId });
-    if (!goal) throw new ApiError('Goal not found.', 404);
-    await Goal.deleteOne({ _id: goalId });
-    res.status(200).json({ success: true, message: 'Goal deleted successfully' });
+        if (!goal) throw new ApiError('Goal not found.', 404);
+        
+        await Goal.deleteOne({ _id: goalId });
+        await Goal.deleteMany({ parentGoalId: goalId });
+
+        res.status(200).json({ 
+            success: true, 
+            message: 'Goal deleted successfully' 
+        });
     } catch (error) {
-    res.status(error.statusCode || 500).json({ success: false, message: error.message || 'Goal deletion failed.' });
+        res.status(error.statusCode || 500).json({ 
+            success: false, 
+            message: error.message || 'Goal deletion failed.' 
+        });
     }
 };
