@@ -24,8 +24,6 @@ export default function ForgotPassword() {
     buttons: [] as Array<{ text: string; onPress: () => void; style?: 'default' | 'cancel' | 'destructive' }>
   });
 
-
-
   const sendResetCodeAction = async () => {
     try {
       if (!email) {
@@ -255,9 +253,9 @@ export default function ForgotPassword() {
               </View>
             </View>
 
-            {/* BUTTONS SECTION */}
+            {/* VERIFY CODE BUTTON */}
             <View style={{ marginTop: 30 }}>
-              {/* VERIFY CODE BUTTON */}
+              
               <TouchableOpacity
                 style={[styles.button, verifyingCode && styles.buttonDisabled]}
                 onPress={verifyCodeAction}

@@ -5,13 +5,13 @@ import {Ionicons} from '@expo/vector-icons';
 import {useAuthStore} from '../../store/auth.store';
 import {useHabitStore} from '../../store/habit.store';
 import COLORS from '../../constants/colors';
-import styles from '../../assets/styles/create.styles';
+import styles from '../../assets/styles/create.habit.styles';
 import {CUSTOM_ICONS} from '../../constants/custom.icons';
 import CustomAlert from '../../constants/CustomAlert';
 import SafeScreen from '../../constants/SafeScreen';
 import {showConnectionError} from '../../constants/alert.utils';
 
-export default function Create() {
+export default function CreateHabit() {
   const router = useRouter();
   const {token} = useAuthStore();
   const {presets, fetchPresets, createHabit, error: storeError} = useHabitStore();
@@ -395,6 +395,7 @@ export default function Create() {
         style={{flex:1}}
         behavior={Platform.OS === "android" ? "padding" : "height"}
         >
+          
         {/* HEADER WITH BACK AND SAVE BUTTONS */}
         <View style={{ 
           flexDirection: 'row', 

@@ -93,7 +93,7 @@ export default function Login() {
         {/* PICTURE */}
         <View style={styles.topIllustration}>
           <Image
-            source={require("../../assets/images/logos/orange-theme-logo.png")} 
+            source={require("../../assets/images/logos/lightning-theme-logo.png")} 
             style={styles.illustrationImage}
             resizeMode="contain"
           />

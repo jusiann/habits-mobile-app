@@ -31,28 +31,6 @@ export default function History() {
   const [days, setDays] = React.useState<(Date | null)[]>([]);
   const [actions, setActions] = React.useState<any>(null);
   
-  React.useEffect(() => {
-    if (!actions) 
-      return;
-
-    const loadHistoryData = async () => {
-      try {
-        setLoading(true);
-        await actions.loadMonthData(currentDate);
-        const daysInMonth = actions.getDaysInMonth(currentDate);
-        setDays(daysInMonth);
-      } catch (error) {
-        console.error('Error loading history data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadHistoryData();
-    const navigationListener = navigation.addListener('focus', loadHistoryData);
-    return () => navigationListener();
-  }, [navigation, currentDate, actions]);
-
   const historyAction = React.useCallback(async () => {  
     try {
       // GETTING MONTH'S DAYS
@@ -116,6 +94,28 @@ export default function History() {
     initActions();
   }, [historyAction]);
 
+  React.useEffect(() => {
+    if (!actions) 
+      return;
+
+    const loadHistoryData = async () => {
+      try {
+        setLoading(true);
+        await actions.loadMonthData(currentDate);
+        const daysInMonth = actions.getDaysInMonth(currentDate);
+        setDays(daysInMonth);
+      } catch (error) {
+        console.error('Error loading history data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadHistoryData();
+    const navigationListener = navigation.addListener('focus', loadHistoryData);
+    return () => navigationListener();
+  }, [navigation, currentDate, actions]);
+
   return (
     <SafeScreen>
       {
@@ -126,34 +126,53 @@ export default function History() {
         ) : (
           <ScrollView style={styles.container} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 60 }}>
 
-          {/* HEADER */}
-          <View style={styles.header}>
-            <View style={styles.userInfo}>
-              <Image 
-              source={getAvatarSource(user, 'Guest')} 
-              style={styles.avatar}
-            />
-              <View style={{ marginTop: 10 }}>
-                <Text style={styles.headerSubtitle}>History</Text>
-                <Text style={styles.headerTitle}>{user?.username || 'Guest'}</Text>
+            {/* HEADER */}
+            <View style={styles.header}>
+              <View style={styles.userInfo}>
+                <Image 
+                source={getAvatarSource(user, 'Guest')} 
+                style={styles.avatar}
+              />
+                <View style={{ marginTop: 10 }}>
+                  <Text style={styles.headerSubtitle}>History</Text>
+                  <Text style={styles.headerTitle}>{user?.username || 'Guest'}</Text>
+                </View>
               </View>
             </View>
-          </View>
 
-          {/* SELECTED DATE DETAILS */}
-          {
-            selectedDate && monthData[selectedDate.getDate()] && (
-              <View style={styles.selectedDateContainer}>
-                <Text style={styles.selectedDateTitle}>
-                  {selectedDate.toLocaleDateString('en-US', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                  })}
-                </Text>
-                          
-                <View style={[styles.selectedDateStats, { flexDirection: 'row', width: '100%', paddingHorizontal: 12, gap: 8 }]}>
+            {/* SELECTED DATE DETAILS */}
+            {
+              selectedDate && monthData[selectedDate.getDate()] && (
+                <View style={styles.selectedDateContainer}>
+                  <Text style={styles.selectedDateTitle}>
+                    {selectedDate.toLocaleDateString('en-US', {
+                      weekday: 'long',
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}
+                  </Text>
+                            
+                  <View style={[styles.selectedDateStats, { flexDirection: 'row', width: '100%', paddingHorizontal: 12, gap: 8 }]}>
+                    <View style={[styles.selectedStat, { 
+                      width: '30%',
+                      alignItems: 'center',
+                      paddingHorizontal: 16,
+                      paddingVertical: 12,
+                      backgroundColor: '#fff',
+                      borderRadius: 16,
+                      shadowColor: '#000',
+                      shadowOffset: { width: 0, height: 2 },
+                      shadowOpacity: 0.15,
+                      shadowRadius: 6,
+                      elevation: 4
+                    }]}>
+                      <Ionicons name="checkmark-circle" size={24} color={COLORS.primary} style={{ marginBottom: 4 }} />
+                      <Text style={[styles.selectedStatNumber, { color: COLORS.primary, fontSize: 20 }]}>
+                        {monthData[selectedDate.getDate()].summary.completedHabits}
+                      </Text>
+                    </View>
+                
                   <View style={[styles.selectedStat, { 
                     width: '30%',
                     alignItems: 'center',
@@ -167,55 +186,36 @@ export default function History() {
                     shadowRadius: 6,
                     elevation: 4
                   }]}>
-                    <Ionicons name="checkmark-circle" size={24} color={COLORS.primary} style={{ marginBottom: 4 }} />
+                    <Ionicons name="time" size={24} color={COLORS.primary} style={{ marginBottom: 4 }} />
                     <Text style={[styles.selectedStatNumber, { color: COLORS.primary, fontSize: 20 }]}>
-                      {monthData[selectedDate.getDate()].summary.completedHabits}
+                      {monthData[selectedDate.getDate()].summary.inProgressHabits}
                     </Text>
                   </View>
-              
-                <View style={[styles.selectedStat, { 
-                  width: '30%',
-                  alignItems: 'center',
-                  paddingHorizontal: 16,
-                  paddingVertical: 12,
-                  backgroundColor: '#fff',
-                  borderRadius: 16,
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.15,
-                  shadowRadius: 6,
-                  elevation: 4
-                }]}>
-                  <Ionicons name="time" size={24} color={COLORS.primary} style={{ marginBottom: 4 }} />
-                  <Text style={[styles.selectedStatNumber, { color: COLORS.primary, fontSize: 20 }]}>
-                    {monthData[selectedDate.getDate()].summary.inProgressHabits}
-                  </Text>
-                </View>
-              
-                <View style={[styles.selectedStat, { 
-                  width: '30%',
-                  alignItems: 'center',
-                  paddingHorizontal: 16,
-                  paddingVertical: 12,
-                  backgroundColor: '#fff',
-                  borderRadius: 16,
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.15,
-                  shadowRadius: 6,
-                  elevation: 4
-                }]}>
-                  <Ionicons name="pie-chart" size={24} color={COLORS.primary} style={{ marginBottom: 4 }} />
-                  <Text style={[styles.selectedStatNumber, { color: COLORS.primary, fontSize: 20 }]}>
-                    {Math.round(monthData[selectedDate.getDate()].summary.completionRate)}%
-                  </Text>
+                
+                  <View style={[styles.selectedStat, { 
+                    width: '30%',
+                    alignItems: 'center',
+                    paddingHorizontal: 16,
+                    paddingVertical: 12,
+                    backgroundColor: '#fff',
+                    borderRadius: 16,
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.15,
+                    shadowRadius: 6,
+                    elevation: 4
+                  }]}>
+                    <Ionicons name="pie-chart" size={24} color={COLORS.primary} style={{ marginBottom: 4 }} />
+                    <Text style={[styles.selectedStatNumber, { color: COLORS.primary, fontSize: 20 }]}>
+                      {Math.round(monthData[selectedDate.getDate()].summary.completionRate)}%
+                    </Text>
+                  </View>
                 </View>
               </View>
-            </View>
-          )}
+            )}
 
-          {/* CALENDAR */}
-          <View style={styles.calendarContainer}>
+            {/* CALENDAR */}
+            <View style={styles.calendarContainer}>
 
             {/* MONTH NAVIGATION */}
             <View style={styles.monthHeader}>

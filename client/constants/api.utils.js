@@ -24,6 +24,12 @@ export const API_ENDPOINTS = {
     PROGRESS: (habitId, queryParams = '') => `${API_BASE_URL}/habits/${habitId}/progress${queryParams ? `?${queryParams}` : ''}`,
     UPDATE: (habitId) => `${API_BASE_URL}/habits/${habitId}`,
     DELETE: (habitId) => `${API_BASE_URL}/habits/${habitId}`
+    ,
+    GOALS: {
+      LIST: `${API_BASE_URL}/habits/goals`,
+      CREATE: `${API_BASE_URL}/habits/goals`,
+      DELETE: (goalId) => `${API_BASE_URL}/habits/goals/${goalId}`
+    }
   }
 };
 

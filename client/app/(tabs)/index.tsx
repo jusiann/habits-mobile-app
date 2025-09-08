@@ -104,7 +104,7 @@ export default function Home() {
           <Text style={styles.habitTitle}>HABITS</Text>
           <TouchableOpacity 
             style={styles.addButton}
-            onPress={() => router.push('/(tabs)/create')}
+            onPress={() => router.push('/(tabs)/create.habit')}
           >
             <Ionicons 
               name="menu" 

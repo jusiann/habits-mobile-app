@@ -199,6 +199,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     justifyContent: "center",
     alignItems: "center",
+  marginLeft: 'auto',
   },
   habitDetailButtonText: {
     color: COLORS.white,

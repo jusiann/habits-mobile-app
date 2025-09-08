@@ -16,21 +16,21 @@
 // };
 
 // LIGHTNING
-// const COLORS = {
-//   primary: "#8E44AD",        
-//   textPrimary: "#5D2E6B",    
-//   textSecondary: "#A569BD",  
-//   textDark: "#4A1B5C",       
-//   placeholderText: "#767676",
-//   background: "#F4F1F8",
-//   cardBackground: "#FDFCFE", 
-//   inputBackground: "#F9F7FC", 
-//   border: "#D5BDEC",         
-//   white: "#ffffff",
-//   black: "#000000",
-//   success: "#9B59B6",
-//   successLight: "#F3E5F5",
-// };
+const COLORS = {
+  primary: "#8E44AD",        
+  textPrimary: "#5D2E6B",    
+  textSecondary: "#A569BD",  
+  textDark: "#4A1B5C",       
+  placeholderText: "#767676",
+  background: "#F4F1F8",
+  cardBackground: "#FDFCFE", 
+  inputBackground: "#F9F7FC", 
+  border: "#D5BDEC",         
+  white: "#ffffff",
+  black: "#000000",
+  success: "#9B59B6",
+  successLight: "#F3E5F5",
+};
 
 // RETRO
 // const COLORS = {
@@ -85,21 +85,21 @@
 // };
 
 // ORANGE
-const COLORS = {
-  primary: "#FF8A65",    
-  textPrimary: "#BF4226",   
-  textSecondary: "#FF7043", 
-  textDark: "#8D2F1A",       
-  placeholderText: "#767676",
-  background: "#FFF3E0",     
-  cardBackground: "#FFFBF7", 
-  inputBackground: "#FFF8F1", 
-  border: "#FFCC9C",         
-  white: "#ffffff",
-  black: "#000000",
-  success: "#F57C00",
-  successLight: "#FFF3E0",
-};
+// const COLORS = {
+//   primary: "#FF8A65",    
+//   textPrimary: "#BF4226",   
+//   textSecondary: "#FF7043", 
+//   textDark: "#8D2F1A",       
+//   placeholderText: "#767676",
+//   background: "#FFF3E0",     
+//   cardBackground: "#FFFBF7", 
+//   inputBackground: "#FFF8F1", 
+//   border: "#FFCC9C",         
+//   white: "#ffffff",
+//   black: "#000000",
+//   success: "#F57C00",
+//   successLight: "#FFF3E0",
+// };
 
 
 export default COLORS;

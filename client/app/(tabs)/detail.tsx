@@ -4,7 +4,7 @@ import {useRouter, useLocalSearchParams, useFocusEffect} from 'expo-router';
 import {Ionicons} from '@expo/vector-icons';
 import {useHabitStore} from '../../store/habit.store';
 import COLORS from '../../constants/colors';
-import styles from '../../assets/styles/create.styles';
+import styles from '../../assets/styles/create.habit.styles';
 import {CUSTOM_ICONS} from '../../constants/custom.icons';
 import CustomAlert from '../../constants/CustomAlert';
 import SafeScreen from '../../constants/SafeScreen';

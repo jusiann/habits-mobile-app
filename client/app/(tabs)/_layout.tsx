@@ -90,7 +90,7 @@ export default function TabLayout() {
           }}
         />
         <Tabs.Screen
-          name="create"
+          name="create.habit"
           options={{
             href: null
           }}
@@ -131,6 +131,12 @@ export default function TabLayout() {
                 title="Goals"
               />
             ),
+          }}
+        />
+        <Tabs.Screen
+          name="create.goal"
+          options={{
+            href: null
           }}
         />
         <Tabs.Screen

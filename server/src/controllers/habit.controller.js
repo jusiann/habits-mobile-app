@@ -718,22 +718,28 @@ export const getDashboardGoals = async (req, res) => {
         const userId = req.user.id;
         const goals = await Goal.find({ userId }).sort({ createdAt: -1 }).populate('habitId', 'name icon');
 
-        const payload = goals.map(g => ({
-            id: g._id,
-            type: g.type,
-            habit: g.habitId ? { id: g.habitId._id, name: g.habitId.name, icon: g.habitId.icon } : null,
-            repeat: g.repeat || null,
-            metric: g.metric || null,
-            value: g.value || null,
-            progress: g.progress,
-            completed: g.completed,
-            createdAt: g.createdAt,
-            updatedAt: g.updatedAt
+        const payload = goals.map(goal => ({
+            id: goal._id,
+            type: goal.type,
+            habit: goal.habitId ? { id: goal.habitId._id, name: goal.habitId.name, icon: goal.habitId.icon } : null,
+            repeat: goal.repeat || null,
+            metric: goal.metric || null,
+            value: goal.value || null,
+            progress: goal.progress,
+            completed: goal.completed,
+            createdAt: goal.createdAt,
+            updatedAt: goal.updatedAt
         }));
 
-    res.status(200).json({ success: true, message: 'Goals retrieved successfully', data: payload });
+    res.status(200).json({ 
+        success: true, 
+        message: 'Goals retrieved successfully', data: payload 
+    });
     } catch (error) {
-    res.status(error.statusCode || 500).json({ success: false, message: error.message || 'Failed to get goals' });
+    res.status(error.statusCode || 500).json({ 
+        success: false, 
+        message: error.message || 'Failed to get goals' 
+    });
     }
 };
 

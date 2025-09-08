@@ -15,7 +15,7 @@ export default function Index() {
           {/* LOGO SECTION */}
           <View style={styles.topIllustration}>
             <Image 
-              source={require("../assets/images/logos/orange-theme-logo.png")} 
+              source={require("../assets/images/logos/lightning-theme-logo.png")} 
               style={styles.illustrationImage}
             />
           </View>
