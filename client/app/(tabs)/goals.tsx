@@ -87,8 +87,6 @@ export default function Goals() {
       
       if (result.success) {
         setMonthStats(result.data.stats);
-        console.log('Goals: Month stats loaded:', result.data.stats);
-        console.log('Goals: Full result:', result);
       } else {
         console.error('Goals: Failed to load month data:', result.message);
       }
@@ -100,19 +98,15 @@ export default function Goals() {
   React.useEffect(() => {
     if (token) {
       setIsLoading(true);
-      console.log('Goals: starting fetchGoals()');
       fetchGoals().finally(() => {
         setIsLoading(false);
-        console.log('Goals: fetchGoals() finished, starting loadHistoryData() in background');
         loadHistoryData().catch(err => console.error('Failed to preload month data for goals', err));
       });
     }
   }, [token, fetchGoals, loadHistoryData]);
 
   React.useEffect(() => {
-    console.log('Goals loaded:', goals);
-    console.log('Monthly cache:', monthlyCache);
-    console.log('Month stats:', monthStats);
+    // Goals and cache data loaded
   }, [goals, monthlyCache, monthStats]);
 
   return (
@@ -142,7 +136,7 @@ export default function Goals() {
                   style={styles.avatar}
                 />
                 <View style={{ marginTop: 10 }}>
-                  <Text style={styles.headerSubtitle}>Goals</Text>
+                  <Text style={[styles.headerSubtitle, { marginLeft: -8 }]}>Goals</Text>
                   <Text style={styles.headerTitle}>{user?.username || 'Guest'}</Text>
                 </View>
               </View>
@@ -156,7 +150,7 @@ export default function Goals() {
                 onPress={() => router.push('/(tabs)/create.goal')}
               >
                 <Ionicons
-                  name="menu"
+                  name="add"
                   size={20}
                   color="white"
                 />
@@ -214,19 +208,16 @@ export default function Goals() {
                         // For rate: use overall completion rate from monthStats
                         const currentRate = monthStats?.completionRate || 0;
                         progress = target > 0 ? Math.min(currentRate / target, 1) : 0;
-                        console.log(`Goal ${g.id} (reach rate): currentRate=${currentRate}, target=${target}, progress=${progress}, monthStats=`, monthStats);
                         
                       } else if (g.metric === 'streak') {
                         // For streak: use current streak from monthStats
                         const currentStreak = monthStats?.currentStreak || 0;
                         progress = target > 0 ? Math.min(currentStreak / target, 1) : 0;
-                        console.log(`Goal ${g.id} (reach streak): currentStreak=${currentStreak}, target=${target}, progress=${progress}, monthStats=`, monthStats);
                       }
                     } else if (g.type === 'maintain') {
                       // For maintain goals, use overall completion rate from monthStats
                       const currentRate = monthStats?.completionRate || 0;
                       progress = currentRate / 100; // Convert percentage to decimal
-                      console.log(`Goal ${g.id} (maintain): currentRate=${currentRate}, progress=${progress}`);
                     }
 
                     const isCompleted = progress >= 1;

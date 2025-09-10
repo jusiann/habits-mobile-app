@@ -40,7 +40,6 @@ export const useHabitStore = create((set, get) => ({
             let totalCompletionRateSum = 0;
             let totalCompletedHabits = 0;
             let currentStreakCount = 0;
-            let streakBroken = false;
 
             let cachedDays = 0;
             let apiDays = 0;
@@ -82,21 +81,54 @@ export const useHabitStore = create((set, get) => ({
                         const dailyCompletionRate = summary.completionRate;
                         totalCompletionRateSum += dailyCompletionRate;
                         totalCompletedHabits += summary.completedHabits;
-                        
-                        // CALC CURRENT STREAK
-                        if (summary.completedHabits > 0) {
-                            if (!streakBroken) {
-                                currentStreakCount++;
-                            } else {
-                                currentStreakCount = 1;
-                                streakBroken = false;
-                            }
-                        } else {
-                            streakBroken = true;
-                        }
                     }
                 }
             }
+
+            // CALCULATE CURRENT STREAK - COUNT BACKWARDS FROM TODAY
+            console.log('[LoadMonthData] Calculating streak backwards from today...');
+            const todayDate = new Date();
+            let streakDate = new Date(todayDate);
+            
+            // Start from today and go backwards to calculate correct streak
+            while (true) {
+                const day = streakDate.getDate();
+                const currentMonth = streakDate.getMonth();
+                const currentYear = streakDate.getFullYear();
+                
+                // If we're looking at a different month, we need to load that data
+                let dayData;
+                if (currentYear === year && currentMonth === month) {
+                    // Same month, use our loaded data
+                    dayData = newMonthData[day];
+                } else {
+                    // Different month, need to query API
+                    const result = await get().habitLogsByDate(streakDate);
+                    if (result.success && result.data) {
+                        dayData = { summary: result.data.summary };
+                    }
+                }
+                
+                if (dayData && dayData.summary && dayData.summary.completedHabits > 0) {
+                    currentStreakCount++;
+                    console.log(`[LoadMonthData] Streak day ${currentStreakCount}: ${streakDate.toDateString()} (${dayData.summary.completedHabits} completed)`);
+                } else {
+                    // No completed habits on this day or no data - streak ends here
+                    console.log(`[LoadMonthData] Streak broken at: ${streakDate.toDateString()} (${dayData?.summary?.completedHabits || 0} completed)`);
+                    break;
+                }
+                
+                // Move to previous day
+                streakDate.setDate(streakDate.getDate() - 1);
+                
+                // Safeguard: don't go back more than 365 days
+                if (currentStreakCount >= 365) {
+                    console.log('[LoadMonthData] Streak safeguard: stopping at 365 days');
+                    break;
+                }
+            }
+
+            console.log(`[LoadMonthData] Final streak calculated: ${currentStreakCount} days`);
 
             // CALCULATE TOTALS
             const stats = {

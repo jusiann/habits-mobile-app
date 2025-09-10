@@ -59,6 +59,7 @@ const styles = StyleSheet.create({
 	userInfo: {
 		flexDirection: 'row',
 		alignItems: 'center',
+		paddingLeft: 4,
 	},
 	avatar: {
 		width: 64,
@@ -218,11 +219,6 @@ const styles = StyleSheet.create({
 		height: 32,
 		justifyContent: 'center',
 		alignItems: 'center',
-		shadowColor: COLORS.black,
-		shadowOffset: { width: 0, height: 1 },
-		shadowOpacity: 0.15,
-		shadowRadius: 2,
-		elevation: 2,
 	},
 	actionButtonText: {
 		color: COLORS.white,

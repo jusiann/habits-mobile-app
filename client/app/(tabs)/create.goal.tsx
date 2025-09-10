@@ -191,111 +191,132 @@ export default function CreateGoal() {
           {/* MAIN FORM CARD */}
           <View style={styles.card}>
 
-            {/* GOAL TYPE SELECTION */}
-            <Text style={styles.label}>Type</Text>
-            <View style={styles.typeSelector}>
-              <TouchableOpacity 
-                style={[styles.typeButton, type === 'complete' && styles.selectedTypeButton]} 
-                onPress={() => setType('complete')}
-              >
-                <Text style={[styles.typeButtonText, type === 'complete' && styles.selectedTypeButtonText]}>
-                  Complete
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity 
-                style={[styles.typeButton, type === 'reach' && styles.selectedTypeButton]} 
-                onPress={() => setType('reach')}
-              >
-                <Text style={[styles.typeButtonText, type === 'reach' && styles.selectedTypeButtonText]}>
-                  Reach
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity 
-                style={[styles.typeButton, type === 'maintain' && styles.selectedTypeButton]} 
-                onPress={() => setType('maintain')}
-              >
-                <Text style={[styles.typeButtonText, type === 'maintain' && styles.selectedTypeButtonText]}>
-                  Maintain
-                </Text>
-              </TouchableOpacity>
+            {/* HEADER SECTION */}
+            <View style={styles.header}>
+              <Text style={styles.title}>Create New Goal</Text>
+              <Text style={styles.subtitle}>Set your goal and track your progress</Text>
             </View>
 
-            {/* COMPLETE TYPE INPUTS */}
-            {type === 'complete' && (
-              <View style={{ marginTop: 12 }}>
-                {/* PRESET HABITS SELECTION */}
-                <Text style={styles.label}>Preset Habits</Text>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginVertical: 8 }}>
-                  {habits && habits.map(h => (
-                    <TouchableOpacity 
-                      key={h.id} 
-                      style={[styles.habitCard, selectedHabitId === h.id && styles.selectedHabitCard]} 
-                      onPress={() => setSelectedHabitId(h.id)}
-                    >
-                      <Ionicons 
-                        name={h.icon || 'checkmark-circle'} 
-                        size={20} 
-                        color={selectedHabitId === h.id ? COLORS.white : COLORS.textPrimary} 
+            {/* FORM SECTION */}
+            <View style={styles.form}>
+
+              {/* GOAL TYPE SELECTION */}
+              <View style={styles.formGroup}>
+                <Text style={styles.label}>Type</Text>
+                <View style={styles.typeSelector}>
+                  <TouchableOpacity 
+                    style={[styles.typeButton, type === 'complete' && styles.selectedTypeButton]} 
+                    onPress={() => setType('complete')}
+                  >
+                    <Text style={[styles.typeButtonText, type === 'complete' && styles.selectedTypeButtonText]}>
+                      Complete
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={[styles.typeButton, type === 'reach' && styles.selectedTypeButton]} 
+                    onPress={() => setType('reach')}
+                  >
+                    <Text style={[styles.typeButtonText, type === 'reach' && styles.selectedTypeButtonText]}>
+                      Reach
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={[styles.typeButton, type === 'maintain' && styles.selectedTypeButton]} 
+                    onPress={() => setType('maintain')}
+                  >
+                    <Text style={[styles.typeButtonText, type === 'maintain' && styles.selectedTypeButtonText]}>
+                      Maintain
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* COMPLETE TYPE INPUTS */}
+              {type === 'complete' && (
+                <View>
+                  {/* PRESET HABITS SELECTION */}
+                  <View style={styles.formGroup}>
+                    <Text style={styles.label}>Preset Habits</Text>
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginVertical: 8 }}>
+                      {habits && habits.map(h => (
+                        <TouchableOpacity 
+                          key={h.id} 
+                          style={[styles.habitCard, selectedHabitId === h.id && styles.selectedHabitCard]} 
+                          onPress={() => setSelectedHabitId(h.id)}
+                        >
+                          <Ionicons 
+                            name={h.icon || 'checkmark-circle'} 
+                            size={20} 
+                            color={selectedHabitId === h.id ? COLORS.white : COLORS.textPrimary} 
+                          />
+                          <Text style={[styles.habitCardText, selectedHabitId === h.id && styles.selectedHabitCardText]}>
+                            {h.name}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
+                  </View>
+
+                  {/* REPEAT INPUT */}
+                  <View style={styles.formGroup}>
+                    <Text style={styles.label}>Repeat</Text>
+                    <View style={styles.inputContainer}>
+                      <TextInput 
+                        value={repeat} 
+                        onChangeText={setRepeat} 
+                        keyboardType="numeric" 
+                        style={styles.input} 
+                        placeholder="How many times" 
+                        placeholderTextColor={COLORS.textSecondary}
                       />
-                      <Text style={[styles.habitCardText, selectedHabitId === h.id && styles.selectedHabitCardText]}>
-                        {h.name}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-
-                {/* REPEAT INPUT */}
-                <Text style={styles.label}>Repeat</Text>
-                <View style={styles.inputContainer}>
-                  <TextInput 
-                    value={repeat} 
-                    onChangeText={setRepeat} 
-                    keyboardType="numeric" 
-                    style={styles.input} 
-                    placeholder="How many times" 
-                  />
+                    </View>
+                  </View>
                 </View>
-              </View>
-            )}
+              )}
 
-            {/* REACH TYPE INPUTS */}
-            {type === 'reach' && (
-              <View style={{ marginTop: 12 }}>
-                
-                {/* METRIC SELECTION */}
-                <Text style={styles.label}>Metric</Text>
-                <View style={styles.unitContainer}>
-                  <TouchableOpacity 
-                    style={[styles.unitButton, metric === 'streak' && styles.selectedUnitButton]} 
-                    onPress={() => setMetric('streak')}
-                  >
-                    <Text style={[styles.unitButtonText, metric === 'streak' && styles.selectedTypeButtonText]}>
-                      Streak
-                    </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity 
-                    style={[styles.unitButton, metric === 'rate' && styles.selectedUnitButton]} 
-                    onPress={() => setMetric('rate')}
-                  >
-                    <Text style={[styles.unitButtonText, metric === 'rate' && styles.selectedTypeButtonText]}>
-                      Rate
-                    </Text>
-                  </TouchableOpacity>
-                </View>
+              {/* REACH TYPE INPUTS */}
+              {type === 'reach' && (
+                <View>
+                  {/* METRIC SELECTION */}
+                  <View style={styles.formGroup}>
+                    <Text style={styles.label}>Metric</Text>
+                    <View style={styles.unitContainer}>
+                      <TouchableOpacity 
+                        style={[styles.unitButton, metric === 'streak' && styles.selectedUnitButton]} 
+                        onPress={() => setMetric('streak')}
+                      >
+                        <Text style={[styles.unitButtonText, metric === 'streak' && styles.selectedUnitButtonText]}>
+                          Streak
+                        </Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity 
+                        style={[styles.unitButton, metric === 'rate' && styles.selectedUnitButton]} 
+                        onPress={() => setMetric('rate')}
+                      >
+                        <Text style={[styles.unitButtonText, metric === 'rate' && styles.selectedUnitButtonText]}>
+                          Rate
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
 
-                {/* VALUE INPUT */}
-                <Text style={styles.label}>Value</Text>
-                <View style={styles.inputContainer}>
-                  <TextInput 
-                    value={value} 
-                    onChangeText={setValue} 
-                    keyboardType="numeric" 
-                    style={styles.input} 
-                    placeholder="Target value" 
-                  />
+                  {/* VALUE INPUT */}
+                  <View style={styles.formGroup}>
+                    <Text style={styles.label}>Value</Text>
+                    <View style={styles.inputContainer}>
+                      <TextInput 
+                        value={value} 
+                        onChangeText={setValue} 
+                        keyboardType="numeric" 
+                        style={styles.input} 
+                        placeholder="Target value" 
+                        placeholderTextColor={COLORS.textSecondary}
+                      />
+                    </View>
+                  </View>
                 </View>
-              </View>
-            )}
+              )}
+            </View>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

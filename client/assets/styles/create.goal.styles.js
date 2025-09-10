@@ -38,7 +38,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: COLORS.textSecondary,
     textAlign: "center",
-    lineHeight: 20,
   },
   form: {
     marginBottom: 16,
@@ -49,51 +48,48 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    fontWeight: "600",
-    color: COLORS.textPrimary,
     marginBottom: 8,
-    letterSpacing: 0.3,
-  },
-  input: {
-    backgroundColor: COLORS.inputBackground,
-    borderRadius: 12,
-    padding: 16,
-    fontSize: 16,
     color: COLORS.textPrimary,
-    borderWidth: 1,
-    borderColor: COLORS.inputBorder,
-    minHeight: 50,
+    fontWeight: "500",
   },
   inputContainer: {
-    marginBottom: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: COLORS.inputBackground,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    paddingHorizontal: 12,
+    marginHorizontal: 0,
   },
-  inputFocused: {
-    borderColor: COLORS.primary,
-    backgroundColor: COLORS.white,
+  input: {
+    flex: 1,
+    height: 48,
+    color: COLORS.textDark,
   },
 
   // Type Selector
   typeSelector: {
     flexDirection: 'row',
-    marginBottom: 20,
-    borderRadius: 12,
     backgroundColor: COLORS.inputBackground,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.border,
     padding: 4,
+    marginHorizontal: 0,
   },
   typeButton: {
     flex: 1,
     paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
     alignItems: 'center',
-    justifyContent: 'center',
+    borderRadius: 8,
   },
   selectedTypeButton: {
     backgroundColor: COLORS.primary,
   },
   typeButtonText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '500',
     color: COLORS.textPrimary,
   },
   selectedTypeButtonText: {
@@ -102,15 +98,14 @@ const styles = StyleSheet.create({
 
   // Habit Cards
   habitCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
     backgroundColor: COLORS.inputBackground,
     borderRadius: 12,
-    padding: 12,
-    marginRight: 12,
-    borderWidth: 2,
-    borderColor: COLORS.inputBorder,
-    minWidth: 120,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    padding: 16,
+    marginRight: 8,
+    alignItems: 'center',
+    minWidth: 80,
   },
   selectedHabitCard: {
     backgroundColor: COLORS.primary,
@@ -118,9 +113,9 @@ const styles = StyleSheet.create({
   },
   habitCardText: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '500',
     color: COLORS.textPrimary,
-    marginLeft: 8,
+    marginTop: 8,
     textAlign: 'center',
   },
   selectedHabitCardText: {
@@ -130,300 +125,86 @@ const styles = StyleSheet.create({
   // Unit Container
   unitContainer: {
     flexDirection: 'row',
-    marginBottom: 20,
-    borderRadius: 12,
     backgroundColor: COLORS.inputBackground,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.border,
     padding: 4,
+    marginHorizontal: 0,
   },
   unitButton: {
     flex: 1,
     paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
     alignItems: 'center',
-    justifyContent: 'center',
+    borderRadius: 8,
   },
   selectedUnitButton: {
     backgroundColor: COLORS.primary,
   },
   unitButtonText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '500',
     color: COLORS.textPrimary,
   },
-  textArea: {
-    backgroundColor: COLORS.inputBackground,
+  selectedUnitButtonText: {
+    color: COLORS.white,
+  },
+
+  button: {
+    backgroundColor: COLORS.primary,
     borderRadius: 12,
-    padding: 16,
+    height: 50,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: COLORS.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  buttonText: {
+    color: COLORS.white,
     fontSize: 16,
-    color: COLORS.textPrimary,
-    borderWidth: 1,
-    borderColor: COLORS.inputBorder,
-    minHeight: 100,
-    textAlignVertical: 'top',
+    fontWeight: "600",
   },
-  
-  // Goal Type Selection
-  goalTypeContainer: {
-    marginBottom: 24,
+  buttonIcon: {
+    marginRight: 8,
   },
-  goalTypeRow: {
+
+  // Button Container
+  buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 12,
-  },
-  goalTypeOption: {
-    flex: 1,
-    backgroundColor: COLORS.inputBackground,
-    borderRadius: 12,
-    padding: 16,
-    marginHorizontal: 4,
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: COLORS.inputBorder,
-  },
-  goalTypeOptionSelected: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
-  },
-  goalTypeText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
-    textAlign: 'center',
-  },
-  goalTypeTextSelected: {
-    color: COLORS.white,
-  },
-  goalTypeDescription: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
-    textAlign: 'center',
-    marginTop: 4,
-    lineHeight: 16,
-  },
-  goalTypeDescriptionSelected: {
-    color: COLORS.white,
-    opacity: 0.9,
-  },
-
-  // Habit Selection
-  habitSelectionContainer: {
-    marginBottom: 20,
-  },
-  habitOption: {
-    backgroundColor: COLORS.inputBackground,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 2,
-    borderColor: COLORS.inputBorder,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  habitOptionSelected: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
-  },
-  habitIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: COLORS.primary,
-    marginRight: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  habitIconSelected: {
-    backgroundColor: COLORS.white,
-  },
-  habitInfo: {
-    flex: 1,
-  },
-  habitName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
-    marginBottom: 2,
-  },
-  habitNameSelected: {
-    color: COLORS.white,
-  },
-  habitDescription: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
-  },
-  habitDescriptionSelected: {
-    color: COLORS.white,
-    opacity: 0.8,
-  },
-
-  // Number Input
-  numberInputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.inputBackground,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: COLORS.inputBorder,
-    paddingHorizontal: 4,
-  },
-  numberButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 8,
-    backgroundColor: COLORS.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    margin: 4,
-  },
-  numberButtonDisabled: {
-    backgroundColor: COLORS.textSecondary,
-    opacity: 0.3,
-  },
-  numberInput: {
-    flex: 1,
-    textAlign: 'center',
-    fontSize: 18,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
-    paddingVertical: 12,
-  },
-
-  // Metric Selection (for reach goals)
-  metricContainer: {
-    flexDirection: 'row',
-    marginBottom: 20,
-  },
-  metricOption: {
-    flex: 1,
-    backgroundColor: COLORS.inputBackground,
-    borderRadius: 12,
-    padding: 16,
-    marginHorizontal: 4,
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: COLORS.inputBorder,
-  },
-  metricOptionSelected: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
-  },
-  metricText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
-  },
-  metricTextSelected: {
-    color: COLORS.white,
-  },
-
-  // Action Buttons
-  buttonContainer: {
     marginTop: 24,
-    gap: 12,
+  },
+  cancelButton: {
+    flex: 1,
+    backgroundColor: COLORS.inputBackground,
+    borderRadius: 12,
+    height: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: COLORS.border,
+    marginRight: 8,
+  },
+  cancelButtonText: {
+    color: COLORS.textPrimary,
+    fontSize: 16,
+    fontWeight: "600",
   },
   primaryButton: {
     backgroundColor: COLORS.primary,
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-    minHeight: 52,
-    justifyContent: 'center',
-  },
-  primaryButtonDisabled: {
-    backgroundColor: COLORS.textSecondary,
-    opacity: 0.6,
+    marginLeft: 8,
   },
   primaryButtonText: {
     color: COLORS.white,
     fontSize: 16,
-    fontWeight: '600',
-    letterSpacing: 0.5,
+    fontWeight: "600",
   },
-  secondaryButton: {
-    backgroundColor: 'transparent',
-    borderRadius: 12,
-    padding: 16,
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: COLORS.primary,
-    minHeight: 52,
-    justifyContent: 'center',
-  },
-  secondaryButtonText: {
-    color: COLORS.primary,
-    fontSize: 16,
-    fontWeight: '600',
-    letterSpacing: 0.5,
-  },
-
-  // Loading State
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: COLORS.background,
-  },
-
-  // Empty State
-  emptyContainer: {
-    alignItems: 'center',
-    paddingVertical: 40,
-  },
-  emptyText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
-    marginBottom: 8,
-  },
-  emptySubtext: {
-    fontSize: 14,
-    color: COLORS.textSecondary,
-    textAlign: 'center',
-    lineHeight: 20,
-  },
-
-  // Validation
-  errorText: {
-    color: COLORS.error,
-    fontSize: 12,
-    marginTop: 4,
-    fontWeight: '500',
-  },
-  successText: {
-    color: COLORS.success,
-    fontSize: 12,
-    marginTop: 4,
-    fontWeight: '500',
-  },
-
-  // Preview Section
-  previewContainer: {
-    backgroundColor: COLORS.inputBackground,
-    borderRadius: 12,
-    padding: 16,
-    marginTop: 20,
-    borderWidth: 1,
-    borderColor: COLORS.inputBorder,
-  },
-  previewTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.textPrimary,
-    marginBottom: 8,
-  },
-  previewText: {
-    fontSize: 16,
-    color: COLORS.textPrimary,
-    fontWeight: '500',
-    lineHeight: 22,
-  },
-  previewMeta: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
-    marginTop: 4,
-    fontStyle: 'italic',
+  disabledButton: {
+    opacity: 0.6,
   },
 });
 
