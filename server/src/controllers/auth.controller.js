@@ -6,40 +6,27 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import sendEmail from '../utils/send.email.js';
 
-// const validateEmail = (email) => {
-//     const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
-//     if (!emailRegex.test(email)) {
-//         throw new ApiError("Invalid email format. Please enter a valid email address.", 400);
-//     }
+const validatePassword = (password) => {
+    if (password.length < 8) {
+        throw new ApiError("Password must be at least 8 characters long.", 400);
+    }
     
-//     // const allowedDomains = ['stu.rumeli.edu.tr'];
-//     // const domain = email.split('@')[1];
-//     // if (!allowedDomains.includes(domain)) {
-//     //     throw new ApiError("Only Rumeli University email addresses (@stu.rumeli.edu.tr) are allowed to register.", 400);
-//     // }
-// };
-
-// const validatePassword = (password) => {
-//     if (password.length < 8) {
-//         throw new ApiError("Password must be at least 8 characters long.", 400);
-//     }
+    if (!/[A-Z]/.test(password)) {
+        throw new ApiError("Password must contain at least one uppercase letter.", 400);
+    }
     
-//     if (!/[A-Z]/.test(password)) {
-//         throw new ApiError("Password must contain at least one uppercase letter.", 400);
-//     }
+    if (!/[a-z]/.test(password)) {
+        throw new ApiError("Password must contain at least one lowercase letter.", 400);
+    }
     
-//     if (!/[a-z]/.test(password)) {
-//         throw new ApiError("Password must contain at least one lowercase letter.", 400);
-//     }
+    if (!/[0-9]/.test(password)) {
+        throw new ApiError("Password must contain at least one number.", 400);
+    }
     
-//     if (!/[0-9]/.test(password)) {
-//         throw new ApiError("Password must contain at least one number.", 400);
-//     }
-    
-//     if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-//         throw new ApiError("Password must contain at least one special character (!@#$%^&*(),.?\":{}|<>).", 400);
-//     }
-// };
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+        throw new ApiError("Password must contain at least one special character (!@#$%^&*(),.?\":{}|<>).", 400);
+    }
+};
 
 export const signUp = async (req, res) => {
     try {
@@ -47,6 +34,19 @@ export const signUp = async (req, res) => {
         if (!username || !fullname || !email || !password) 
             throw new ApiError("username, fullname, email and password are required.", 400);
         
+        const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+        if (!emailRegex.test(email))
+            throw new ApiError("Invalid email format. Please enter a valid email address.", 400);
+
+
+        if (username.length < 3 || username.length > 30)
+            throw new ApiError("Username must be between 3 and 30 characters long.", 400);
+
+        if (fullname.length < 2 || fullname.length > 50)
+            throw new ApiError("Full name must be between 2 and 50 characters long.", 400);
+
+        validatePassword(password);
+
         const existingUser = await User.findOne({
             $or: [{ 
                 email: email ? email.toLowerCase() : undefined 
@@ -221,6 +221,10 @@ export const forgotPassword = async (req, res) => {
         if (!email)
             throw new ApiError("Email is required.", 400);
 
+        const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+        if (!emailRegex.test(email))
+            throw new ApiError("Invalid email format. Please enter a valid email address.", 400);
+
         const user = await User.findOne({ email: email.toLowerCase() });
         if (!user)
             throw new ApiError("User with this email does not exist.", 404);
@@ -306,6 +310,8 @@ export const changePassword = async (req, res) => {
 
         if (!password || !temporaryToken)
             throw new ApiError("Password and temporary token are required.", 400);
+
+        validatePassword(password);
 
         const decoded = jwt.verify(temporaryToken, process.env.JWT_SECRET_KEY);
         if (decoded.type !== "reset")
@@ -404,6 +410,9 @@ export const updateProfile = async (req, res) => {
             const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
             if (!isCurrentPasswordValid)
                 throw new ApiError("Current password is incorrect.", 401);
+
+            // Validate new password strength
+            validatePassword(newPassword);
 
             const salt = await bcrypt.genSalt(10);
             const hashedNewPassword = await bcrypt.hash(newPassword, salt);
@@ -515,3 +524,28 @@ export const logout = async (req, res) => {
     }
 };
 
+export const deleteAccount = async (req, res) => {
+    try{
+        const userId = req.user._id;
+        const user = await User.findById(userId);
+        if (!user)
+            throw new ApiError("User not found.", 404);
+
+        await Promise.all([
+            Habit.deleteMany({ userId: userId }),
+            Log.deleteMany({ userId: userId }),
+            Goal.deleteMany({ userId: userId })
+        ]);
+        await User.findByIdAndDelete(userId);
+
+        res.status(200).json({
+            success: true,
+            message: "Account deleted successfully."
+        }); 
+    } catch (error) {
+        res.status(error.statusCode || 500).json({
+            success: false,
+            message: error.message || "Account deletion failed"
+        });
+    }
+};

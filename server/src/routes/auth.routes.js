@@ -9,7 +9,8 @@ import {
     changePassword,
     updateProfile,
     logout,
-    getMe
+    getMe,
+    deleteUser
 } from '../controllers/auth.controller.js';
 
 const router = express.Router();
@@ -24,5 +25,6 @@ router.post('/change-password', changePassword);
 router.post('/update-profile', verifyToken, updateProfile);
 router.post('/logout', verifyToken, logout);
 router.get('/me', verifyToken, getMe);
+router.delete('/delete', verifyToken, deleteUser);
 
 export default router;

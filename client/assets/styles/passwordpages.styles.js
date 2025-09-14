@@ -1,4 +1,4 @@
-import { StyleSheet, Dimensions } from "react-native";
+import {StyleSheet, Dimensions} from "react-native";
 import COLORS from "../../constants/colors";
 
 const { width } = Dimensions.get("window");
@@ -10,7 +10,6 @@ const styles = StyleSheet.create({
     padding: 20,
     justifyContent: "center",
   },
-
   topIllustration: {
     alignItems: "center",
     width: "100%",
