@@ -524,7 +524,7 @@ export const logout = async (req, res) => {
     }
 };
 
-export const deleteAccount = async (req, res) => {
+export const deleteUser = async (req, res) => {
     try{
         const userId = req.user._id;
         const user = await User.findById(userId);
