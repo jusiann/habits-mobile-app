@@ -9,6 +9,7 @@ import {CUSTOM_ICONS} from '../../constants/custom.icons';
 import CustomAlert from '../../constants/CustomAlert';
 import SafeScreen from '../../constants/SafeScreen';
 import {showConnectionError} from '../../constants/alert.utils';
+import {translate} from '../../constants/language.utils';
 
 export default function Detail() {
   const router = useRouter()
@@ -452,9 +453,9 @@ export default function Detail() {
           {
             !habit ? (
               <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-                <Text style={styles.title}>Habit not found</Text>
+                <Text style={styles.title}>{translate('habits.detail.habitNotFound')}</Text>
                 <TouchableOpacity style={styles.button} onPress={() => router.back()}>
-                  <Text style={styles.buttonText}>Go Back</Text>
+                  <Text style={styles.buttonText}>{translate('habits.detail.goBack')}</Text>
                 </TouchableOpacity>
               </View>
             ) : (
@@ -462,11 +463,11 @@ export default function Detail() {
                 
                 {/* HEADER SECTION */}
                 <View style={styles.header}>
-                  <Text style={styles.title}>Edit Habit</Text>
+                  <Text style={styles.title}>{translate('habits.detail.title')}</Text>
                   <Text style={styles.subtitle}>
                     {habit.type === 'default' 
-                      ? 'Edit settings for your preset habit' 
-                      : 'Edit your custom habit'
+                      ? translate('habits.detail.title')
+                      : translate('habits.detail.title')
                     }
                   </Text>
                 </View>
@@ -545,7 +546,7 @@ export default function Detail() {
                     ) : (
                       <>
                         <Ionicons name="trash-outline" size={20} color={COLORS.white} />
-                        <Text style={{ color: COLORS.white, fontWeight: '600' }}>Delete Habit</Text>
+                        <Text style={{ color: COLORS.white, fontWeight: '600' }}>{translate('habits.detail.deleteHabit')}</Text>
                       </>
                     )}
                   </View>

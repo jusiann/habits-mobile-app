@@ -10,6 +10,7 @@ import {CUSTOM_ICONS} from '../../constants/custom.icons';
 import CustomAlert from '../../constants/CustomAlert';
 import SafeScreen from '../../constants/SafeScreen';
 import {showConnectionError} from '../../constants/alert.utils';
+import {translate} from '../../constants/language.utils';
 
 export default function CreateHabit() {
   const router = useRouter();
@@ -79,10 +80,10 @@ export default function CreateHabit() {
         if (!selectedHabit) {
           setShowAlert({
             visible: true,
-            title: 'Missing Information',
-            message: 'Please select a habit preset.',
+            title: translate('alerts.missingInfo'),
+            message: translate('alerts.missingInfo'),
             type: 'error',
-            buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+            buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
           })
           return;
         }
@@ -90,10 +91,10 @@ export default function CreateHabit() {
         if (!targetAmount || !incrementAmount || !selectedUnit) {
           setShowAlert({
             visible: true,
-            title: 'Missing Information',
-            message: 'For preset habits: name, type, category, unit, targetAmount and incrementAmount are required.',
+            title: translate('alerts.missingInfo'),
+            message: translate('alerts.missingInfo'),
             type: 'error',
-            buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+            buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
           })
           return;
         }
@@ -110,10 +111,10 @@ export default function CreateHabit() {
         if (!customName || !customIcon || !customUnit || !targetAmount || !incrementAmount) {
           setShowAlert({
             visible: true,
-            title: 'Missing Information',
-            message: 'For custom habits: icon, unit, targetAmount and incrementAmount are required.',
+            title: translate('alerts.missingInfo'),
+            message: translate('alerts.missingInfo'),
             type: 'error',
-            buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+            buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
           })
           return;
         }
@@ -435,7 +436,7 @@ export default function CreateHabit() {
               fontWeight: '600',
               color: COLORS.primary
             }}>
-              Cancel
+              {translate('common.cancel')}
             </Text>
           </TouchableOpacity>
           
@@ -472,8 +473,8 @@ export default function CreateHabit() {
 
             {/* HEADER SECTION */}
             <View style={styles.header}>
-              <Text style={styles.title}>Create New Habit</Text>
-              <Text style={styles.subtitle}>Choose a preset habit or create your own</Text>
+              <Text style={styles.title}>{translate('habits.create.title')}</Text>
+              <Text style={styles.subtitle}>{translate('habits.create.subtitle')}</Text>
             </View>
             
             {/* FORM SECTION */}
@@ -481,7 +482,7 @@ export default function CreateHabit() {
 
               {/* HABIT TYPE SELECTOR */}
               <View style={styles.formGroup}>
-                <Text style={styles.label}>Habit Type</Text>
+                <Text style={styles.label}>{translate('habits.create.habitType')}</Text>
                 <View style={styles.typeSelector}>
                   <TouchableOpacity
                     style={[

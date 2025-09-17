@@ -4,6 +4,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {Tabs} from 'expo-router';
 import {Ionicons} from '@expo/vector-icons';
 import COLORS from '../../constants/colors';
+import {translate} from '../../constants/language.utils';
 
 function TabIcon({ focused, iconName, title }: any) {
   return (
@@ -79,12 +80,12 @@ export default function TabLayout() {
         <Tabs.Screen
           name="index"
           options={{
-            title: "Home",
+            title: translate('navigation.home'),
             tabBarIcon: ({ focused }) => (
               <TabIcon
                 focused={focused}
                 iconName="home-outline"
-                title="Home"
+                title={translate('navigation.home')}
               />
             ),
           }}
@@ -110,12 +111,12 @@ export default function TabLayout() {
         <Tabs.Screen
           name="history"
           options={{
-            title: "History",
+            title: translate('navigation.history'),
             tabBarIcon: ({ focused }) => (
               <TabIcon
                 focused={focused}
                 iconName="time-outline"
-                title="History"
+                title={translate('navigation.history')}
               />
             ),
           }}
@@ -123,12 +124,12 @@ export default function TabLayout() {
         <Tabs.Screen
           name="goals"
           options={{
-            title: "Goals",
+            title: translate('navigation.goals'),
             tabBarIcon: ({ focused }) => (
               <TabIcon
                 focused={focused}
                 iconName="trophy-outline"
-                title="Goals"
+                title={translate('navigation.goals')}
               />
             ),
           }}
@@ -142,12 +143,12 @@ export default function TabLayout() {
         <Tabs.Screen
           name="profile"
           options={{
-            title: "Profile",
+            title: translate('navigation.profile'),
             tabBarIcon: ({ focused }) => (
               <TabIcon
                 focused={focused}
                 iconName="person-outline"
-                title="Profile"
+                title={translate('navigation.profile')}
               />
             ),
           }}

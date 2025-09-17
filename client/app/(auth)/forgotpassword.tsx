@@ -7,7 +7,8 @@ import COLORS from '../../constants/colors';
 import styles from '../../assets/styles/passwordpages.styles';
 import SafeScreen from '../../constants/SafeScreen';
 import CustomAlert from '../../constants/CustomAlert';
-import {showConnectionError} from '../../constants/alert.utils'
+import {showConnectionError} from '../../constants/alert.utils';
+import {translate} from '../../constants/language.utils';
 
 export default function ForgotPassword() {
   const [email, setEmail] = React.useState("");
@@ -29,10 +30,10 @@ export default function ForgotPassword() {
       if (!email) {
         setShowAlert({
           visible: true,
-          title: "Missing Information",
-          message: "Please enter your email address.",
+          title: translate('alerts.missingInfo'),
+          message: translate('auth.forgotPassword.emailPlaceholder'),
           type: "warning",
-          buttons: [{ text: "OK", onPress: () => setShowAlert(previous => ({ ...previous, visible: false })) }]
+          buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })) }]
         });
         return;
       }
@@ -41,10 +42,10 @@ export default function ForgotPassword() {
       if (!emailRegex.test(email)) {
         setShowAlert({
           visible: true,
-          title: 'Invalid Email',
-          message: 'Please enter a valid email address.',
+          title: translate('alerts.invalidEmail'),
+          message: translate('alerts.invalidEmail'),
           type: 'error',
-          buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+          buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
         });
         return;
       }
@@ -85,10 +86,10 @@ export default function ForgotPassword() {
       if (!resetCode.trim()) {
         setShowAlert({
           visible: true,
-          title: "Missing Information",
-          message: "Please enter the reset code.",
+          title: translate('alerts.missingInfo'),
+          message: translate('alerts.missingInfo'),
           type: "warning",
-          buttons: [{ text: "OK", onPress: () => setShowAlert(prev => ({ ...prev, visible: false })) }]
+          buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(prev => ({ ...prev, visible: false })) }]
         });
         return;
       }
@@ -163,7 +164,7 @@ export default function ForgotPassword() {
               fontWeight: '600',
               color: COLORS.primary
             }}>
-              Sign In
+              {translate('auth.forgotPassword.backToSignIn')}
             </Text>
           </TouchableOpacity>
         </View>
@@ -173,9 +174,9 @@ export default function ForgotPassword() {
 
             {/* HEADER */}
             <View style={[styles.header, { marginBottom: 40 }]}>
-              <Text style={styles.title}>Forgot Password</Text>
+              <Text style={styles.title}>{translate('auth.forgotPassword.title')}</Text>
               <Text style={styles.subtitle}>
-                Enter your email address and reset code
+                {translate('auth.forgotPassword.subtitle')}
               </Text>
             </View>
 
@@ -183,7 +184,7 @@ export default function ForgotPassword() {
 
               {/* EMAIL INPUT */}
               <View style={styles.inputGroup}>
-                <Text style={styles.label}>Email</Text>
+                <Text style={styles.label}>{translate('auth.forgotPassword.email')}</Text>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                   <View style={[styles.inputContainer, { flex: 1 }]}>
                     <Ionicons
@@ -194,7 +195,7 @@ export default function ForgotPassword() {
                     />
                     <TextInput
                       style={styles.input}
-                      placeholder="Enter your email"
+                      placeholder={translate('auth.forgotPassword.emailPlaceholder')}
                       placeholderTextColor={COLORS.placeholderText}
                       value={email}
                       onChangeText={setEmail}
@@ -233,7 +234,7 @@ export default function ForgotPassword() {
 
               {/* RESET CODE INPUT */}
               <View style={styles.inputGroup}>
-                <Text style={styles.label}>Reset Code</Text>
+                <Text style={styles.label}>{translate('auth.forgotPassword.resetButton')}</Text>
                 <View style={styles.inputContainer}>
                   <Ionicons
                     name="key-outline"
@@ -243,7 +244,7 @@ export default function ForgotPassword() {
                   />
                   <TextInput
                     style={styles.input}
-                    placeholder="Enter reset code"
+                    placeholder={translate('auth.forgotPassword.resetButton')}
                     placeholderTextColor={COLORS.placeholderText}
                     value={resetCode}
                     onChangeText={setResetCode}
@@ -265,7 +266,7 @@ export default function ForgotPassword() {
                   verifyingCode ? (
                     <ActivityIndicator color="#fff" />
                   ) : (
-                    <Text style={styles.buttonText}>Verify Code</Text>
+                    <Text style={styles.buttonText}>{translate('auth.forgotPassword.resetButton')}</Text>
                   )}
               </TouchableOpacity>
             </View>

@@ -8,6 +8,7 @@ import {useAuthStore} from '../../store/auth.store';
 import CustomAlert from '../../constants/CustomAlert'
 import SafeScreen from '../../constants/SafeScreen'
 import {showConnectionError} from '../../constants/alert.utils'
+import {translate} from '../../constants/language.utils';
 
 export default function Signup() {
   const [username, setUsername] = React.useState("");
@@ -31,10 +32,10 @@ export default function Signup() {
       if (!username || !email || !fullName || !password) {
         setShowAlert({
           visible: true,
-          title: 'Missing Information',
-          message: 'Username, full name, email and password are required.',
+          title: translate('alerts.missingInfo'),
+          message: translate('alerts.missingInfo'),
           type: 'error',
-          buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+          buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
         });
         return;
       }
@@ -42,10 +43,10 @@ export default function Signup() {
       if (!confirmPassword) {
         setShowAlert({
           visible: true,
-          title: 'Missing Information',
-          message: 'Please confirm your password.',
+          title: translate('alerts.missingInfo'),
+          message: translate('auth.signUp.confirmPasswordPlaceholder'),
           type: 'error',
-          buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+          buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
         });
         return;
       }
@@ -53,10 +54,10 @@ export default function Signup() {
       if (password !== confirmPassword) {
         setShowAlert({
           visible: true,
-          title: 'Password Mismatch',
-          message: 'Passwords do not match. Please try again.',
+          title: translate('alerts.passwordMismatch'),
+          message: translate('alerts.passwordMismatch'),
           type: 'error',
-          buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+          buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
         });
         return;
       }
@@ -65,10 +66,10 @@ export default function Signup() {
       if (!emailRegex.test(email)) {
         setShowAlert({
           visible: true,
-          title: 'Invalid Email',
-          message: 'Please enter a valid email address.',
+          title: translate('alerts.invalidEmail'),
+          message: translate('alerts.invalidEmail'),
           type: 'error',
-          buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+          buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
         });
         return;
       }
@@ -77,18 +78,18 @@ export default function Signup() {
       if (result.success) {
         setShowAlert({
           visible: true,
-          title: 'Sign Up Successful',
-          message: 'Account created successfully!',
+          title: translate('alerts.signUpSuccessful'),
+          message: translate('alerts.signUpSuccessful'),
           type: 'success',
-          buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+          buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
         });
       } else {
         setShowAlert({
           visible: true,
-          title: 'Sign Up Failed',
-          message: result.message || 'Registration failed. Please try again.',
+          title: translate('alerts.signUpFailed'),
+          message: result.message || translate('alerts.signUpFailed'),
           type: 'error',
-          buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+          buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
         });
       }
     } catch (error) {
@@ -119,8 +120,8 @@ export default function Signup() {
 
             {/* HEADER */}
             <View style={styles.header}>
-              <Text style={styles.title}>Create an Account</Text>
-              <Text style={styles.subtitle}>Sign up to get started</Text>
+              <Text style={styles.title}>{translate('auth.signUp.title')}</Text>
+              <Text style={styles.subtitle}>{translate('auth.signUp.subtitle')}</Text>
             </View>
 
             <View style={styles.formContainer}>
@@ -137,7 +138,7 @@ export default function Signup() {
                   />
                   <TextInput
                     style={styles.input}
-                    placeholder="Enter your Username"
+                    placeholder={translate('auth.signUp.usernamePlaceholder')}
                     placeholderTextColor={COLORS.placeholderText}
                     autoCapitalize="none"
                     value={username}
@@ -158,7 +159,7 @@ export default function Signup() {
                   />
                   <TextInput
                     style={styles.input}
-                    placeholder="Enter your Email"
+                    placeholder={translate('auth.signUp.emailPlaceholder')}
                     placeholderTextColor={COLORS.placeholderText}
                     autoCapitalize="none"
                     value={email}
@@ -180,7 +181,7 @@ export default function Signup() {
                   />
                   <TextInput
                     style={styles.input}
-                    placeholder="Enter your Full Name"
+                    placeholder={translate('auth.signUp.fullNamePlaceholder')}
                     placeholderTextColor={COLORS.placeholderText}
                     autoCapitalize="none"
                     value={fullName}
@@ -205,7 +206,7 @@ export default function Signup() {
                   {/* INPUT */}
                   <TextInput
                     style={styles.input}
-                    placeholder="Enter your Password"
+                    placeholder={translate('auth.signUp.passwordPlaceholder')}
                     placeholderTextColor={COLORS.placeholderText}
                     value={password}
                     onChangeText={setPassword}
@@ -240,7 +241,7 @@ export default function Signup() {
                   {/* INPUT */}
                   <TextInput
                     style={styles.input}
-                    placeholder="Enter your Confirm Password"
+                    placeholder={translate('auth.signUp.confirmPasswordPlaceholder')}
                     placeholderTextColor={COLORS.placeholderText}
                     value={confirmPassword}
                     onChangeText={setConfirmPassword}
@@ -265,17 +266,17 @@ export default function Signup() {
                   isLoading ? (
                     <ActivityIndicator size={25} color="#fff" />
                   ) : (
-                    <Text style={styles.buttonText}>Sign Up</Text>
+                    <Text style={styles.buttonText}>{translate('auth.signUp.signUpButton')}</Text>
                   )
                 }
               </TouchableOpacity>
 
               {/* SIGNIN LINK */}
               <View style={styles.footer}>
-                <Text style={styles.footerText}>Already have an account?</Text>
+                <Text style={styles.footerText}>{translate('auth.signUp.haveAccount')}</Text>
                 <Link href="/" asChild>
                   <TouchableOpacity>
-                    <Text style={styles.link}>Sign In</Text>
+                    <Text style={styles.link}>{translate('auth.signUp.signInLink')}</Text>
                   </TouchableOpacity>
                 </Link>
               </View>

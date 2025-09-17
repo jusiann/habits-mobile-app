@@ -3,6 +3,7 @@ import {Text, TouchableOpacity, View, Image} from 'react-native';
 import {useRouter} from 'expo-router';
 import styles from '../assets/styles/main.styles';
 import SafeScreen from '../constants/SafeScreen';
+import {translate} from '../constants/language.utils';
 
 export default function Index() {
   const router = useRouter();
@@ -21,10 +22,10 @@ export default function Index() {
           </View>
         
           <View style={styles.header}>
-            <Text style={styles.titleFirst}>Welcome to</Text>
-            <Text style={styles.titleSecond}>Habits App</Text>
+            <Text style={styles.titleFirst}>{translate('welcome.title')}</Text>
+            <Text style={styles.titleSecond}>{translate('welcome.appName')}</Text>
             <Text style={styles.subtitleSpaced}>
-              Track your daily habits and build better routines
+              {translate('welcome.subtitle')}
             </Text>
           </View>
 
@@ -34,13 +35,13 @@ export default function Index() {
               style={styles.button} 
               onPress={() => router.push('/(auth)')}
             >
-              <Text style={styles.buttonText}>Sign In</Text>
+              <Text style={styles.buttonText}>{translate('welcome.signIn')}</Text>
             </TouchableOpacity>
             <TouchableOpacity 
               style={styles.button} 
               onPress={() => router.push('/(auth)/signup')}
             >
-              <Text style={styles.buttonText}>Sign Up</Text>
+              <Text style={styles.buttonText}>{translate('welcome.signUp')}</Text>
             </TouchableOpacity>
           </View>
         </View>

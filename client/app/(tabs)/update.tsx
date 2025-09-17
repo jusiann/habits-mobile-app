@@ -10,6 +10,7 @@ import CustomAlert from '../../constants/CustomAlert';
 import SafeScreen from '../../constants/SafeScreen';
 import {getAvatarSource} from '../../constants/avatar.utils';
 import { showConnectionError } from '../../constants/alert.utils';
+import { translate, changeLanguage, getCurrentLanguage } from '../../constants/language.utils';
 
 export default function UpdateProfile() {
   const {user, updateProfile, changePassword, isLoading} = useAuthStore();
@@ -32,6 +33,7 @@ export default function UpdateProfile() {
   const [showNewPassword, setShowNewPassword] = React.useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
   const [hasChanges, setHasChanges] = React.useState(false);
+  const [currentLang, setCurrentLang] = React.useState('en');
     const generateNewProfilePicture = (avatarNumber) => {
     const formattedNumber = avatarNumber < 10 ? `0${avatarNumber}` : avatarNumber;
     setTempProfilePicture(formattedNumber);
@@ -42,8 +44,16 @@ export default function UpdateProfile() {
     title: '',
     message: '',
     type: 'info' as 'success' | 'error' | 'warning' | 'info',
-    buttons: [] as Array<{ text: string; onPress: () => void; style?: 'default' | 'cancel' | 'destructive' }>
+    buttons: [] as { text: string; onPress: () => void; style?: 'default' | 'cancel' | 'destructive' }[]
   });
+
+  React.useEffect(() => {
+    const loadLanguage = async () => {
+      const lang = await getCurrentLanguage();
+      setCurrentLang(lang);
+    };
+    loadLanguage();
+  }, []);
 
   React.useEffect(() => {
     const changes = fullname !== (user?.fullname || '') ||
@@ -86,10 +96,10 @@ export default function UpdateProfile() {
       if (!fullname.trim()) {
         setShowAlert({
           visible: true,
-          title: 'Error',
-          message: 'Full name field cannot be empty.',
+          title: translate('common.error'),
+          message: translate('update.fullNameError'),
           type: 'error',
-          buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+          buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
         });
         return;
       }
@@ -97,10 +107,10 @@ export default function UpdateProfile() {
       if (fullname.trim().length < 2) {
         setShowAlert({
           visible: true,
-          title: 'Error',
-          message: 'Full name must be at least 2 characters long.',
+          title: translate('common.error'),
+          message: translate('update.fullNameLengthError'),
           type: 'error',
-          buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+          buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
         });
         return;
       }
@@ -108,10 +118,10 @@ export default function UpdateProfile() {
       if (age && (isNaN(Number(age)) || Number(age) < 0 || Number(age) > 150)) {
         setShowAlert({
           visible: true,
-          title: 'Error',
-          message: 'Age must be between 0-150 years.',
+          title: translate('common.error'),
+          message: translate('update.ageError'),
           type: 'error',
-          buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+          buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
         });
         return;
       }
@@ -119,10 +129,10 @@ export default function UpdateProfile() {
       if (height && (isNaN(Number(height)) || Number(height) < 0 || Number(height) > 300)) {
         setShowAlert({
           visible: true,
-          title: 'Error',
-          message: 'Height must be between 0-300 cm.',
+          title: translate('common.error'),
+          message: translate('update.heightError'),
           type: 'error',
-          buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+          buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
         });
         return;
       }
@@ -130,10 +140,10 @@ export default function UpdateProfile() {
       if (weight && (isNaN(Number(weight)) || Number(weight) < 0 || Number(weight) > 500)) {
         setShowAlert({
           visible: true,
-          title: 'Error',
-          message: 'Weight must be between 0-500 kg.',
+          title: translate('common.error'),
+          message: translate('update.weightError'),
           type: 'error',
-          buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+          buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
         });
         return;
       }
@@ -158,18 +168,18 @@ export default function UpdateProfile() {
       if (result.success) {
         setShowAlert({
           visible: true,
-          title: 'Success',
-          message: result.message || 'Profile updated successfully.',
+          title: translate('common.success'),
+          message: result.message || translate('update.profileUpdateSuccess'),
           type: 'success',
-          buttons: [{ text: 'OK', onPress: () => { setShowAlert(previous => ({ ...previous, visible: false })); router.push("/(tabs)/profile"); }, style: 'default' }]
+          buttons: [{ text: translate('common.ok'), onPress: () => { setShowAlert(previous => ({ ...previous, visible: false })); router.push("/(tabs)/profile"); }, style: 'default' }]
         });
       } else {
         setShowAlert({
           visible: true,
-          title: 'Error',
-          message: result.message || 'An error occurred while updating profile.',
+          title: translate('common.error'),
+          message: result.message || translate('common.error'),
           type: 'error',
-          buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+          buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
         });
       }
     } catch (error) {
@@ -186,10 +196,10 @@ export default function UpdateProfile() {
       if (!currentPassword || !newPassword || !confirmNewPassword) {
         setShowAlert({
           visible: true,
-          title: 'Error',
-          message: 'All password fields must be filled.',
+          title: translate('common.error'),
+          message: translate('update.passwordFieldsRequired'),
           type: 'error',
-          buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+          buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
         });
         return;
       }
@@ -197,10 +207,10 @@ export default function UpdateProfile() {
       if (newPassword !== confirmNewPassword) {
         setShowAlert({
           visible: true,
-          title: 'Error',
-          message: 'New passwords do not match.',
+          title: translate('common.error'),
+          message: translate('update.passwordMismatch'),
           type: 'error',
-          buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+          buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
         });
         return;
       }
@@ -208,10 +218,10 @@ export default function UpdateProfile() {
       if (currentPassword === newPassword) {
         setShowAlert({
           visible: true,
-          title: 'Error',
-          message: 'New password must be different from current password.',
+          title: translate('common.error'),
+          message: translate('update.samePassword'),
           type: 'error',
-          buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+          buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
         });
         return;
       }
@@ -220,10 +230,10 @@ export default function UpdateProfile() {
       if (result.success) {
         setShowAlert({
           visible: true,
-          title: 'Success',
-          message: result.message || 'Password changed successfully.',
+          title: translate('common.success'),
+          message: result.message || translate('update.passwordChangeSuccess'),
           type: 'success',
-          buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+          buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
         });
         setShowPasswordModal(false);
         setCurrentPassword('');
@@ -232,10 +242,10 @@ export default function UpdateProfile() {
       } else {
         setShowAlert({
           visible: true,
-          title: 'Error',
-          message: result.message || 'An error occurred while changing password.',
+          title: translate('common.error'),
+          message: result.message || translate('common.error'),
           type: 'error',
-          buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+          buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
         });
       }
     } catch (error) {
@@ -287,7 +297,7 @@ export default function UpdateProfile() {
 
           {/* CHANGE PASSWORD */}
           <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Change Password</Text>
+            <Text style={styles.modalTitle}>{translate('update.changePassword')}</Text>
             <TouchableOpacity onPress={() => setShowPasswordModal(false)}>
               <Ionicons name="close" size={26} color={COLORS.textPrimary} />
             </TouchableOpacity>
@@ -295,14 +305,14 @@ export default function UpdateProfile() {
 
           {/* CURRENT PASSWORD */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Current Password</Text>
+            <Text style={styles.label}>{translate('update.currentPassword')}</Text>
             <View style={styles.inputContainer}>
               <Ionicons name="lock-closed-outline" size={20} color={COLORS.primary} style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 value={currentPassword}
                 onChangeText={setCurrentPassword}
-                placeholder="Enter your current password"
+                placeholder={translate('update.currentPasswordPlaceholder')}
                 placeholderTextColor={COLORS.placeholderText}
                 secureTextEntry={!showCurrentPassword}
               />
@@ -319,14 +329,14 @@ export default function UpdateProfile() {
 
           {/* NEW PASSWORD */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>New Password</Text>
+            <Text style={styles.label}>{translate('update.newPassword')}</Text>
             <View style={styles.inputContainer}>
               <Ionicons name="lock-closed-outline" size={20} color={COLORS.primary} style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 value={newPassword}
                 onChangeText={setNewPassword}
-                placeholder="Enter your new password"
+                placeholder={translate('update.newPasswordPlaceholder')}
                 placeholderTextColor={COLORS.placeholderText}
                 secureTextEntry={!showNewPassword}
               />
@@ -343,14 +353,14 @@ export default function UpdateProfile() {
 
           {/* CONFIRM NEW PASSWORD */}
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Confirm New Password</Text>
+            <Text style={styles.label}>{translate('update.confirmPassword')}</Text>
             <View style={styles.inputContainer}>
               <Ionicons name="lock-closed-outline" size={20} color={COLORS.primary} style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
                 value={confirmNewPassword}
                 onChangeText={setConfirmNewPassword}
-                placeholder="Confirm your new password"
+                placeholder={translate('update.confirmPasswordPlaceholder')}
                 placeholderTextColor={COLORS.placeholderText}
                 secureTextEntry={!showConfirmPassword}
               />
@@ -383,7 +393,7 @@ export default function UpdateProfile() {
               isLoading ? (
                 <ActivityIndicator color={COLORS.white} size="small" />
               ) : (
-                <Text style={styles.modalSaveText}>Change Password</Text>
+                <Text style={styles.modalSaveText}>{translate('update.changePassword')}</Text>
             )}
           </TouchableOpacity>
         </View>
@@ -404,7 +414,7 @@ export default function UpdateProfile() {
 
           {/* CHOOSE AVATAR */}
           <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Choose Avatar</Text>
+            <Text style={styles.modalTitle}>{translate('update.chooseAvatar')}</Text>
             <TouchableOpacity onPress={() => {
               setShowAvatarModal(false);
               setTempProfilePicture('');
@@ -453,7 +463,7 @@ export default function UpdateProfile() {
               isAvatarSaving ? (
                   <ActivityIndicator color={COLORS.white} size="small" />
               ) : (
-                <Text style={styles.saveButtonText}>Choose Avatar</Text>
+                <Text style={styles.saveButtonText}>{translate('update.chooseAvatar')}</Text>
             )}
           </TouchableOpacity>
         </View>
@@ -498,12 +508,12 @@ export default function UpdateProfile() {
               if (hasChanges) {
                 setShowAlert({
                   visible: true,
-                  title: 'Unsaved Changes',
-                  message: 'You have unsaved changes. Are you sure you want to leave?',
+                  title: translate('update.unsavedChanges'),
+                  message: translate('update.unsavedChangesMessage'),
                   type: 'warning',
                   buttons: [
-                    { text: 'Stay', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'cancel' },
-                    { text: 'Leave', onPress: () => { setShowAlert(previous => ({ ...previous, visible: false })); router.push("/(tabs)/profile"); }, style: 'destructive' }
+                    { text: translate('update.stay'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'cancel' },
+                    { text: translate('update.leave'), onPress: () => { setShowAlert(previous => ({ ...previous, visible: false })); router.push("/(tabs)/profile"); }, style: 'destructive' }
                   ]
                 })
               } else {
@@ -521,7 +531,7 @@ export default function UpdateProfile() {
               fontWeight: '600',
               color: COLORS.primary
             }}>
-              Back
+              {translate('update.back')}
             </Text>
           </TouchableOpacity>
 
@@ -542,7 +552,7 @@ export default function UpdateProfile() {
                   fontWeight: '600',
                   color: COLORS.primary
                 }}>
-                  Save
+                  {translate('update.save')}
                 </Text>
             )}
           </TouchableOpacity>
@@ -567,7 +577,7 @@ export default function UpdateProfile() {
             </View>
             <TouchableOpacity style={styles.changePictureButton} onPress={() => setShowAvatarModal(true)}>
               <Ionicons name="camera" size={18} color={COLORS.white} />
-              <Text style={styles.changePictureText}>Change Picture</Text>
+              <Text style={styles.changePictureText}>{translate('update.changePicture')}</Text>
             </TouchableOpacity>
           </View>
 
@@ -575,7 +585,7 @@ export default function UpdateProfile() {
 
             {/* FULL NAME INPUT */}
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Full Name *</Text>
+              <Text style={styles.label}>{translate('update.fullName')}</Text>
               <View style={styles.inputContainer}>
 
                 {/* USER ICON */}
@@ -584,7 +594,7 @@ export default function UpdateProfile() {
                   style={styles.input}
                   value={fullname}
                   onChangeText={setFullname}
-                  placeholder="Full Name"
+                  placeholder={translate('update.fullName').replace(' *', '')}
                   placeholderTextColor={COLORS.placeholderText}
                 />
               </View>
@@ -592,7 +602,7 @@ export default function UpdateProfile() {
 
             {/* GENDER SELECTION */}
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Gender</Text>
+              <Text style={styles.label}>{translate('profile.gender.label')}</Text>
               <View style={styles.genderContainer}>
 
                 {/* GENDER OPTIONS */}
@@ -605,7 +615,7 @@ export default function UpdateProfile() {
                     size={24} 
                     color={gender === 'male' ? COLORS.primary : COLORS.textSecondary} 
                   />
-                  <Text style={[styles.genderText, gender === 'male' && styles.genderTextSelected]}>Male</Text>
+                  <Text style={[styles.genderText, gender === 'male' && styles.genderTextSelected]}>{translate('profile.gender.male')}</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity 
@@ -617,7 +627,7 @@ export default function UpdateProfile() {
                     size={24} 
                     color={gender === 'female' ? COLORS.primary : COLORS.textSecondary} 
                   />
-                  <Text style={[styles.genderText, gender === 'female' && styles.genderTextSelected]}>Female</Text>
+                  <Text style={[styles.genderText, gender === 'female' && styles.genderTextSelected]}>{translate('profile.gender.female')}</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity 
@@ -629,7 +639,7 @@ export default function UpdateProfile() {
                     size={24} 
                     color={gender === 'other' ? COLORS.primary : COLORS.textSecondary} 
                   />
-                  <Text style={[styles.genderText, gender === 'other' && styles.genderTextSelected]}>Other</Text>
+                  <Text style={[styles.genderText, gender === 'other' && styles.genderTextSelected]}>{translate('profile.gender.other')}</Text>
                 </TouchableOpacity>
 
               </View>
@@ -637,7 +647,7 @@ export default function UpdateProfile() {
 
             {/* AGE INPUT */}
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Age</Text>
+              <Text style={styles.label}>{translate('update.age')}</Text>
               <View style={styles.inputContainer}>
 
                 {/* ICON */}
@@ -646,7 +656,7 @@ export default function UpdateProfile() {
                   style={styles.input}
                   value={age}
                   onChangeText={setAge}
-                  placeholder="Age"
+                  placeholder={translate('update.age')}
                   placeholderTextColor={COLORS.placeholderText}
                   keyboardType="numeric"
                 />
@@ -655,7 +665,7 @@ export default function UpdateProfile() {
 
             {/* HEIGHT INPUT */}
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Height (cm)</Text>
+              <Text style={styles.label}>{translate('update.height')}</Text>
               <View style={styles.inputContainer}>
 
                 {/* ICON */}
@@ -664,7 +674,7 @@ export default function UpdateProfile() {
                   style={styles.input}
                   value={height}
                   onChangeText={setHeight}
-                  placeholder="Height (cm)"
+                  placeholder={translate('update.height')}
                   placeholderTextColor={COLORS.placeholderText}
                   keyboardType="numeric"
                 />
@@ -673,7 +683,7 @@ export default function UpdateProfile() {
 
             {/* WEIGHT INPUT */}
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Weight (kg)</Text>
+              <Text style={styles.label}>{translate('update.weight')}</Text>
               <View style={styles.inputContainer}>
 
                 {/* ICON */}
@@ -682,7 +692,7 @@ export default function UpdateProfile() {
                   style={styles.input}
                   value={weight}
                   onChangeText={setWeight}
-                  placeholder="Weight (kg)"
+                  placeholder={translate('update.weight')}
                   placeholderTextColor={COLORS.placeholderText}
                   keyboardType="numeric"
                 />
@@ -701,7 +711,39 @@ export default function UpdateProfile() {
               <View style={styles.actionIcon}>
                 <Ionicons name="lock-closed-outline" size={24} color={COLORS.primary} />
               </View>
-              <Text style={styles.actionText}>Change Password</Text>
+              <Text style={styles.actionText}>{translate('update.changePassword')}</Text>
+              <Ionicons name="chevron-forward" size={18} color={COLORS.textSecondary} />
+            </TouchableOpacity>
+
+            {/* LANGUAGE CHANGE BUTTON */}
+            <TouchableOpacity 
+              style={styles.actionButton} 
+              onPress={async () => {
+                const newLang = currentLang === 'en' ? 'tr' : 'en';
+                await changeLanguage(newLang);
+                setCurrentLang(newLang);
+                setShowAlert({
+                  visible: true,
+                  title: translate('common.success'),
+                  message: translate('update.changeLanguage'),
+                  type: 'success',
+                  buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+                });
+              }}
+            >
+              <View style={styles.actionIcon}>
+                <Ionicons name="language-outline" size={24} color={COLORS.primary} />
+              </View>
+              <View style={{flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between'}}>
+                <Text style={styles.actionText}>{translate('update.language')}</Text>
+                <Text style={{
+                  fontSize: 16,
+                  color: COLORS.textSecondary,
+                  marginRight: 8
+                }}>
+                  {currentLang === 'en' ? 'English' : 'Türkçe'}
+                </Text>
+              </View>
               <Ionicons name="chevron-forward" size={18} color={COLORS.textSecondary} />
             </TouchableOpacity>
           </View>

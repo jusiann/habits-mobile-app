@@ -162,12 +162,39 @@ export default {
 
   // Profil Güncelle
   update: {
+    title: "Profili Güncelle",
+    back: "Geri",
+    save: "Kaydet",
     fullName: "Ad Soyad *",
     fullNameRequired: "Ad soyad gereklidir",
     age: "Yaş",
     height: "Boy (cm)",
     weight: "Kilo (kg)",
-    changePassword: "Şifre Değiştir"
+    changePassword: "Şifre Değiştir",
+    changePicture: "Resim Değiştir",
+    chooseAvatar: "Avatar Seç",
+    unsavedChanges: "Kaydedilmemiş Değişiklikler",
+    unsavedChangesMessage: "Kaydedilmemiş değişiklikleriniz var. Çıkmak istediğinizden emin misiniz?",
+    stay: "Kal",
+    leave: "Çık",
+    currentPassword: "Mevcut Şifre",
+    currentPasswordPlaceholder: "Mevcut şifrenizi girin",
+    newPassword: "Yeni Şifre",
+    newPasswordPlaceholder: "Yeni şifrenizi girin",
+    confirmPassword: "Yeni Şifreyi Onayla",
+    confirmPasswordPlaceholder: "Yeni şifrenizi onaylayın",
+    passwordFieldsRequired: "Tüm şifre alanları doldurulmalıdır.",
+    passwordMismatch: "Yeni şifreler eşleşmiyor.",
+    samePassword: "Yeni şifre mevcut şifreden farklı olmalıdır.",
+    passwordChangeSuccess: "Şifre başarıyla değiştirildi.",
+    profileUpdateSuccess: "Profil başarıyla güncellendi.",
+    fullNameError: "Ad soyad alanı boş olamaz.",
+    fullNameLengthError: "Ad soyad en az 2 karakter olmalıdır.",
+    ageError: "Yaş 0-150 yıl arasında olmalıdır.",
+    heightError: "Boy 0-300 cm arasında olmalıdır.",
+    weightError: "Kilo 0-500 kg arasında olmalıdır.",
+    language: "Dil",
+    changeLanguage: "Dil Değiştir"
   },
 
   // Ortak

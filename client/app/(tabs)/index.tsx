@@ -10,6 +10,7 @@ import COLORS from '../../constants/colors';
 import SafeScreen from '../../constants/SafeScreen';
 import {getAvatarSource} from '../../constants/avatar.utils';
 import {getUserTimezone} from '../../constants/timezone.utils';
+import {translate} from '../../constants/language.utils';
 
 export default function Home() {
   const {user, token, updateProfile} = useAuthStore();
@@ -20,13 +21,13 @@ export default function Home() {
   const getGreeting = () => {
     const currentHour = new Date().getHours();
     if (currentHour >= 6 && currentHour < 12)
-      return "Good Morning";
+      return translate('home.greeting.morning');
     else if (currentHour >= 12 && currentHour < 18)
-      return "Good Afternoon";
+      return translate('home.greeting.afternoon');
     else if (currentHour >= 18 && currentHour < 22)
-      return "Good Evening";
+      return translate('home.greeting.evening');
     else
-      return "Good Night";
+      return translate('home.greeting.night');
   };
 
   const loadHistoryData = React.useCallback(async () => {
@@ -101,7 +102,7 @@ export default function Home() {
 
         {/* FIXED HABIRT SECTION */}
         <View style={styles.habitHeader}>
-          <Text style={styles.habitTitle}>HABITS</Text>
+          <Text style={styles.habitTitle}>{translate('home.habitsTitle')}</Text>
           <TouchableOpacity 
             style={styles.addButton}
             onPress={() => router.push('/(tabs)/create.habit')}
@@ -128,8 +129,8 @@ export default function Home() {
             ) : habits.length === 0 ? (
               <View style={styles.habitCard}>
                 <View style={styles.emptyContainer}>
-                  <Text style={styles.emptyText}>Add a new habit</Text>
-                  <Text style={styles.emptySubtext}>Start building better routines by adding your first habit</Text>
+                  <Text style={styles.emptyText}>{translate('home.emptyState.title')}</Text>
+                  <Text style={styles.emptySubtext}>{translate('home.emptyState.subtitle')}</Text>
                 </View>
               </View>
             ) : (

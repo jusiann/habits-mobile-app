@@ -7,6 +7,7 @@ import COLORS from '../../constants/colors';
 import styles from '../../assets/styles/passwordpages.styles';
 import CustomAlert from '../../constants/CustomAlert';
 import SafeScreen from '../../constants/SafeScreen';
+import {translate} from '../../constants/language.utils';
 
 export default function ChangePassword() {
   const {email, resetCode} = useLocalSearchParams();

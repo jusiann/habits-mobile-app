@@ -162,12 +162,39 @@ export default {
 
   // Update Profile
   update: {
+    title: "Update Profile",
+    back: "Back",
+    save: "Save",
     fullName: "Full Name *",
     fullNameRequired: "Full name is required",
     age: "Age",
     height: "Height (cm)",
     weight: "Weight (kg)",
-    changePassword: "Change Password"
+    changePassword: "Change Password",
+    changePicture: "Change Picture",
+    chooseAvatar: "Choose Avatar",
+    unsavedChanges: "Unsaved Changes",
+    unsavedChangesMessage: "You have unsaved changes. Are you sure you want to leave?",
+    stay: "Stay",
+    leave: "Leave",
+    currentPassword: "Current Password",
+    currentPasswordPlaceholder: "Enter your current password",
+    newPassword: "New Password",
+    newPasswordPlaceholder: "Enter your new password",
+    confirmPassword: "Confirm New Password",
+    confirmPasswordPlaceholder: "Confirm your new password",
+    passwordFieldsRequired: "All password fields must be filled.",
+    passwordMismatch: "New passwords do not match.",
+    samePassword: "New password must be different from current password.",
+    passwordChangeSuccess: "Password changed successfully.",
+    profileUpdateSuccess: "Profile updated successfully.",
+    fullNameError: "Full name field cannot be empty.",
+    fullNameLengthError: "Full name must be at least 2 characters long.",
+    ageError: "Age must be between 0-150 years.",
+    heightError: "Height must be between 0-300 cm.",
+    weightError: "Weight must be between 0-500 kg.",
+    language: "Language",
+    changeLanguage: "Change Language"
   },
 
   // Common

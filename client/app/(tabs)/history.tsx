@@ -18,6 +18,7 @@ import {
   STATS_STRUCTURE
 } from '../../constants/habit.constant';
 import { showConnectionError } from '../../constants/alert.utils';
+import {translate} from '../../constants/language.utils';
 
 export default function History() {
   const {loadMonthData: loadMonthDataFromStore} = useHabitStore();
@@ -134,7 +135,7 @@ export default function History() {
                 style={styles.avatar}
               />
                 <View style={{ marginTop: 10 }}>
-                  <Text style={styles.headerSubtitle}>History</Text>
+                  <Text style={styles.headerSubtitle}>{translate('history.title')}</Text>
                   <Text style={styles.headerTitle}>{user?.username || 'Guest'}</Text>
                 </View>
               </View>

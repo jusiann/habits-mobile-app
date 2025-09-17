@@ -8,6 +8,7 @@ import {useAuthStore} from '../../store/auth.store';
 import SafeScreen from '../../constants/SafeScreen';
 import CustomAlert from '../../constants/CustomAlert';
 import {showConnectionError} from '../../constants/alert.utils';
+import {translate} from '../../constants/language.utils';
 
 export default function Login() {
   const [email, setEmail] = React.useState("");
@@ -28,10 +29,10 @@ export default function Login() {
       if (!email && !username) {
         setShowAlert({
           visible: true,
-          title: 'Missing Information',
-          message: 'Please enter your email or username.',
+          title: translate('alerts.missingInfo'),
+          message: translate('auth.signIn.emailOrUsernamePlaceholder'),
           type: 'error',
-          buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+          buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
         });
         return;
       }
@@ -39,10 +40,10 @@ export default function Login() {
       if (!password) {
         setShowAlert({
           visible: true,
-          title: 'Missing Information',
-          message: 'Please enter your password.',
+          title: translate('alerts.missingInfo'),
+          message: translate('auth.signIn.passwordPlaceholder'),
           type: 'error',
-          buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+          buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
         });
         return;
       }
@@ -51,18 +52,18 @@ export default function Login() {
       if (result.success) {
         setShowAlert({
           visible: true,
-          title: 'Sign In Successful',
-          message: 'You have successfully signed in.',
+          title: translate('alerts.signInSuccessful'),
+          message: translate('alerts.signInSuccessful'),
           type: 'success',
-          buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+          buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
         });
       } else {
         setShowAlert({
           visible: true,
-          title: 'Sign In Failed',
-          message: result.message || 'Invalid username or password.',
+          title: translate('alerts.signInFailed'),
+          message: result.message || translate('alerts.signInFailed'),
           type: 'error',
-          buttons: [{ text: 'OK', onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
+          buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(prev => ({ ...prev, visible: false })), style: 'default' }]
         });
       }
     } catch (error) {
@@ -104,7 +105,7 @@ export default function Login() {
 
             {/* EMAIL OR USERNAME */}
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Email or Username</Text>
+              <Text style={styles.label}>{translate('auth.signIn.emailOrUsername')}</Text>
               <View style={styles.inputContainer}>
                 <Ionicons 
                   name="person-outline" 
@@ -114,7 +115,7 @@ export default function Login() {
                 />
                 <TextInput
                   style={styles.input}
-                  placeholder="Enter your email or username"
+                  placeholder={translate('auth.signIn.emailOrUsernamePlaceholder')}
                   placeholderTextColor={COLORS.placeholderText}
                   value={email || username}
                   onChangeText={text => {
@@ -134,7 +135,7 @@ export default function Login() {
 
             {/* PASSWORD */}
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Password</Text>
+              <Text style={styles.label}>{translate('auth.signIn.password')}</Text>
               <View style={styles.inputContainer}>
 
                 {/* LEFT ICON */}
@@ -148,7 +149,7 @@ export default function Login() {
                 {/* INPUT */}
                 <TextInput
                   style={styles.input}
-                  placeholder="Enter your password"
+                  placeholder={translate('auth.signIn.passwordPlaceholder')}
                   placeholderTextColor={COLORS.placeholderText}
                   value={password}
                   onChangeText={setPassword}
@@ -169,10 +170,10 @@ export default function Login() {
             
             {/* FORGOT PASSWORD */}
             <View style={[styles.footer, { marginTop: 0 }]}>
-              <Text style={styles.footerText}>Forgot your password?</Text>
+              <Text style={styles.footerText}>{translate('auth.signIn.forgotPassword')}</Text>
               <Link href="/(auth)/forgotpassword" asChild>
                 <TouchableOpacity>
-                  <Text style={styles.link}>Reset Password</Text>
+                  <Text style={styles.link}>{translate('auth.signIn.resetPassword')}</Text>
                 </TouchableOpacity>
               </Link>
             </View>
@@ -183,17 +184,17 @@ export default function Login() {
                 isLoading ? (
                   <ActivityIndicator size={25} color="#fff" />
                 ) : (
-                  <Text style={styles.buttonText}>Sign In</Text>
+                  <Text style={styles.buttonText}>{translate('auth.signIn.signInButton')}</Text>
                 )
               }
             </TouchableOpacity>
 
             {/* SIGNUP LINK */}
             <View style={styles.footer}>
-              <Text style={styles.footerText}>Don&apos;t have an account ?</Text>
+              <Text style={styles.footerText}>{translate('auth.signIn.noAccount')}</Text>
               <Link href="/(auth)/signup" asChild>
                 <TouchableOpacity>
-                  <Text style={styles.link}>Sign Up</Text>
+                  <Text style={styles.link}>{translate('auth.signIn.signUpLink')}</Text>
                 </TouchableOpacity>
               </Link>
             </View>

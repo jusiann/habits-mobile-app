@@ -10,6 +10,7 @@ import CustomAlert from '../../constants/CustomAlert';
 import {getAvatarSource} from '../../constants/avatar.utils';
 import COLORS from '../../constants/colors';
 import styles from '../../assets/styles/goals.styles';
+import {translate} from '../../constants/language.utils';
 
 export default function Goals() {
   const {user, token} = useAuthStore();
@@ -136,7 +137,7 @@ export default function Goals() {
                   style={styles.avatar}
                 />
                 <View style={{ marginTop: 10 }}>
-                  <Text style={[styles.headerSubtitle, { marginLeft: -8 }]}>Goals</Text>
+                  <Text style={[styles.headerSubtitle, { marginLeft: -8 }]}>{translate('navigation.goals')}</Text>
                   <Text style={styles.headerTitle}>{user?.username || 'Guest'}</Text>
                 </View>
               </View>
@@ -144,7 +145,7 @@ export default function Goals() {
 
             {/* GOALS HEADER */}
             <View style={styles.habitHeader}>
-              <Text style={styles.habitTitle}>GOALS</Text>
+              <Text style={styles.habitTitle}>{translate('goals.title')}</Text>
               <TouchableOpacity
                 style={styles.addButton}
                 onPress={() => router.push('/(tabs)/create.goal')}
@@ -168,8 +169,8 @@ export default function Goals() {
                   /* EMPTY STATE */
                   <View style={styles.habitCard}>
                     <View style={styles.emptyContainer}>
-                      <Text style={styles.emptyText}>No goals yet</Text>
-                      <Text style={styles.emptySubtext}>Tap + to create a goal and track progress</Text>
+                      <Text style={styles.emptyText}>{translate('goals.emptyState.title')}</Text>
+                      <Text style={styles.emptySubtext}>{translate('goals.emptyState.subtitle')}</Text>
                     </View>
                   </View>
                 ) : (

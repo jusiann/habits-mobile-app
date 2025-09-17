@@ -11,6 +11,7 @@ import CustomAlert from '../../constants/CustomAlert';
 import SafeScreen from '../../constants/SafeScreen';
 import {getAvatarSource} from '../../constants/avatar.utils';
 import {showConnectionError} from '../../constants/alert.utils';
+import {translate} from '../../constants/language.utils';
 
 export default function Profile() {
   const {user, logout, isLoading} = useAuthStore();
@@ -106,7 +107,7 @@ export default function Profile() {
       
             {/* PERSONAL INFORMATION SECTION */}
             <View style={styles.detailsCard}>
-              <Text style={styles.sectionTitle}>Personal Information</Text>
+              <Text style={styles.sectionTitle}>{translate('profile.personalInfo')}</Text>
           
               {/* GENDER DETAIL */}
               <View style={styles.detailRow}>
@@ -115,9 +116,9 @@ export default function Profile() {
                   <Ionicons name="person-outline" size={24} color={COLORS.primary} />
                 </View>
                 <View style={styles.detailContent}>
-                  <Text style={styles.detailLabel}>Gender</Text>
+                  <Text style={styles.detailLabel}>{translate('profile.gender.label')}</Text>
                   <Text style={styles.detailValue}>
-                    {user?.gender ? (user.gender === 'male' ? 'Male' : user.gender === 'female' ? 'Female' : 'Other') : 'Not specified'}
+                    {user?.gender ? (user.gender === 'male' ? translate('profile.gender.male') : user.gender === 'female' ? translate('profile.gender.female') : translate('profile.gender.other')) : translate('profile.notSpecified')}
                   </Text>
                 </View>
               </View>
@@ -132,8 +133,8 @@ export default function Profile() {
                 <View style={styles.detailContent}>
 
                   {/* AGE INFO */}
-                  <Text style={styles.detailLabel}>Age</Text>
-                  <Text style={styles.detailValue}>{user?.age ? `${user.age} years` : 'Not specified'}</Text>
+                  <Text style={styles.detailLabel}>{translate('profile.age')}</Text>
+                  <Text style={styles.detailValue}>{user?.age ? `${user.age} ${translate('profile.ageUnit')}` : translate('profile.notSpecified')}</Text>
                 </View>
               </View>
       
@@ -147,8 +148,8 @@ export default function Profile() {
                 <View style={styles.detailContent}>
 
                   {/* HEIGHT INFO */}
-                  <Text style={styles.detailLabel}>Height</Text>
-                  <Text style={styles.detailValue}>{user?.height ? `${user.height} cm` : 'Not specified'}</Text>
+                  <Text style={styles.detailLabel}>{translate('profile.height')}</Text>
+                  <Text style={styles.detailValue}>{user?.height ? `${user.height} cm` : translate('profile.notSpecified')}</Text>
                 </View>
               </View>
       
@@ -162,15 +163,15 @@ export default function Profile() {
                 <View style={styles.detailContent}>
 
                   {/* WEIGHT INFO */}
-                  <Text style={styles.detailLabel}>Weight</Text>
-                  <Text style={styles.detailValue}>{user?.weight ? `${user.weight} kg` : 'Not specified'}</Text>
+                  <Text style={styles.detailLabel}>{translate('profile.weight')}</Text>
+                  <Text style={styles.detailValue}>{user?.weight ? `${user.weight} kg` : translate('profile.notSpecified')}</Text>
                 </View>
               </View>
             </View>
       
             {/* SETTINGS SECTION */}
             <View style={styles.actionsCard}>
-              <Text style={styles.sectionTitle}>General Settings</Text>
+              <Text style={styles.sectionTitle}>{translate('profile.generalSettings')}</Text>
           
               {/* EDIT PROFILE BUTTON */}
               <TouchableOpacity style={styles.actionButton} onPress={() => router.push('/(tabs)/update')}>
@@ -179,7 +180,7 @@ export default function Profile() {
                   {/* SETTINGS ICON */}
                   <Ionicons name="settings-outline" size={24} color={COLORS.primary} />
                 </View>
-                <Text style={styles.actionText}>Edit Profile</Text>
+                <Text style={styles.actionText}>{translate('profile.editProfile')}</Text>
 
                 {/* FORWARD ICON */}
                 <Ionicons name="chevron-forward" size={18} color={COLORS.textSecondary} />
@@ -192,7 +193,7 @@ export default function Profile() {
                   {/* LOGOUT ICON */}
                   <Ionicons name="log-out-outline" size={24} color={COLORS.primary} />
                 </View>
-                <Text style={styles.actionText}>Logout</Text>
+                <Text style={styles.actionText}>{translate('profile.logout')}</Text>
 
                 {/* FORWARD ICON */}
                 <Ionicons name="chevron-forward" size={18} color={COLORS.textSecondary} />

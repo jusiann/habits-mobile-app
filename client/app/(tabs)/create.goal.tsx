@@ -7,6 +7,7 @@ import SafeScreen from '../../constants/SafeScreen';
 import CustomAlert from '../../constants/CustomAlert';
 import COLORS from '../../constants/colors';
 import styles from '../../assets/styles/create.goal.styles';
+import {translate} from '../../constants/language.utils';
 
 export default function CreateGoal() {
   const {habits, fetchPresets, fetchHabits, fetchGoals, createGoal} = useHabitStore();
@@ -33,10 +34,10 @@ export default function CreateGoal() {
         if (!selectedHabitId) {
           setShowAlert({
             visible: true,
-            title: 'Missing Information',
-            message: 'Please select a preset habit.',
+            title: translate('alerts.missingInfo'),
+            message: translate('alerts.missingInfo'),
             type: 'error',
-            buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+            buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
           });
           return;
         }
@@ -44,10 +45,10 @@ export default function CreateGoal() {
         if (!Number.isInteger(r) || r <= 0) {
           setShowAlert({
             visible: true,
-            title: 'Invalid Input',
-            message: 'Repeat must be a number greater than 0.',
+            title: translate('alerts.error'),
+            message: translate('alerts.error'),
             type: 'error',
-            buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+            buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
           });
           return;
         }
@@ -58,10 +59,10 @@ export default function CreateGoal() {
         if (!Number.isInteger(v) || v <= 0) {
           setShowAlert({
             visible: true,
-            title: 'Invalid Input',
-            message: 'Value must be a number greater than 0.',
+            title: translate('alerts.error'),
+            message: translate('alerts.error'),
             type: 'error',
-            buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+            buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
           });
           return;
         }
@@ -164,7 +165,7 @@ export default function CreateGoal() {
               fontWeight: '600',
               color: COLORS.primary
             }}>
-              Cancel
+              {translate('common.cancel')}
             </Text>
           </TouchableOpacity>
 
@@ -177,7 +178,7 @@ export default function CreateGoal() {
             {isSubmitting ? (
               <ActivityIndicator size={25} color={COLORS.primary} />
             ) : (
-              <Text style={{ fontSize: 16, fontWeight: '600', color: COLORS.primary }}>Add</Text>
+              <Text style={{ fontSize: 16, fontWeight: '600', color: COLORS.primary }}>{translate('goals.create.add')}</Text>
             )}
           </TouchableOpacity>
         </View>
@@ -193,8 +194,8 @@ export default function CreateGoal() {
 
             {/* HEADER SECTION */}
             <View style={styles.header}>
-              <Text style={styles.title}>Create New Goal</Text>
-              <Text style={styles.subtitle}>Set your goal and track your progress</Text>
+              <Text style={styles.title}>{translate('goals.create.title')}</Text>
+              <Text style={styles.subtitle}>{translate('goals.create.subtitle')}</Text>
             </View>
 
             {/* FORM SECTION */}
@@ -202,7 +203,7 @@ export default function CreateGoal() {
 
               {/* GOAL TYPE SELECTION */}
               <View style={styles.formGroup}>
-                <Text style={styles.label}>Type</Text>
+                <Text style={styles.label}>{translate('goals.create.type')}</Text>
                 <View style={styles.typeSelector}>
                   <TouchableOpacity 
                     style={[styles.typeButton, type === 'complete' && styles.selectedTypeButton]} 
@@ -236,7 +237,7 @@ export default function CreateGoal() {
                 <View>
                   {/* PRESET HABITS SELECTION */}
                   <View style={styles.formGroup}>
-                    <Text style={styles.label}>Preset Habits</Text>
+                    <Text style={styles.label}>{translate('goals.create.presetHabits')}</Text>
                     <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginVertical: 8 }}>
                       {habits && habits.map(h => (
                         <TouchableOpacity 
@@ -259,7 +260,7 @@ export default function CreateGoal() {
 
                   {/* REPEAT INPUT */}
                   <View style={styles.formGroup}>
-                    <Text style={styles.label}>Repeat</Text>
+                    <Text style={styles.label}>{translate('goals.create.repeat')}</Text>
                     <View style={styles.inputContainer}>
                       <TextInput 
                         value={repeat} 
@@ -279,7 +280,7 @@ export default function CreateGoal() {
                 <View>
                   {/* METRIC SELECTION */}
                   <View style={styles.formGroup}>
-                    <Text style={styles.label}>Metric</Text>
+                    <Text style={styles.label}>{translate('goals.create.metric')}</Text>
                     <View style={styles.unitContainer}>
                       <TouchableOpacity 
                         style={[styles.unitButton, metric === 'streak' && styles.selectedUnitButton]} 
@@ -302,7 +303,7 @@ export default function CreateGoal() {
 
                   {/* VALUE INPUT */}
                   <View style={styles.formGroup}>
-                    <Text style={styles.label}>Value</Text>
+                    <Text style={styles.label}>{translate('goals.create.value')}</Text>
                     <View style={styles.inputContainer}>
                       <TextInput 
                         value={value} 
