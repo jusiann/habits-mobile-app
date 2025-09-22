@@ -364,6 +364,12 @@ export const useAuthStore = create((set,get) => ({
                         set({ 
                             user: updatedUser 
                         });
+                        
+                        // SYNC USER LANGUAGE WITH LOCAL STORAGE
+                        if (updatedUser.language) {
+                            const {changeLanguage} = await import('../constants/language.utils');
+                            await changeLanguage(updatedUser.language);
+                        }
                     } else {
                         throw new Error('Failed to fetch user data');
                     }
@@ -575,7 +581,7 @@ export const useAuthStore = create((set,get) => ({
     },
 
     // UPDATE PROFILE
-    updateProfile: async ({ fullname, gender, height, weight, age, profilePicture, timezone, currentPassword, newPassword }) => {
+    updateProfile: async ({ fullname, gender, height, weight, age, profilePicture, timezone, language, currentPassword, newPassword }) => {
         set({ 
             isLoading: true 
         });
@@ -590,6 +596,7 @@ export const useAuthStore = create((set,get) => ({
                     age,
                     profilePicture,
                     timezone,
+                    language,
                     currentPassword,
                     newPassword
                 }),

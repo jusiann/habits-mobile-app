@@ -719,16 +719,42 @@ export default function UpdateProfile() {
             <TouchableOpacity 
               style={styles.actionButton} 
               onPress={async () => {
-                const newLang = currentLang === 'en' ? 'tr' : 'en';
-                await changeLanguage(newLang);
-                setCurrentLang(newLang);
-                setShowAlert({
-                  visible: true,
-                  title: translate('common.success'),
-                  message: translate('update.changeLanguage'),
-                  type: 'success',
-                  buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
-                });
+                try {
+                  const newLang = currentLang === 'en' ? 'tr' : 'en';
+                  
+                  // Backend'e dil değişikliğini gönder
+                  const result = await updateProfile({ language: newLang });
+                  
+                  if (result.success) {
+                    // Başarılı olursa local storage'ı güncelle
+                    await changeLanguage(newLang);
+                    setCurrentLang(newLang);
+                    setShowAlert({
+                      visible: true,
+                      title: translate('common.success'),
+                      message: translate('update.changeLanguage'),
+                      type: 'success',
+                      buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+                    });
+                  } else {
+                    setShowAlert({
+                      visible: true,
+                      title: translate('common.error'),
+                      message: result.message || translate('update.languageChangeError'),
+                      type: 'error',
+                      buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+                    });
+                  }
+                } catch (error) {
+                  console.error('Language change error:', error);
+                  setShowAlert({
+                    visible: true,
+                    title: translate('common.error'),
+                    message: error.message || translate('update.languageChangeError'),
+                    type: 'error',
+                    buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+                  });
+                }
               }}
             >
               <View style={styles.actionIcon}>

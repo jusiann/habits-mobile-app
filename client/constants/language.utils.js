@@ -41,11 +41,20 @@ export const loadSavedLanguage = async () => {
       currentLanguage = savedLanguage;
       return savedLanguage;
     }
+    currentLanguage = DEFAULT_LANGUAGE;
     return DEFAULT_LANGUAGE;
   } catch (error) {
     console.error('Dil yüklenirken hata:', error);
+    currentLanguage = DEFAULT_LANGUAGE;
     return DEFAULT_LANGUAGE;
   }
+};
+
+/**
+ * Dil sistemini başlatır - uygulama başlatıldığında çağrılmalı
+ */
+export const initializeLanguage = async () => {
+  return await loadSavedLanguage();
 };
 
 /**

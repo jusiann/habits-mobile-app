@@ -194,7 +194,8 @@ export default {
     heightError: "Boy 0-300 cm arasında olmalıdır.",
     weightError: "Kilo 0-500 kg arasında olmalıdır.",
     language: "Dil",
-    changeLanguage: "Dil Değiştir"
+    changeLanguage: "Dil başarıyla değiştirildi",
+    languageChangeError: "Dil değiştirilemedi. Lütfen tekrar deneyin."
   },
 
   // Ortak

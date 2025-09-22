@@ -194,7 +194,8 @@ export default {
     heightError: "Height must be between 0-300 cm.",
     weightError: "Weight must be between 0-500 kg.",
     language: "Language",
-    changeLanguage: "Change Language"
+    changeLanguage: "Language changed successfully",
+    languageChangeError: "Failed to change language. Please try again."
   },
 
   // Common

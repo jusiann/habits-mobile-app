@@ -4,6 +4,7 @@ import {StatusBar} from 'expo-status-bar';
 import {Stack, SplashScreen} from 'expo-router';
 import {useAuthStore} from '../store/auth.store';
 import SafeScreen from '../constants/SafeScreen';
+import {initializeLanguage} from '../constants/language.utils';
  
 function SplashScreenController() {
   const {checkAuth} = useAuthStore();
@@ -11,6 +12,9 @@ function SplashScreenController() {
 
   React.useEffect(() => {
     const initAuth = async () => {
+      // Önce dil sistemini başlat
+      await initializeLanguage();
+      // Sonra auth kontrolü yap (bu kullanıcı dil bilgisini alırsa günceller)
       await checkAuth();
       setIsReady(true);
     };
