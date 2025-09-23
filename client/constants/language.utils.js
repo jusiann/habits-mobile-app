@@ -166,11 +166,30 @@ export const detectSystemLanguage = () => {
 };
 
 /**
+ * Alışkanlık adını çevirir
+ * Eğer translationKey varsa onu kullanır, yoksa orijinal adı döndürür
+ */
+export const translateHabitName = (habit) => {
+  if (!habit) return '';
+  
+  // Eğer translationKey varsa, çeviriyi kullan
+  if (habit.translationKey) {
+    const translated = translate(habit.translationKey);
+    // Eğer çeviri bulunamazsa (key ile aynı döndürülürse), orijinal adı kullan
+    return translated !== habit.translationKey ? translated : habit.name;
+  }
+  
+  // translationKey yoksa direkt adı döndür (custom habit)
+  return habit.name;
+};
+
+/**
  * Hook benzeri kullanım için (React Context ile birlikte kullanılabilir)
  */
 export const useTranslation = () => {
   return {
     translate,
+    translateHabitName,
     currentLanguage: getCurrentLanguage(),
     changeLanguage,
     availableLanguages: getAvailableLanguages()

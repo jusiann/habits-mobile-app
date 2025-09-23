@@ -10,7 +10,7 @@ import CustomAlert from '../../constants/CustomAlert';
 import {getAvatarSource} from '../../constants/avatar.utils';
 import COLORS from '../../constants/colors';
 import styles from '../../assets/styles/goals.styles';
-import {translate} from '../../constants/language.utils';
+import {translate, translateHabitName} from '../../constants/language.utils';
 
 export default function Goals() {
   const {user, token} = useAuthStore();
@@ -251,10 +251,10 @@ export default function Goals() {
                             <View style={styles.habitTextContainer}>
                               <Text style={styles.habitName}>
                                 {g.type === 'complete' 
-                                  ? `Complete ${g.repeat} ${g.habit?.name || 'habit(s)'}` 
+                                  ? `Complete ${g.repeat} ${g.habit ? translateHabitName(g.habit) : 'habit(s)'}` 
                                   : g.type === 'reach' 
                                   ? `Reach ${g.value} ${g.metric || ''}` 
-                                  : g.title || (g.habit?.name || 'Maintain goal')
+                                  : g.title || (g.habit ? translateHabitName(g.habit) : 'Maintain goal')
                                 }
                               </Text>
                             </View>

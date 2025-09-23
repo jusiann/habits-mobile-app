@@ -10,6 +10,10 @@ const habitSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    translationKey: {
+        type: String,
+        default: null
+    },
     type: {
         type: String,
         enum: ['other', 'default'],

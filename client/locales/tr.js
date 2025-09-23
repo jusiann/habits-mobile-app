@@ -71,7 +71,7 @@ export default {
       evening: "İyi Akşamlar",
       night: "İyi Geceler"
     },
-    habitsTitle: "ALIŞKANLİKLAR",
+    habitsTitle: "ALIŞKANLIKLAR",
     emptyState: {
       title: "Yeni bir alışkanlık ekle",
       subtitle: "İlk alışkanlığınızı ekleyerek daha iyi rutinler oluşturmaya başlayın"
@@ -107,7 +107,15 @@ export default {
       goBack: "Geri Dön",
       deleteHabit: "Alışkanlığı Sil",
       chooseIcon: "İkon Seç"
-    }
+    },
+
+    // Alışkanlık Adları
+    water: "Su",
+    food: "Yemek",
+    walking: "Yürüyüş",
+    exercise: "Egzersiz",
+    reading: "Okuma",
+    sleep: "Uyku"
   },
 
   // Hedefler

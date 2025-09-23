@@ -107,7 +107,15 @@ export default {
       goBack: "Go Back",
       deleteHabit: "Delete Habit",
       chooseIcon: "Choose Icon"
-    }
+    },
+
+    // Habit Names
+    water: "Water",
+    food: "Food",
+    walking: "Walking",
+    exercise: "Exercise",
+    reading: "Reading",
+    sleep: "Sleep"
   },
 
   // Goals

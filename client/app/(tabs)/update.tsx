@@ -721,12 +721,10 @@ export default function UpdateProfile() {
               onPress={async () => {
                 try {
                   const newLang = currentLang === 'en' ? 'tr' : 'en';
-                  
-                  // Backend'e dil değişikliğini gönder
+                
                   const result = await updateProfile({ language: newLang });
                   
                   if (result.success) {
-                    // Başarılı olursa local storage'ı güncelle
                     await changeLanguage(newLang);
                     setCurrentLang(newLang);
                     setShowAlert({

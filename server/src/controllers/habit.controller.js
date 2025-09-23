@@ -10,6 +10,7 @@ const HABIT_PRESETS = {
     health: [
         {
             name: "Water",
+            translationKey: "habits.water",
             icon: "water-outline",
             unit: "glasses",
             targetAmount: 8,
@@ -18,6 +19,7 @@ const HABIT_PRESETS = {
         },
         {
             name: "Food",
+            translationKey: "habits.food",
             icon: "restaurant-outline",
             unit: "meals",
             targetAmount: 3,
@@ -26,6 +28,7 @@ const HABIT_PRESETS = {
         },
         {
             name: "Walking",
+            translationKey: "habits.walking",
             icon: "walk-outline",
             unit: "steps",
             targetAmount: 10000,
@@ -34,6 +37,7 @@ const HABIT_PRESETS = {
         },
         {
             name: "Exercise",
+            translationKey: "habits.exercise",
             icon: "barbell-outline",
             unit: "minutes",
             targetAmount: 30,
@@ -42,6 +46,7 @@ const HABIT_PRESETS = {
         },
         {
             name: "Reading",
+            translationKey: "habits.reading",
             icon: "book-outline",
             unit: "pages",
             targetAmount: 20,
@@ -50,6 +55,7 @@ const HABIT_PRESETS = {
         },
         {
             name: "Sleep",
+            translationKey: "habits.sleep",
             icon: "moon-outline",
             unit: "hours",
             targetAmount: 8,
@@ -166,6 +172,7 @@ export const addHabit = async (req, res) => {
             habitData = {
                 userId,
                 name: preset.name,
+                translationKey: preset.translationKey,
                 type: 'default',
                 category,
                 icon: preset.icon, 
@@ -206,6 +213,7 @@ export const addHabit = async (req, res) => {
             data: {
                 id: newHabit._id,
                 name: newHabit.name,
+                translationKey: newHabit.translationKey,
                 type: newHabit.type,
                 category: newHabit.category,
                 icon: newHabit.icon,

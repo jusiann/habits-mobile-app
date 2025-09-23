@@ -10,7 +10,7 @@ import {CUSTOM_ICONS} from '../../constants/custom.icons';
 import CustomAlert from '../../constants/CustomAlert';
 import SafeScreen from '../../constants/SafeScreen';
 import {showConnectionError} from '../../constants/alert.utils';
-import {translate} from '../../constants/language.utils';
+import {translate, translateHabitName} from '../../constants/language.utils';
 
 export default function CreateHabit() {
   const router = useRouter();
@@ -238,7 +238,7 @@ export default function CreateHabit() {
                       styles.habitCardText,
                       selectedHabit?.name === habit.name && styles.selectedHabitCardText
                     ]}>
-                      {habit.name}
+                      {translateHabitName(habit)}
                     </Text>
                   </TouchableOpacity>
               ))}
