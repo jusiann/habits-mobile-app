@@ -10,8 +10,6 @@ import styles from '../../assets/styles/history.styles';
 import SafeScreen from '../../constants/SafeScreen';
 import {getAvatarSource} from '../../constants/avatar.utils';
 import {
-  MONTH_NAMES,
-  DAY_NAMES,
   DEFAULT_STATS,
   CALENDAR_CONFIG,
   DAY_DATA_STRUCTURE,
@@ -221,7 +219,11 @@ export default function History() {
             {/* MONTH NAVIGATION */}
             <View style={styles.monthHeader}>
               <Text style={styles.monthTitle}>
-                {MONTH_NAMES[currentDate.getMonth()]} {currentDate.getFullYear()}
+                {(() => {
+                  const monthKeys = ['january', 'february', 'march', 'april', 'may', 'june', 
+                                   'july', 'august', 'september', 'october', 'november', 'december'];
+                  return translate(`history.months.${monthKeys[currentDate.getMonth()]}`);
+                })()} {currentDate.getFullYear()}
               </Text>
 
               <View style={styles.navigationButtons}>
@@ -251,11 +253,14 @@ export default function History() {
 
             {/* DAY NAMES */}
             <View style={styles.dayNamesContainer}>
-              {DAY_NAMES.map((dayName) => (
-                <View key={dayName} style={styles.dayNameCell}>
-                  <Text style={styles.dayNameText}>{dayName}</Text>
-                </View>
-              ))}
+              {(() => {
+                const dayKeys = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+                return dayKeys.map((dayKey) => (
+                  <View key={dayKey} style={styles.dayNameCell}>
+                    <Text style={styles.dayNameText}>{translate(`history.days.${dayKey}`)}</Text>
+                  </View>
+                ));
+              })()}
             </View>
 
             {/* CALENDAR GRID */}
@@ -311,19 +316,19 @@ export default function History() {
             <View style={styles.statCard}>
               <Ionicons name="flame" size={18} color={COLORS.primary} style={{ marginBottom: 4 }} />
               <Text style={styles.statValue}>{stats.currentStreak}</Text>
-              <Text style={styles.statLabel}>Current Streak</Text>
+              <Text style={styles.statLabel}>{translate('history.stats.currentStreak')}</Text>
             </View>
 
             <View style={styles.statCard}>
               <Ionicons name="pie-chart" size={18} color={COLORS.primary} style={{ marginBottom: 4 }} />
               <Text style={styles.statValue}>{stats.completionRate}%</Text>
-              <Text style={styles.statLabel}>Completion Rate</Text>
+              <Text style={styles.statLabel}>{translate('history.stats.completionRate')}</Text>
             </View>
 
             <View style={styles.statCard}>
               <Ionicons name="checkmark-done" size={18} color={COLORS.primary} style={{ marginBottom: 4 }} />
               <Text style={styles.statValue}>{stats.totalCompleted}</Text>
-              <Text style={styles.statLabel}>Total Completed</Text>
+              <Text style={styles.statLabel}>{translate('history.stats.totalCompleted')}</Text>
             </View>
           </View>
         </ScrollView>

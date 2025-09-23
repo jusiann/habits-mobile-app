@@ -9,7 +9,7 @@ import {CUSTOM_ICONS} from '../../constants/custom.icons';
 import CustomAlert from '../../constants/CustomAlert';
 import SafeScreen from '../../constants/SafeScreen';
 import {showConnectionError} from '../../constants/alert.utils';
-import {translate, translateHabitName} from '../../constants/language.utils';
+import {translate, translateHabitName, translateUnit} from '../../constants/language.utils';
 
 export default function Detail() {
   const router = useRouter()
@@ -155,18 +155,18 @@ export default function Detail() {
       if (result.success) {
         setShowAlert({
           visible: true,
-          title: 'Success',
-          message: 'Habit updated successfully!',
+          title: translate('alerts.success'),
+          message: translate('alerts.habitUpdatedSuccessfully'),
           type: 'success',
-          buttons: [{ text: 'OK', onPress: () => { setShowAlert(previous => ({ ...previous, visible: false })); router.back(); }, style: 'default' }]
+          buttons: [{ text: translate('common.ok'), onPress: () => { setShowAlert(previous => ({ ...previous, visible: false })); router.back(); }, style: 'default' }]
         });
       } else {
         setShowAlert({
           visible: true,
-          title: 'Update Failed',
-          message: result.message || 'Failed to update habit',
+          title: translate('alerts.updateFailed'),
+          message: result.message || translate('alerts.failedToUpdateHabit'),
           type: 'error',
-          buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+          buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
         })
       }
     } catch (error) {
@@ -202,7 +202,7 @@ export default function Detail() {
               <View style={{ marginTop: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
                 <Ionicons name="warning" size={16} color="orange" style={{ marginTop: -8 }}/> 
                 <Text style={[styles.label, { marginLeft: 5, color: 'orange', fontSize: 12 }]}>
-                  These changes will reset your progress for today
+                  {translate('habits.detail.resetWarning')}
                 </Text>
               </View>
             )
@@ -213,7 +213,7 @@ export default function Detail() {
       {
         habit.availableUnits && habit.availableUnits.length > 0 && (
           <View style={styles.formGroup}>
-            <Text style={styles.label}>Unit</Text>
+            <Text style={styles.label}>{translate('habits.create.unit')}</Text>
             <View style={styles.unitContainer}>
               {habit.availableUnits.map((unit: string) => (
                 <TouchableOpacity
@@ -228,7 +228,7 @@ export default function Detail() {
                     styles.unitButtonText,
                     selectedUnit === unit && styles.selectedUnitButtonText
                   ]}>
-                    {unit}
+                    {translateUnit(unit)}
                   </Text>
                 </TouchableOpacity>
               ))}
@@ -239,14 +239,14 @@ export default function Detail() {
       
       {/* DEFAULT HABIT TARGET AMOUNT */}
       <View style={styles.formGroup}>
-        <Text style={styles.label}>Target Amount</Text>
+        <Text style={styles.label}>{translate('habits.create.targetAmount')}</Text>
         <View style={styles.inputContainer}>
           <TextInput
             style={styles.input}
             value={targetAmount}
             onChangeText={setTargetAmount}
             keyboardType="numeric"
-            placeholder="Enter target amount"
+            placeholder={translate('habits.create.targetAmountPlaceholder')}
             placeholderTextColor={COLORS.textSecondary}
           />
         </View>
@@ -254,14 +254,14 @@ export default function Detail() {
       
       {/* DEFAULT HABIT INCREMENT AMOUNT */}
       <View style={styles.formGroup}>
-        <Text style={styles.label}>Increment Amount</Text>
+        <Text style={styles.label}>{translate('habits.create.incrementAmount')}</Text>
         <View style={styles.inputContainer}>
           <TextInput
             style={styles.input}
             value={incrementAmount}
             onChangeText={setIncrementAmount}
             keyboardType="numeric"
-            placeholder="Enter increment amount"
+            placeholder={translate('habits.create.incrementAmountPlaceholder')}
             placeholderTextColor={COLORS.textSecondary}
           />
         </View>
@@ -274,13 +274,13 @@ export default function Detail() {
 
       {/* CUSTOM HABIT INFORMATION */}
       <View style={styles.formGroup}>
-        <Text style={styles.label}>Habit Name</Text>
+        <Text style={styles.label}>{translate('habits.detail.habitName')}</Text>
         <View style={styles.inputContainer}>
           <TextInput
             style={styles.input}
             value={customName}
             onChangeText={setCustomName}
-            placeholder="Enter habit name"
+            placeholder={translate('habits.detail.habitNamePlaceholder')}
             placeholderTextColor={COLORS.textSecondary}
           />
         </View>
@@ -288,25 +288,25 @@ export default function Detail() {
       
       {/* CUSTOM HABIT ICONS */}
       <View style={styles.formGroup}>
-        <Text style={styles.label}>Icon</Text>
+        <Text style={styles.label}>{translate('habits.detail.icon')}</Text>
         <TouchableOpacity 
           style={styles.iconSelector}
           onPress={() => setShowIconModal(true)}
         >
           <Ionicons name={customIcon as any} size={24} color={COLORS.primary} />
-          <Text style={styles.iconSelectorText}>Tap to change icon</Text>
+          <Text style={styles.iconSelectorText}>{translate('habits.detail.tapToChangeIcon')}</Text>
         </TouchableOpacity>
       </View>
 
       {/* CUSTOM HABIT UNIT */}
       <View style={styles.formGroup}>
-        <Text style={styles.label}>Unit</Text>
+        <Text style={styles.label}>{translate('habits.create.unit')}</Text>
         <View style={styles.inputContainer}>
           <TextInput
             style={styles.input}
             value={customUnit}
             onChangeText={setCustomUnit}
-            placeholder="e.g., minutes, pages, times"
+            placeholder={translate('habits.create.unitPlaceholder')}
             placeholderTextColor={COLORS.textSecondary}
           />
         </View>
@@ -314,14 +314,14 @@ export default function Detail() {
       
       {/* CUSTOM HABIT TARGET AMOUNT */}
       <View style={styles.formGroup}>
-        <Text style={styles.label}>Target Amount</Text>
+        <Text style={styles.label}>{translate('habits.create.targetAmount')}</Text>
         <View style={styles.inputContainer}>
           <TextInput
             style={styles.input}
             value={targetAmount}
             onChangeText={setTargetAmount}
             keyboardType="numeric"
-            placeholder="Enter target amount"
+            placeholder={translate('habits.create.targetAmountPlaceholder')}
             placeholderTextColor={COLORS.textSecondary}
           />
         </View>
@@ -329,14 +329,14 @@ export default function Detail() {
       
       {/* CUSTOM HABIT INCREMENT AMOUNT */}
       <View style={styles.formGroup}>
-        <Text style={styles.label}>Increment Amount</Text>
+        <Text style={styles.label}>{translate('habits.create.incrementAmount')}</Text>
         <View style={styles.inputContainer}>
           <TextInput
             style={styles.input}
             value={incrementAmount}
             onChangeText={setIncrementAmount}
             keyboardType="numeric"
-            placeholder="Enter increment amount"
+            placeholder={translate('habits.create.incrementAmountPlaceholder')}
             placeholderTextColor={COLORS.textSecondary}
           />
         </View>
@@ -350,7 +350,7 @@ export default function Detail() {
           <View style={{ marginTop: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
             <Ionicons name="warning" size={16} color="orange" style={{ marginTop: -8 }}/> 
             <Text style={[styles.label, { marginLeft: 5, color: 'orange', fontSize: 12 }]}>
-              These changes will reset your progress for today
+              {translate('habits.detail.progressResetWarning')}
             </Text>
           </View>
       )}
@@ -394,12 +394,12 @@ export default function Detail() {
               if (hasChanges) {
                 setShowAlert({
                   visible: true,
-                  title: 'Unsaved Changes',
-                  message: 'You have unsaved changes. Are you sure you want to leave?',
+                  title: translate('alerts.unsavedChanges'),
+                  message: translate('alerts.unsavedChangesMessage'),
                   type: 'warning',
                   buttons: [
-                    { text: 'Stay', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'cancel' },
-                    { text: 'Leave', onPress: () => { setShowAlert(previous => ({ ...previous, visible: false })); router.back(); }, style: 'destructive' }
+                    { text: translate('common.stay'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'cancel' },
+                    { text: translate('common.leave'), onPress: () => { setShowAlert(previous => ({ ...previous, visible: false })); router.back(); }, style: 'destructive' }
                   ]
                 })
               } else {
@@ -417,7 +417,7 @@ export default function Detail() {
               fontWeight: '600',
               color: COLORS.primary
             }}>
-              Back
+              {translate('common.back')}
             </Text>
           </TouchableOpacity>
           
@@ -437,7 +437,7 @@ export default function Detail() {
                 fontWeight: '600',
                 color: COLORS.primary
               }}>
-                Save
+{translate('habits.detail.save')}
               </Text>
             )}
           </TouchableOpacity>
@@ -497,13 +497,13 @@ export default function Detail() {
                   onPress={() => {
                     setShowAlert({
                       visible: true,
-                      title: 'Delete Habit',
-                      message: 'Are you sure you want to delete this habit? This action cannot be undone.',
+                      title: translate('alerts.deleteHabit'),
+                      message: translate('alerts.deleteHabitMessage'),
                       type: 'warning',
                       buttons: [
-                        { text: 'Cancel', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'cancel' },
+                        { text: translate('common.cancel'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'cancel' },
                         { 
-                            text: 'Delete', 
+                            text: translate('common.delete'), 
                             onPress: async () => {
                             setShowAlert(previous => ({ ...previous, visible: false }));
                             setIsDeleteLoading(true);
@@ -512,18 +512,18 @@ export default function Detail() {
                               if (result.success) {
                                 setShowAlert({
                                   visible: true,
-                                  title: 'Success',
-                                  message: 'Habit deleted successfully!',
+                                  title: translate('alerts.success'),
+                                  message: translate('alerts.habitDeletedSuccessfully'),
                                   type: 'success',
-                                  buttons: [{ text: 'OK', onPress: () => { setShowAlert(previous => ({ ...previous, visible: false })); router.back(); }, style: 'default' }]
+                                  buttons: [{ text: translate('common.ok'), onPress: () => { setShowAlert(previous => ({ ...previous, visible: false })); router.back(); }, style: 'default' }]
                                 });
                               } else {
                                 setShowAlert({
                                   visible: true,
-                                  title: 'Delete Failed',
-                                  message: result.message || 'Failed to delete habit',
+                                  title: translate('alerts.deleteFailed'),
+                                  message: result.message || translate('alerts.failedToDeleteHabit'),
                                   type: 'error',
-                                  buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+                                  buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
                                 });
                               }
                             } catch (error) {
@@ -568,7 +568,7 @@ export default function Detail() {
 
                     {/* MODAL HEADER */}
                     <View style={styles.modalHeader}>
-                      <Text style={styles.modalTitle}>Choose Icon</Text>
+                      <Text style={styles.modalTitle}>{translate('habits.detail.chooseIcon')}</Text>
                       <TouchableOpacity onPress={() => setShowIconModal(false)}>
                         <Ionicons name="close-outline" size={24} color={COLORS.textPrimary} />
                       </TouchableOpacity>

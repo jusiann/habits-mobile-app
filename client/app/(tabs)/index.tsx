@@ -10,7 +10,7 @@ import COLORS from '../../constants/colors';
 import SafeScreen from '../../constants/SafeScreen';
 import {getAvatarSource} from '../../constants/avatar.utils';
 import {getUserTimezone} from '../../constants/timezone.utils';
-import {translate, translateHabitName} from '../../constants/language.utils';
+import {translate, translateHabitName, translateUnit} from '../../constants/language.utils';
 
 export default function Home() {
   const {user, token, updateProfile} = useAuthStore();
@@ -204,7 +204,7 @@ export default function Home() {
 
                         {/* HABIT UNIT */}
                         <Text style={isCompleted ? styles.progressTextCompleted : styles.progressText}>
-                          {unit}
+                          {translateUnit(unit)}
                         </Text>
 
                         {/* HABIT PROGRESS */}

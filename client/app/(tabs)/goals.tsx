@@ -30,17 +30,17 @@ export default function Goals() {
       if (action === 'delete') {
         setShowAlert({
           visible: true,
-          title: 'Delete Goal',
-          message: 'Are you sure you want to delete this goal? This action cannot be undone.',
+          title: translate('goals.delete.title'),
+          message: translate('goals.delete.message'),
           type: 'warning',
           buttons: [
             {
-              text: 'Cancel',
+              text: translate('goals.delete.cancel'),
               onPress: () => setShowAlert(previous => ({ ...previous, visible: false })),
               style: 'cancel'
             },
             {
-              text: 'Delete',
+              text: translate('goals.delete.confirm'),
               onPress: async () => {
                 setShowAlert(previous => ({ ...previous, visible: false }));
                 setIsLoading(true);
@@ -49,10 +49,10 @@ export default function Goals() {
                   if (!res.success) {
                     setShowAlert({
                       visible: true,
-                      title: 'Delete Failed',
-                      message: res.message || 'Failed to delete goal. Please try again.',
+                      title: translate('goals.delete.failed'),
+                      message: res.message || translate('goals.delete.failedMessage'),
                       type: 'error',
-                      buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+                      buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
                     });
                   } else {
                     await fetchGoals();
@@ -61,10 +61,10 @@ export default function Goals() {
                   console.error('[Goals] delete failed', err);
                   setShowAlert({
                     visible: true,
-                    title: 'Delete Failed',
-                    message: 'Failed to delete goal. Please try again.',
+                    title: translate('goals.delete.failed'),
+                    message: translate('goals.delete.failedMessage'),
                     type: 'error',
-                    buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+                    buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
                   });
                 } finally {
                   setIsLoading(false);
@@ -251,10 +251,10 @@ export default function Goals() {
                             <View style={styles.habitTextContainer}>
                               <Text style={styles.habitName}>
                                 {g.type === 'complete' 
-                                  ? `Complete ${g.repeat} ${g.habit ? translateHabitName(g.habit) : 'habit(s)'}` 
+                                  ? `${translate('goals.types.complete')} ${g.repeat} ${g.habit ? translateHabitName(g.habit) : translate('goals.types.habits')}` 
                                   : g.type === 'reach' 
-                                  ? `Reach ${g.value} ${g.metric || ''}` 
-                                  : g.title || (g.habit ? translateHabitName(g.habit) : 'Maintain goal')
+                                  ? `${translate('goals.types.reach')} ${g.value} ${g.metric || ''}` 
+                                  : g.title || (g.habit ? translateHabitName(g.habit) : translate('goals.types.maintain'))
                                 }
                               </Text>
                             </View>

@@ -32,20 +32,20 @@ export default function Profile() {
       if (result.success) {
         setShowAlert({
             visible: true,
-            title: 'Success',
-            message: 'Logout successful',
+            title: translate('common.success'),
+            message: translate('profile.logoutSuccess'),
             type: 'success',
-            buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+            buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
         });
         router.dismissAll();
         router.push('/');
       } else {
         setShowAlert({
           visible: true,
-          title: 'Error',
-          message: result.message || 'Logout failed',
+          title: translate('common.error'),
+          message: result.message || translate('profile.logoutFailed'),
           type: 'error',
-          buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+          buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
         });
       }
     } catch (error) {

@@ -184,12 +184,24 @@ export const translateHabitName = (habit) => {
 };
 
 /**
+ * Unit adını çevirir
+ */
+export const translateUnit = (unit) => {
+  if (!unit) return '';
+  
+  const translated = translate(`units.${unit}`);
+  // Eğer çeviri bulunamazsa orijinal unit'i döndür
+  return translated !== `units.${unit}` ? translated : unit;
+};
+
+/**
  * Hook benzeri kullanım için (React Context ile birlikte kullanılabilir)
  */
 export const useTranslation = () => {
   return {
     translate,
     translateHabitName,
+    translateUnit,
     currentLanguage: getCurrentLanguage(),
     changeLanguage,
     availableLanguages: getAvailableLanguages()

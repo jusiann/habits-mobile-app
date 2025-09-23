@@ -51,18 +51,18 @@ export default function ChangePassword() {
     if (result.success) {
       setShowAlert({
         visible: true,
-        title: 'Success',
-        message: 'Password changed successfully!',
+        title: translate('common.success'),
+        message: translate('auth.changePassword.successMessage'),
         type: 'success',
-        buttons: [{ text: 'OK', onPress: () => { setShowAlert(previous => ({ ...previous, visible: false })); router.push('/(auth)'); }, style: 'default' }]
+        buttons: [{ text: translate('common.ok'), onPress: () => { setShowAlert(previous => ({ ...previous, visible: false })); router.push('/(auth)'); }, style: 'default' }]
       });
     } else {
       setShowAlert({
         visible: true,
-        title: 'Error',
-        message: result.message || 'An error occurred while changing password',
+        title: translate('common.error'),
+        message: result.message || translate('auth.changePassword.errorMessage'),
         type: 'error',
-        buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+        buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
       });
     }
   };

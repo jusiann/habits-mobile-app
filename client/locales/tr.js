@@ -59,7 +59,9 @@ export default {
       currentPassword: "Mevcut Şifre",
       newPassword: "Yeni Şifre",
       confirmNewPassword: "Yeni Şifreyi Onayla",
-      changeButton: "Şifre Değiştir"
+      changeButton: "Şifre Değiştir",
+      successMessage: "Şifre başarıyla değiştirildi!",
+      errorMessage: "Şifre değiştirilirken bir hata oluştu"
     }
   },
 
@@ -85,7 +87,10 @@ export default {
       title: "Yeni Alışkanlık Oluştur",
       subtitle: "Hazır bir alışkanlık seçin veya kendiniz oluşturun",
       habitType: "Alışkanlık Türü",
+      defaultHabit: "Varsayılan",
+      customHabit: "Özel",
       chooseDefault: "Varsayılan Alışkanlık Seç",
+      chooseDefaultTitle: "Varsayılan Alışkanlık Seçin",
       failedToLoad: "Önayarlar yüklenemedi:",
       retry: "Tekrar Dene",
       noPresets: "Önayar bulunmuyor",
@@ -98,7 +103,11 @@ export default {
       targetAmount: "Hedef Miktar",
       targetAmountPlaceholder: "Hedef miktarı girin",
       incrementAmount: "Artış Miktarı",
-      incrementAmountPlaceholder: "Artış miktarını girin"
+      incrementAmountPlaceholder: "Artış miktarını girin",
+      createButton: "Oluştur",
+      successMessage: "Alışkanlık başarıyla oluşturuldu!",
+      failed: "Alışkanlık Oluşturma Başarısız",
+      failedMessage: "Alışkanlık oluşturulamadı"
     },
 
     detail: {
@@ -106,7 +115,19 @@ export default {
       habitNotFound: "Alışkanlık bulunamadı",
       goBack: "Geri Dön",
       deleteHabit: "Alışkanlığı Sil",
-      chooseIcon: "İkon Seç"
+      chooseIcon: "İkon Seç",
+      habitName: "Alışkanlık Adı",
+      habitNamePlaceholder: "Alışkanlık adını girin",
+      icon: "İkon",
+      unit: "Birim",
+      targetAmount: "Hedef Miktar",
+      targetAmountPlaceholder: "Hedef miktarı girin",
+      incrementAmount: "Artış Miktarı",
+      incrementAmountPlaceholder: "Artış miktarını girin",
+      save: "Kaydet",
+      resetWarning: "Bu değişiklikler bugünkü ilerlemenizi sıfırlayacak",
+      progressResetWarning: "Bu değişiklikler bugünkü ilerlemenizi sıfırlayacak",
+      tapToChangeIcon: "İkonu değiştirmek için dokunun"
     },
 
     // Alışkanlık Adları
@@ -129,21 +150,71 @@ export default {
       title: "Yeni Hedef Oluştur",
       subtitle: "Hedefinizi belirleyin ve ilerlemenizi takip edin",
       type: "Tür",
+      complete: "Tamamla",
+      reach: "Ulaş",
+      maintain: "Sürdür",
       presetHabits: "Hazır Alışkanlıklar",
       repeat: "Tekrar",
       metric: "Metrik",
+      streak: "Seri",
+      rate: "Oran",
       value: "Değer",
       add: "Ekle"
+    },
+
+    delete: {
+      title: "Hedefi Sil",
+      message: "Bu hedefi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
+      cancel: "İptal",
+      confirm: "Sil",
+      failed: "Silme Başarısız",
+      failedMessage: "Hedef silinemedi. Lütfen tekrar deneyin."
+    },
+
+    types: {
+      complete: "Tamamla",
+      reach: "Ulaş",
+      maintain: "Hedefi sürdür",
+      habits: "alışkanlık"
     }
   },
 
   // Geçmiş
   history: {
     title: "Geçmiş",
+    months: {
+      january: "Ocak",
+      february: "Şubat",
+      march: "Mart",
+      april: "Nisan",
+      may: "Mayıs",
+      june: "Haziran",
+      july: "Temmuz",
+      august: "Ağustos",
+      september: "Eylül",
+      october: "Ekim",
+      november: "Kasım",
+      december: "Aralık"
+    },
+    days: {
+      sunday: "Pz",
+      monday: "Pt",
+      tuesday: "Sa",
+      wednesday: "Ça",
+      thursday: "Pe",
+      friday: "Cu",
+      saturday: "Ct"
+    },
     stats: {
       currentStreak: "Mevcut Seri",
       completionRate: "Tamamlama Oranı",
       totalCompleted: "Toplam Tamamlanan"
+    },
+    selectedDay: {
+      totalHabits: "Toplam Alışkanlık",
+      completedHabits: "Tamamlanan",
+      inProgress: "Devam Eden",
+      notStarted: "Başlanmamış"
     }
   },
 
@@ -165,7 +236,9 @@ export default {
     ageUnit: "yaş",
     height: "Boy",
     weight: "Kilo",
-    notSpecified: "Belirtilmemiş"
+    notSpecified: "Belirtilmemiş",
+    logoutSuccess: "Çıkış başarılı",
+    logoutFailed: "Çıkış başarısız"
   },
 
   // Profil Güncelle
@@ -206,6 +279,8 @@ export default {
     languageChangeError: "Dil değiştirilemedi. Lütfen tekrar deneyin."
   },
 
+
+
   // Ortak
   common: {
     ok: "Tamam",
@@ -218,7 +293,10 @@ export default {
     error: "Hata",
     success: "Başarılı",
     warning: "Uyarı",
-    info: "Bilgi"
+    info: "Bilgi",
+    back: "Geri",
+    stay: "Kal",
+    leave: "Çık"
   },
 
   // Navigasyon
@@ -237,7 +315,34 @@ export default {
     signInSuccessful: "Giriş Başarılı",
     signInFailed: "Giriş Başarısız",
     signUpSuccessful: "Kayıt Başarılı",
-    signUpFailed: "Kayıt Başarısız"
+    signUpFailed: "Kayıt Başarısız",
+    unsavedChanges: "Kaydedilmemiş Değişiklikler",
+    unsavedChangesMessage: "Kaydedilmemiş değişiklikleriniz var. Çıkmak istediğinizden emin misiniz?",
+    success: "Başarılı",
+    habitUpdatedSuccessfully: "Alışkanlık başarıyla güncellendi!",
+    updateFailed: "Güncelleme Başarısız",
+    failedToUpdateHabit: "Alışkanlık güncellenemedi",
+    deleteHabit: "Alışkanlığı Sil",
+    deleteHabitMessage: "Bu alışkanlığı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
+    habitDeletedSuccessfully: "Alışkanlık başarıyla silindi!",
+    deleteFailed: "Silme Başarısız",
+    failedToDeleteHabit: "Alışkanlık silinemedi",
+    connectionError: {
+      title: "Bağlantı Hatası",
+      message: "Sunucuya bağlanılamadı. İnternet bağlantınızı kontrol edip tekrar deneyin."
+    },
+    networkError: {
+      title: "Ağ Hatası",
+      message: "Ağ isteği başarısız. Lütfen tekrar deneyin."
+    },
+    validationError: {
+      title: "Doğrulama Hatası", 
+      message: "Girişinizi kontrol edip tekrar deneyin."
+    },
+    error: {
+      title: "Hata",
+      message: "Bir hata oluştu. Lütfen tekrar deneyin."
+    }
   },
 
   // Varsayılan Alışkanlık İsimleri (6 sistem önayarı)

@@ -10,7 +10,7 @@ import {CUSTOM_ICONS} from '../../constants/custom.icons';
 import CustomAlert from '../../constants/CustomAlert';
 import SafeScreen from '../../constants/SafeScreen';
 import {showConnectionError} from '../../constants/alert.utils';
-import {translate, translateHabitName} from '../../constants/language.utils';
+import {translate, translateHabitName, translateUnit} from '../../constants/language.utils';
 
 export default function CreateHabit() {
   const router = useRouter();
@@ -157,18 +157,18 @@ export default function CreateHabit() {
       if (result.success) {
         setShowAlert({
           visible: true,
-          title: 'Success',
-          message: 'Habit created successfully!',
+          title: translate('common.success'),
+          message: translate('habits.create.successMessage'),
           type: 'success',
-          buttons: [{ text: 'OK', onPress: () => { setShowAlert(previous => ({ ...previous, visible: false })); router.back(); }, style: 'default' }]
+          buttons: [{ text: translate('common.ok'), onPress: () => { setShowAlert(previous => ({ ...previous, visible: false })); router.back(); }, style: 'default' }]
         });
       } else {
         setShowAlert({
           visible: true,
-          title: 'Habit Creation Failed',
-          message: result.message || 'Failed to create habit',
+          title: translate('habits.create.failed'),
+          message: result.message || translate('habits.create.failedMessage'),
           type: 'error',
-          buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+          buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
         })
       }
     } catch (error) {
@@ -188,7 +188,7 @@ export default function CreateHabit() {
 
       {/* DEFAULT HABIT INFORMATION */}
       <View style={styles.formGroup}>
-        <Text style={styles.label}>Choose a Default Habit</Text>
+        <Text style={styles.label}>{translate('habits.create.chooseDefaultTitle')}</Text>
         {
           isPresetsLoading ? (
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 20 }}>
@@ -198,7 +198,7 @@ export default function CreateHabit() {
             <View>
 
               {/* ERROR MESSAGE AND RETRY BUTTON */}
-              <Text style={[styles.label, { color: 'red' }]}>Failed to load presets: {storeError}</Text>
+              <Text style={[styles.label, { color: 'red' }]}>{translate('habits.create.failedToLoad')} {storeError}</Text>
               <TouchableOpacity 
                 style={styles.button}
                 onPress={() => {
@@ -208,11 +208,11 @@ export default function CreateHabit() {
                   }
                 }}
               >
-                <Text style={styles.buttonText}>Retry</Text>
+                <Text style={styles.buttonText}>{translate('habits.create.retry')}</Text>
               </TouchableOpacity>
             </View>
           ) : presets.length === 0 ? (
-            <Text style={styles.label}>No presets available</Text>
+            <Text style={styles.label}>{translate('habits.create.noPresets')}</Text>
           ) : (
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{marginVertical: 10}}>
               {
@@ -251,7 +251,7 @@ export default function CreateHabit() {
 
               {/* UNIT SELECTOR */}
               <View style={styles.formGroup}>
-                <Text style={styles.label}>Unit</Text>
+                <Text style={styles.label}>{translate('habits.create.unit')}</Text>
                 <View style={styles.unitContainer}>
                   {selectedHabit.availableUnits.map((unit: string) => (
                     <TouchableOpacity
@@ -266,7 +266,7 @@ export default function CreateHabit() {
                         styles.unitButtonText,
                         selectedUnit === unit && styles.selectedUnitButtonText
                       ]}>
-                        {unit}
+                        {translateUnit(unit)}
                       </Text>
                     </TouchableOpacity>
                   ))}
@@ -275,14 +275,14 @@ export default function CreateHabit() {
                 
               {/* TARGET AMOUNT INPUT */}
               <View style={styles.formGroup}>
-                <Text style={styles.label}>Target Amount</Text>
+                <Text style={styles.label}>{translate('habits.create.targetAmount')}</Text>
                 <View style={styles.inputContainer}>
                   <TextInput
                     style={styles.input}
                     value={targetAmount}
                     onChangeText={setTargetAmount}
                     keyboardType="numeric"
-                    placeholder="Enter target amount"
+                    placeholder={translate('habits.create.targetAmountPlaceholder')}
                     placeholderTextColor={COLORS.textSecondary}
                   />
                 </View>
@@ -290,14 +290,14 @@ export default function CreateHabit() {
               
               {/* INCREMENT AMOUNT INPUT */}
               <View style={styles.formGroup}>
-                <Text style={styles.label}>Increment Amount</Text>
+                <Text style={styles.label}>{translate('habits.create.incrementAmount')}</Text>
                 <View style={styles.inputContainer}>
                   <TextInput
                     style={styles.input}
                     value={incrementAmount}
                     onChangeText={setIncrementAmount}
                     keyboardType="numeric"
-                    placeholder="Enter increment amount"
+                    placeholder={translate('habits.create.incrementAmountPlaceholder')}
                     placeholderTextColor={COLORS.textSecondary}
                   />
                 </View>
@@ -312,13 +312,13 @@ export default function CreateHabit() {
     <View>
       {/* HABIT NAME INPUT */}
       <View style={styles.formGroup}>
-        <Text style={styles.label}>Habit Name</Text>
+        <Text style={styles.label}>{translate('habits.create.habitName')}</Text>
         <View style={styles.inputContainer}>
           <TextInput
             style={styles.input}
             value={customName}
             onChangeText={setCustomName}
-            placeholder="Enter habit name"
+            placeholder={translate('habits.create.habitNamePlaceholder')}
             placeholderTextColor={COLORS.textSecondary}
           />
         </View>
@@ -326,25 +326,25 @@ export default function CreateHabit() {
       
       {/* ICON SELECTOR */}
       <View style={styles.formGroup}>
-        <Text style={styles.label}>Icon</Text>
+        <Text style={styles.label}>{translate('habits.create.icon')}</Text>
         <TouchableOpacity 
           style={styles.iconSelector}
           onPress={() => setShowIconModal(true)}
         >
           <Ionicons name={customIcon as any} size={24} color={COLORS.primary} />
-          <Text style={styles.iconSelectorText}>Tap to change icon</Text>
+          <Text style={styles.iconSelectorText}>{translate('habits.create.iconSelector')}</Text>
         </TouchableOpacity>
       </View>
       
       {/* UNIT INPUT */}
       <View style={styles.formGroup}>
-        <Text style={styles.label}>Unit</Text>
+        <Text style={styles.label}>{translate('habits.create.unit')}</Text>
         <View style={styles.inputContainer}>
           <TextInput
             style={styles.input}
             value={customUnit}
             onChangeText={setCustomUnit}
-            placeholder="e.g., minutes, pages, times"
+            placeholder={translate('habits.create.unitPlaceholder')}
             placeholderTextColor={COLORS.textSecondary}
           />
         </View>
@@ -352,14 +352,14 @@ export default function CreateHabit() {
       
       {/* TARGET AMOUNT INPUT */}
       <View style={styles.formGroup}>
-        <Text style={styles.label}>Target Amount</Text>
+        <Text style={styles.label}>{translate('habits.create.targetAmount')}</Text>
         <View style={styles.inputContainer}>
           <TextInput
             style={styles.input}
             value={targetAmount}
             onChangeText={setTargetAmount}
             keyboardType="numeric"
-            placeholder="Enter target amount"
+            placeholder={translate('habits.create.targetAmountPlaceholder')}
             placeholderTextColor={COLORS.textSecondary}
           />
         </View>
@@ -367,14 +367,14 @@ export default function CreateHabit() {
       
       {/* INCREMENT AMOUNT INPUT */}
       <View style={styles.formGroup}>
-        <Text style={styles.label}>Increment Amount</Text>
+        <Text style={styles.label}>{translate('habits.create.incrementAmount')}</Text>
         <View style={styles.inputContainer}>
           <TextInput
             style={styles.input}
             value={incrementAmount}
             onChangeText={setIncrementAmount}
             keyboardType="numeric"
-            placeholder="Enter increment amount"
+            placeholder={translate('habits.create.incrementAmountPlaceholder')}
             placeholderTextColor={COLORS.textSecondary}
           />
         </View>
@@ -456,7 +456,7 @@ export default function CreateHabit() {
                 fontWeight: '600',
                 color: COLORS.primary
               }}>
-                Create
+                {translate('habits.create.createButton')}
               </Text>
             )}
           </TouchableOpacity>
@@ -495,7 +495,7 @@ export default function CreateHabit() {
                       styles.typeButtonText,
                       habitType === 'default' && styles.selectedTypeButtonText
                     ]}>
-                      Default
+                      {translate('habits.create.defaultHabit')}
                     </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
@@ -509,7 +509,7 @@ export default function CreateHabit() {
                       styles.typeButtonText,
                       habitType === 'other' && styles.selectedTypeButtonText
                     ]}>
-                      Custom
+                      {translate('habits.create.customHabit')}
                     </Text>
                   </TouchableOpacity>
                 </View>

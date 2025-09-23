@@ -1,10 +1,30 @@
+import { translate } from './language.utils';
+
 // TABS - HISTORY PAGE'S CONSTANT
-export const MONTH_NAMES = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December'
+export const getMonthNames = () => [
+  translate('history.months.january'),
+  translate('history.months.february'),
+  translate('history.months.march'),
+  translate('history.months.april'),
+  translate('history.months.may'),
+  translate('history.months.june'),
+  translate('history.months.july'),
+  translate('history.months.august'),
+  translate('history.months.september'),
+  translate('history.months.october'),
+  translate('history.months.november'),
+  translate('history.months.december')
 ];
 
-export const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+export const getDayNames = () => [
+  translate('history.days.sunday'),
+  translate('history.days.monday'),
+  translate('history.days.tuesday'),
+  translate('history.days.wednesday'),
+  translate('history.days.thursday'),
+  translate('history.days.friday'),
+  translate('history.days.saturday')
+];
 
 export const DEFAULT_STATS = {
   currentStreak: 0,

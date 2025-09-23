@@ -59,7 +59,9 @@ export default {
       currentPassword: "Current Password",
       newPassword: "New Password",
       confirmNewPassword: "Confirm New Password",
-      changeButton: "Change Password"
+      changeButton: "Change Password",
+      successMessage: "Password changed successfully!",
+      errorMessage: "An error occurred while changing password"
     }
   },
 
@@ -85,7 +87,10 @@ export default {
       title: "Create New Habit",
       subtitle: "Choose a preset habit or create your own",
       habitType: "Habit Type",
+      defaultHabit: "Default",
+      customHabit: "Custom",
       chooseDefault: "Choose a Default Habit",
+      chooseDefaultTitle: "Choose a Default Habit",
       failedToLoad: "Failed to load presets:",
       retry: "Retry",
       noPresets: "No presets available",
@@ -98,7 +103,11 @@ export default {
       targetAmount: "Target Amount",
       targetAmountPlaceholder: "Enter target amount",
       incrementAmount: "Increment Amount",
-      incrementAmountPlaceholder: "Enter increment amount"
+      incrementAmountPlaceholder: "Enter increment amount",
+      createButton: "Create",
+      successMessage: "Habit created successfully!",
+      failed: "Habit Creation Failed",
+      failedMessage: "Failed to create habit"
     },
 
     detail: {
@@ -106,7 +115,19 @@ export default {
       habitNotFound: "Habit not found",
       goBack: "Go Back",
       deleteHabit: "Delete Habit",
-      chooseIcon: "Choose Icon"
+      chooseIcon: "Choose Icon",
+      habitName: "Habit Name",
+      habitNamePlaceholder: "Enter habit name",
+      icon: "Icon",
+      unit: "Unit",
+      targetAmount: "Target Amount",
+      targetAmountPlaceholder: "Enter target amount",
+      incrementAmount: "Increment Amount",
+      incrementAmountPlaceholder: "Enter increment amount",
+      save: "Save",
+      resetWarning: "These changes will reset your progress for today",
+      progressResetWarning: "These changes will reset your progress for today",
+      tapToChangeIcon: "Tap to change icon"
     },
 
     // Habit Names
@@ -129,21 +150,78 @@ export default {
       title: "Create New Goal",
       subtitle: "Set your goal and track your progress",
       type: "Type",
+      complete: "Complete",
+      reach: "Reach",
+      maintain: "Maintain",
       presetHabits: "Preset Habits",
       repeat: "Repeat",
+      repeatPlaceholder: "How many times",
       metric: "Metric",
+      streak: "Streak",
+      rate: "Rate",
       value: "Value",
-      add: "Add"
+      valuePlaceholder: "Target value",
+      add: "Add",
+      failed: "Creation Failed",
+      failedMessage: "Failed to create goal. Please try again.",
+      success: "Goal Created",
+      successMessage: "Your goal has been created successfully.",
+      unexpectedError: "An unexpected error occurred."
+    },
+
+    delete: {
+      title: "Delete Goal",
+      message: "Are you sure you want to delete this goal? This action cannot be undone.",
+      cancel: "Cancel",
+      confirm: "Delete",
+      failed: "Delete Failed",
+      failedMessage: "Failed to delete goal. Please try again."
+    },
+
+    types: {
+      complete: "Complete",
+      reach: "Reach",
+      maintain: "Maintain goal",
+      habits: "habit(s)"
     }
   },
 
   // History
   history: {
     title: "History",
+    months: {
+      january: "January",
+      february: "February",
+      march: "March",
+      april: "April",
+      may: "May",
+      june: "June",
+      july: "July",
+      august: "August",
+      september: "September",
+      october: "October",
+      november: "November",
+      december: "December"
+    },
+    days: {
+      sunday: "Sun",
+      monday: "Mon",
+      tuesday: "Tue",
+      wednesday: "Wed",
+      thursday: "Thu",
+      friday: "Fri",
+      saturday: "Sat"
+    },
     stats: {
       currentStreak: "Current Streak",
       completionRate: "Completion Rate",
       totalCompleted: "Total Completed"
+    },
+    selectedDay: {
+      totalHabits: "Total Habits",
+      completedHabits: "Completed",
+      inProgress: "In Progress",
+      notStarted: "Not Started"
     }
   },
 
@@ -165,7 +243,9 @@ export default {
     ageUnit: "years",
     height: "Height",
     weight: "Weight",
-    notSpecified: "Not specified"
+    notSpecified: "Not specified",
+    logoutSuccess: "Logout successful",
+    logoutFailed: "Logout failed"
   },
 
   // Update Profile
@@ -218,7 +298,10 @@ export default {
     error: "Error",
     success: "Success",
     warning: "Warning",
-    info: "Info"
+    info: "Info",
+    back: "Back",
+    stay: "Stay",
+    leave: "Leave"
   },
 
   // Navigation
@@ -237,7 +320,34 @@ export default {
     signInSuccessful: "Sign In Successful",
     signInFailed: "Sign In Failed",
     signUpSuccessful: "Sign Up Successful",
-    signUpFailed: "Sign Up Failed"
+    signUpFailed: "Sign Up Failed",
+    unsavedChanges: "Unsaved Changes",
+    unsavedChangesMessage: "You have unsaved changes. Are you sure you want to leave?",
+    success: "Success",
+    habitUpdatedSuccessfully: "Habit updated successfully!",
+    updateFailed: "Update Failed",
+    failedToUpdateHabit: "Failed to update habit",
+    deleteHabit: "Delete Habit",
+    deleteHabitMessage: "Are you sure you want to delete this habit? This action cannot be undone.",
+    habitDeletedSuccessfully: "Habit deleted successfully!",
+    deleteFailed: "Delete Failed",
+    failedToDeleteHabit: "Failed to delete habit",
+    connectionError: {
+      title: "Connection Error",
+      message: "Failed to connect to server. Please check your internet connection and try again."
+    },
+    networkError: {
+      title: "Network Error", 
+      message: "Network request failed. Please try again."
+    },
+    validationError: {
+      title: "Validation Error",
+      message: "Please check your input and try again."
+    },
+    error: {
+      title: "Error",
+      message: "An error occurred. Please try again."
+    }
   },
 
   // Default Habit Names (6 system presets)

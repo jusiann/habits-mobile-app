@@ -74,10 +74,10 @@ export default function CreateGoal() {
       if (!res || !res.success) {
         setShowAlert({
           visible: true,
-          title: 'Creation Failed',
-          message: res?.message || 'Failed to create goal. Please try again.',
+          title: translate('goals.create.failed'),
+          message: res?.message || translate('goals.create.failedMessage'),
           type: 'error',
-          buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+          buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
         });
         return;
       }
@@ -86,18 +86,18 @@ export default function CreateGoal() {
 
       setShowAlert({
         visible: true,
-        title: 'Goal Created',
-        message: 'Your goal has been created successfully.',
+        title: translate('goals.create.success'),
+        message: translate('goals.create.successMessage'),
         type: 'success',
-        buttons: [{ text: 'OK', onPress: () => { setShowAlert(previous => ({ ...previous, visible: false })); router.back(); }, style: 'default' }]
+        buttons: [{ text: translate('common.ok'), onPress: () => { setShowAlert(previous => ({ ...previous, visible: false })); router.back(); }, style: 'default' }]
       });
     } catch (error) {
       setShowAlert({
         visible: true,
-        title: 'Creation Failed',
-        message: error?.message || 'An unexpected error occurred.',
+        title: translate('goals.create.failed'),
+        message: error?.message || translate('goals.create.unexpectedError'),
         type: 'error',
-        buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+        buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
       });
     } finally {
       setIsSubmitting(false);
@@ -210,7 +210,7 @@ export default function CreateGoal() {
                     onPress={() => setType('complete')}
                   >
                     <Text style={[styles.typeButtonText, type === 'complete' && styles.selectedTypeButtonText]}>
-                      Complete
+                      {translate('goals.create.complete')}
                     </Text>
                   </TouchableOpacity>
                   <TouchableOpacity 
@@ -218,7 +218,7 @@ export default function CreateGoal() {
                     onPress={() => setType('reach')}
                   >
                     <Text style={[styles.typeButtonText, type === 'reach' && styles.selectedTypeButtonText]}>
-                      Reach
+                      {translate('goals.create.reach')}
                     </Text>
                   </TouchableOpacity>
                   <TouchableOpacity 
@@ -226,7 +226,7 @@ export default function CreateGoal() {
                     onPress={() => setType('maintain')}
                   >
                     <Text style={[styles.typeButtonText, type === 'maintain' && styles.selectedTypeButtonText]}>
-                      Maintain
+                      {translate('goals.create.maintain')}
                     </Text>
                   </TouchableOpacity>
                 </View>
@@ -267,7 +267,7 @@ export default function CreateGoal() {
                         onChangeText={setRepeat} 
                         keyboardType="numeric" 
                         style={styles.input} 
-                        placeholder="How many times" 
+                        placeholder={translate('goals.create.repeatPlaceholder')} 
                         placeholderTextColor={COLORS.textSecondary}
                       />
                     </View>
@@ -287,7 +287,7 @@ export default function CreateGoal() {
                         onPress={() => setMetric('streak')}
                       >
                         <Text style={[styles.unitButtonText, metric === 'streak' && styles.selectedUnitButtonText]}>
-                          Streak
+                          {translate('goals.create.streak')}
                         </Text>
                       </TouchableOpacity>
                       <TouchableOpacity 
@@ -295,7 +295,7 @@ export default function CreateGoal() {
                         onPress={() => setMetric('rate')}
                       >
                         <Text style={[styles.unitButtonText, metric === 'rate' && styles.selectedUnitButtonText]}>
-                          Rate
+                          {translate('goals.create.rate')}
                         </Text>
                       </TouchableOpacity>
                     </View>
@@ -310,7 +310,7 @@ export default function CreateGoal() {
                         onChangeText={setValue} 
                         keyboardType="numeric" 
                         style={styles.input} 
-                        placeholder="Target value" 
+                        placeholder={translate('goals.create.valuePlaceholder')} 
                         placeholderTextColor={COLORS.textSecondary}
                       />
                     </View>
