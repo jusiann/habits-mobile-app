@@ -167,7 +167,7 @@ export const detectSystemLanguage = () => {
 
 /**
  * Alışkanlık adını çevirir
- * Eğer translationKey varsa onu kullanır, yoksa orijinal adı döndürür
+ * Eğer translationKey varsa onu kullanır, yoksa preset habits için fallback çevirisi yapar
  */
 export const translateHabitName = (habit) => {
   if (!habit) return '';
@@ -179,7 +179,22 @@ export const translateHabitName = (habit) => {
     return translated !== habit.translationKey ? translated : habit.name;
   }
   
-  // translationKey yoksa direkt adı döndür (custom habit)
+  // translationKey yoksa, bilinen preset habit isimlerini çevirmeye çalış
+  const presetMappings = {
+    'Water': 'habits.water',
+    'Food': 'habits.food', 
+    'Walking': 'habits.walking',
+    'Exercise': 'habits.exercise',
+    'Reading': 'habits.reading',
+    'Sleep': 'habits.sleep'
+  };
+  
+  if (presetMappings[habit.name]) {
+    const translated = translate(presetMappings[habit.name]);
+    return translated !== presetMappings[habit.name] ? translated : habit.name;
+  }
+  
+  // Hiçbiri değilse direkt adı döndür (custom habit)
   return habit.name;
 };
 
@@ -189,9 +204,31 @@ export const translateHabitName = (habit) => {
 export const translateUnit = (unit) => {
   if (!unit) return '';
   
-  const translated = translate(`units.${unit}`);
+  // Büyük harfli unit'leri küçük harfe çevir
+  const normalizedUnit = unit.toLowerCase();
+  const translated = translate(`units.${normalizedUnit}`);
+  
   // Eğer çeviri bulunamazsa orijinal unit'i döndür
-  return translated !== `units.${unit}` ? translated : unit;
+  return translated !== `units.${normalizedUnit}` ? translated : unit;
+};
+
+/**
+ * Tarihi çevirir (weekday, month, day, year formatında)
+ */
+export const translateDate = (date) => {
+  if (!date) return '';
+  
+  const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+  const monthNames = ['january', 'february', 'march', 'april', 'may', 'june', 
+                     'july', 'august', 'september', 'october', 'november', 'december'];
+  
+  const dayName = translate(`history.days.${dayNames[date.getDay()]}`);
+  const monthName = translate(`history.months.${monthNames[date.getMonth()]}`);
+  const day = date.getDate();
+  const year = date.getFullYear();
+  
+  // Format: "Çarşamba, 25 Eylül 2024"
+  return `${dayName}, ${day} ${monthName} ${year}`;
 };
 
 /**
@@ -202,6 +239,7 @@ export const useTranslation = () => {
     translate,
     translateHabitName,
     translateUnit,
+    translateDate,
     currentLanguage: getCurrentLanguage(),
     changeLanguage,
     availableLanguages: getAvailableLanguages()

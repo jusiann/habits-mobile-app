@@ -155,11 +155,15 @@ export default {
       maintain: "Sürdür",
       presetHabits: "Hazır Alışkanlıklar",
       repeat: "Tekrar",
+      repeatPlaceholder: "Kaç kez tekrarlanacak?",
       metric: "Metrik",
       streak: "Seri",
       rate: "Oran",
-      value: "Değer",
-      add: "Ekle"
+      value: "Hedef Değer",
+      valuePlaceholder: "Hedef değeri girin",
+      add: "Ekle",
+      cancelTitle: "Hedef Oluşturmayı İptal Et",
+      cancelMessage: "Bu hedefi oluşturmayı iptal etmek istediğinizden emin misiniz?"
     },
 
     delete: {
@@ -197,9 +201,18 @@ export default {
       december: "Aralık"
     },
     days: {
+      sunday: "Pazar",
+      monday: "Pazartesi", 
+      tuesday: "Salı",
+      wednesday: "Çarşamba",
+      thursday: "Perşembe",
+      friday: "Cuma",
+      saturday: "Cumartesi"
+    },
+    daysShort: {
       sunday: "Pz",
       monday: "Pt",
-      tuesday: "Sa",
+      tuesday: "Sa", 
       wednesday: "Ça",
       thursday: "Pe",
       friday: "Cu",

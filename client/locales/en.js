@@ -162,6 +162,8 @@ export default {
       value: "Value",
       valuePlaceholder: "Target value",
       add: "Add",
+      cancelTitle: "Cancel Goal Creation",
+      cancelMessage: "Are you sure you want to cancel creating this goal?",
       failed: "Creation Failed",
       failedMessage: "Failed to create goal. Please try again.",
       success: "Goal Created",
@@ -204,10 +206,19 @@ export default {
       december: "December"
     },
     days: {
+      sunday: "Sunday",
+      monday: "Monday",
+      tuesday: "Tuesday", 
+      wednesday: "Wednesday",
+      thursday: "Thursday",
+      friday: "Friday",
+      saturday: "Saturday"
+    },
+    daysShort: {
       sunday: "Sun",
       monday: "Mon",
       tuesday: "Tue",
-      wednesday: "Wed",
+      wednesday: "Wed", 
       thursday: "Thu",
       friday: "Fri",
       saturday: "Sat"

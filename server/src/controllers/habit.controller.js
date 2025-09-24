@@ -106,6 +106,7 @@ export const getDashboardHabits = async (req, res) => {
             return {
                 id: habit._id,
                 name: habit.name,
+                translationKey: habit.translationKey,
                 type: habit.type,
                 category: habit.category,
                 icon: habit.icon,
@@ -260,6 +261,7 @@ export const detailHabit = async (req, res) => {
             data: {
                 id: habit._id,
                 name: habit.name,
+                translationKey: habit.translationKey,
                 type: habit.type,
                 category: habit.category,
                 icon: habit.icon,

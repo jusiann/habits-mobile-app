@@ -107,12 +107,12 @@ export default function CreateGoal() {
   const cancelAction = () => {
     setShowAlert({
       visible: true,
-      title: 'Cancel Goal Creation',
-      message: 'Are you sure you want to cancel creating this goal?',
+      title: translate('goals.create.cancelTitle'),
+      message: translate('goals.create.cancelMessage'),
       type: 'warning',
       buttons: [
-        { text: 'Stay', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'cancel' },
-        { text: 'Cancel', onPress: () => { setShowAlert(previous => ({ ...previous, visible: false })); router.back(); }, style: 'destructive' }
+        { text: translate('common.stay'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'cancel' },
+        { text: translate('common.cancel'), onPress: () => { setShowAlert(previous => ({ ...previous, visible: false })); router.back(); }, style: 'destructive' }
       ]
     });
   };

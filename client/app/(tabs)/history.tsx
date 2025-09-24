@@ -16,7 +16,7 @@ import {
   STATS_STRUCTURE
 } from '../../constants/habit.constant';
 import { showConnectionError } from '../../constants/alert.utils';
-import {translate} from '../../constants/language.utils';
+import {translate, translateDate} from '../../constants/language.utils';
 
 export default function History() {
   const {loadMonthData: loadMonthDataFromStore} = useHabitStore();
@@ -144,12 +144,7 @@ export default function History() {
               selectedDate && monthData[selectedDate.getDate()] && (
                 <View style={styles.selectedDateContainer}>
                   <Text style={styles.selectedDateTitle}>
-                    {selectedDate.toLocaleDateString('en-US', {
-                      weekday: 'long',
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}
+                    {translateDate(selectedDate)}
                   </Text>
                             
                   <View style={[styles.selectedDateStats, { flexDirection: 'row', width: '100%', paddingHorizontal: 12, gap: 8 }]}>
@@ -257,7 +252,7 @@ export default function History() {
                 const dayKeys = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
                 return dayKeys.map((dayKey) => (
                   <View key={dayKey} style={styles.dayNameCell}>
-                    <Text style={styles.dayNameText}>{translate(`history.days.${dayKey}`)}</Text>
+                    <Text style={styles.dayNameText}>{translate(`history.daysShort.${dayKey}`)}</Text>
                   </View>
                 ));
               })()}
