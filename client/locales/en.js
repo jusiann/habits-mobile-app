@@ -343,6 +343,9 @@ export default {
     habitDeletedSuccessfully: "Habit deleted successfully!",
     deleteFailed: "Delete Failed",
     failedToDeleteHabit: "Failed to delete habit",
+    invalidInput: "Invalid Input",
+    targetAmountError: "Target amount must be a positive number.",
+    incrementAmountError: "Increment amount must be a positive number.",
     connectionError: {
       title: "Connection Error",
       message: "Failed to connect to server. Please check your internet connection and try again."
@@ -380,6 +383,7 @@ export default {
     pages: "pages",
     hours: "hours",
     liters: "liters",
+    cups: "cups",
     servings: "servings",
     portions: "portions",
     kilometers: "kilometers",

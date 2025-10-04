@@ -15,8 +15,25 @@ export const useHabitStore = create((set, get) => ({
     makeRequest: async (url, options = {}) => {
         try {
             const {useAuthStore} = await import("./auth.store");
+            const authState = useAuthStore.getState();
+            
+            // CHECK IF USER IS AUTHENTICATED
+            if (!authState.token || !authState.user) {
+                console.warn('No authentication available, skipping API call to:', url);
+                throw new Error("Not authenticated");
+            }
+            
             return await makeAuthenticatedRequest(url, options, useAuthStore);
         } catch (error) {
+            console.error('makeRequest failed for:', url, error.message);
+            
+            // IF AUTHENTICATION ERROR, DON'T RETRY
+            if (error.message.includes("Not authenticated") || 
+                error.message.includes("Session expired") || 
+                error.message.includes("No authentication token available")) {
+                throw error; // RE-THROW WITHOUT RETRY
+            }
+            
             throw new Error(error.message || "Authentication request failed");
         }
     },
@@ -766,6 +783,20 @@ export const useHabitStore = create((set, get) => ({
                 error: error.message || 'An error occurred', 
                 isLoading: false 
             });
+            
+            // IF AUTHENTICATION ERROR, RETURN EMPTY RESULT INSTEAD OF ERROR
+            if (error.message.includes("Not authenticated") || 
+                error.message.includes("Session expired") || 
+                error.message.includes("No authentication token available")) {
+                return { 
+                    success: true, 
+                    data: { 
+                        summary: { completedHabits: 0, totalHabits: 0, completionRate: 0 }, 
+                        habits: [] 
+                    } 
+                };
+            }
+            
             return { 
                 success: false, 
                 error: error.message || 'Network error. Please try again.' 

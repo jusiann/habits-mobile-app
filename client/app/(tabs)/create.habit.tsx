@@ -134,10 +134,10 @@ export default function CreateHabit() {
       if (isNaN(parseInt(targetAmount)) || parseInt(targetAmount) <= 0) {
         setShowAlert({
           visible: true,
-          title: 'Invalid Input',
-          message: 'Target amount must be a positive number.',
+          title: translate('alerts.invalidInput'),
+          message: translate('alerts.targetAmountError'),
           type: 'error',
-          buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+          buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
         })
         return;
       }
@@ -145,10 +145,10 @@ export default function CreateHabit() {
       if (isNaN(parseInt(incrementAmount)) || parseInt(incrementAmount) <= 0) {
         setShowAlert({
           visible: true,
-          title: 'Invalid Input',
-          message: 'Increment amount must be a positive number.',
+          title: translate('alerts.invalidInput'),
+          message: translate('alerts.incrementAmountError'),
           type: 'error',
-          buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+          buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
         })
         return;
       }
