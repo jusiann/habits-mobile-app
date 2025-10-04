@@ -340,6 +340,9 @@ export default {
     habitDeletedSuccessfully: "Alışkanlık başarıyla silindi!",
     deleteFailed: "Silme Başarısız",
     failedToDeleteHabit: "Alışkanlık silinemedi",
+    invalidInput: "Geçersiz Giriş",
+    targetAmountError: "Hedef miktar pozitif bir sayı olmalıdır.",
+    incrementAmountError: "Artış miktarı pozitif bir sayı olmalıdır.",
     connectionError: {
       title: "Bağlantı Hatası",
       message: "Sunucuya bağlanılamadı. İnternet bağlantınızı kontrol edip tekrar deneyin."
@@ -377,6 +380,7 @@ export default {
     pages: "sayfa",
     hours: "saat",
     liters: "litre",
+    cups: "fincan",
     servings: "porsiyon",
     portions: "porsiyon",
     kilometers: "kilometre",

@@ -35,20 +35,24 @@ export const API_ENDPOINTS = {
 
 // MAKE AUTHENTICATED REQUEST
 export const makeAuthenticatedRequest = async (url, options = {}, authStore) => {
-  const {token, tokenExpirationTime} = authStore.getState();
+  const authState = authStore.getState();
+  const {token, tokenExpirationTime, user} = authState;
   
-  if (!token) 
+  if (!token || !user) {
+      console.warn('makeAuthenticatedRequest: No token or user available');
       throw new Error("No authentication token available");
+  }
   
   // CHECK TOKEN EXPIRY
   const currentTime = Date.now();
   const twoMinutes = 2 * 60 * 1000;
   
   if (tokenExpirationTime && (currentTime >= tokenExpirationTime - twoMinutes)) {
+      console.log('Token needs refresh, attempting refresh...');
       const refreshResult = await authStore.getState().refreshAccessToken();
       if (!refreshResult.success) {
-          await authStore.getState().logout();
-          throw new Error("Session expired. Please log in again.");
+          console.error('Token refresh failed, logging out');
+          throw new Error(refreshResult.message || "Session expired. Please log in again.");
       }
   }
 
@@ -65,8 +69,10 @@ export const makeAuthenticatedRequest = async (url, options = {}, authStore) => 
 
   try {
       const response = await fetch(url, requestOptions);
-      // HANDLE 401 WITH RETRY
+      
+      // HANDLE 401 WITH ONE RETRY ONLY
       if (response.status === 401) {
+          console.log('Got 401, attempting token refresh...');
           const refreshResult = await authStore.getState().refreshAccessToken();
           if (refreshResult.success) {
               const newToken = authStore.getState().token;
@@ -79,14 +85,15 @@ export const makeAuthenticatedRequest = async (url, options = {}, authStore) => 
               };
               return await fetch(url, retryOptions);
           } else {
-              await authStore.getState().logout();
-              throw new Error("Session expired. Please log in again.");
+              console.error('Token refresh failed on 401, user will be logged out');
+              throw new Error(refreshResult.message || "Session expired. Please log in again.");
           }
       }
       return response;
   } catch (error) {
-      if (error.message.includes("Network request failed") || error.message.includes("fetch"))
+      if (error.message.includes("Network request failed") || error.message.includes("fetch")) {
           throw new Error("Network connection failed. Please check your internet connection.");
+      }
       throw error;
   }
 };

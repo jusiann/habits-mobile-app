@@ -169,10 +169,19 @@ export const useAuthStore = create((set,get) => ({
             }
 
             if (!response.ok) {
-                if (response.status === 401 || response.status === 403) {
-                    await get().logout();
+                console.error('Refresh token failed with status:', response.status, 'Data:', data);
+                
+                // CLEAR INVALID AUTHENTICATION STATE
+                await get().logout();
+                
+                // SPECIFIC ERROR HANDLING
+                if (response.status === 404 && data.message?.includes("User not found")) {
+                    throw new Error("User account no longer exists. Please register again.");
+                } else if (response.status === 401 || response.status === 403) {
+                    throw new Error("Session expired. Please log in again.");
+                } else {
+                    throw new Error(data.message || data.error || "Authentication failed");
                 }
-                throw new Error(data.message || data.error || "Token refresh failed");
             }
 
             const expirationTime = await StorageUtils.updateTokens(data.accessToken, data.refreshToken);
@@ -186,16 +195,16 @@ export const useAuthStore = create((set,get) => ({
                 user: data.user || get().user
             });
 
+            console.log('Token refresh successful');
             return { 
                 success: true 
             };
         } catch (error) {
             console.error("Token refresh failed:", error);
-            if (error.message.includes("invalidated") || 
-                error.message.includes("expired") || 
-                error.message.includes("invalid")) {
-                await get().logout();
-            }
+            
+            // ENSURE LOGOUT ON ANY REFRESH FAILURE
+            await get().logout();
+            
             return { 
                 success: false, 
                 message: error.message || "Token refresh failed" 
