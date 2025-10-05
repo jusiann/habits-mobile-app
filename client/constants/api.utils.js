@@ -1,6 +1,10 @@
-export const API_BASE_URL = 'https://habits-mobile-app.onrender.com/api';
+// FOR ONLINE TEST
+// export const API_BASE_URL = 'https://habits-mobile-app.onrender.com/api';
+
 // export const API_LOCAL_BASE_URL = 'http://localhost:3000/api';
-// export const API_LOCAL_BASE_URL = 'http://192.168.1.4:3000/api';
+
+// FOR LOCAL TEST ANDROID EMULATOR
+export const API_BASE_URL = 'http://192.168.1.4:3000/api';
 
 export const API_ENDPOINTS = {
   AUTH: {
