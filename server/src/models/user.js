@@ -46,6 +46,11 @@ const userSchema = new mongoose.Schema({
         enum: ['en', 'tr'],
         default: 'en',
     },
+    theme: {
+        type: String,
+        enum: ['blossom', 'forest', 'lightning', 'retro', 'ocean', 'orange'],
+        default: 'blossom',
+    },
     timezone: {
         type: String,
         default: 'Europe/Istanbul',
