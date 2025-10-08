@@ -289,7 +289,11 @@ export default {
     weightError: "Kilo 0-500 kg arasında olmalıdır.",
     language: "Dil",
     changeLanguage: "Dil başarıyla değiştirildi",
-    languageChangeError: "Dil değiştirilemedi. Lütfen tekrar deneyin."
+    languageChangeError: "Dil değiştirilemedi. Lütfen tekrar deneyin.",
+    theme: "Tema",
+    chooseTheme: "Tema Seç",
+    themeChanged: "Tema başarıyla değiştirildi",
+    themeChangeError: "Tema değiştirilemedi. Lütfen tekrar deneyin."
   },
 
 

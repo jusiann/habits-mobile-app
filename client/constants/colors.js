@@ -1,105 +1,65 @@
-// FOREST
-// const COLORS = {
-//   primary: "#4CAF50",
-//   textPrimary: "#2e5a2e",
-//   textSecondary: "#688f68",
-//   textDark: "#1b361b",
-//   placeholderText: "#767676",
-//   background: "#e8f5e9",
-//   cardBackground: "#f1f8f2",
-//   inputBackground: "#f4faf5",
-//   border: "#c8e6c9",
-//   white: "#ffffff",
-//   black: "#000000",
-//   success: "#388E3C",
-//   successLight: "#E8F5E9",
-// };
+import { THEMES, getThemeColors } from './theme.utils';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { themeManager } from './ThemeManager';
 
-// LIGHTNING
-const COLORS = {
-  primary: "#8E44AD",        
-  textPrimary: "#5D2E6B",    
-  textSecondary: "#A569BD",  
-  textDark: "#4A1B5C",       
-  placeholderText: "#767676",
-  background: "#F4F1F8",
-  cardBackground: "#FDFCFE", 
-  inputBackground: "#F9F7FC", 
-  border: "#D5BDEC",         
-  white: "#ffffff",
-  black: "#000000",
-  success: "#9B59B6",
-  successLight: "#F3E5F5",
+// Kullanıcının temayını al
+const getUserTheme = async () => {
+  try {
+    const userData = await AsyncStorage.getItem('user');
+    if (userData) {
+      const user = JSON.parse(userData);
+      return user.theme || 'lightning';
+    }
+    return 'lightning';
+  } catch (error) {
+    console.error('Error getting user theme:', error);
+    return 'lightning';
+  }
 };
 
-// RETRO
-// const COLORS = {
-//   primary: "#e17055",
-//   textPrimary: "#784e2d",
-//   textSecondary: "#a58e7c",
-//   textDark: "#50372a",
-//   placeholderText: "#767676",
-//   background: "#ede1d1",
-//   cardBackground: "#faf5eb",
-//   inputBackground: "#f7f2ea",
-//   border: "#e2d6c1",
-//   white: "#ffffff",
-//   black: "#000000",
-//   success: "#D35400",
-//   successLight: "#FDF2E9",
-// };
+// Dinamik colors proxy
+const createDynamicColors = () => {
+  let currentColors = THEMES.lightning.colors;
+  
+  // Theme manager'dan güncellemeleri dinle
+  themeManager.on('themeChanged', ({ colors }) => {
+    Object.keys(colors).forEach(key => {
+      currentColors[key] = colors[key];
+    });
+  });
 
-// OCEAN
+  return new Proxy(currentColors, {
+    get(target, prop) {
+      // Her erişimde güncel renkleri döndür
+      const managerColors = themeManager.getCurrentColors();
+      if (managerColors && managerColors[prop]) {
+        return managerColors[prop];
+      }
+      return target[prop];
+    }
+  });
+};
 
-// const COLORS = {
-//   primary: "#1976D2", 
-//   textPrimary: "#1a4971",
-//   textSecondary: "#6d93b8", 
-//   textDark: "#0d2b43", 
-//   placeholderText: "#767676",
-//   background: "#e3f2fd", 
-//   cardBackground: "#f5f9ff",
-//   inputBackground: "#f0f8ff", 
-//   border: "#bbdefb",
-//   white: "#ffffff",
-//   black: "#000000",
-//   success: "#0277BD",
-//   successLight: "#E1F5FE",
-// };
+// Temayı güncelle
+export const updateColors = async () => {
+  try {
+    const userTheme = await getUserTheme();
+    const themeColors = getThemeColors(userTheme);
+    
+    // Theme manager'ı güncelle
+    themeManager.setTheme(userTheme, themeColors);
+    
+    return themeColors;
+  } catch (error) {
+    console.error('Error updating colors:', error);
+    return THEMES.lightning.colors;
+  }
+};
 
-// BLOSSOM
-// const COLORS = {
-//   primary: "#EC407A", 
-//   textPrimary: "#7d2150", 
-//   textSecondary: "#b06a8f", 
-//   textDark: "#5a1836", 
-//   placeholderText: "#767676",
-//   background: "#fce4ec", 
-//   cardBackground: "#fff5f8", 
-//   inputBackground: "#fef8fa", 
-//   border: "#f8bbd0",
-//   white: "#ffffff",
-//   black: "#000000",
-//   success: "#AD1457",
-//   successLight: "#FCE4EC",
-// };
+// Dinamik colors objesi oluştur
+const COLORS = createDynamicColors();
 
-// ORANGE
-// const COLORS = {
-//   primary: "#FF8A65",    
-//   textPrimary: "#BF4226",   
-//   textSecondary: "#FF7043", 
-//   textDark: "#8D2F1A",       
-//   placeholderText: "#767676",
-//   background: "#FFF3E0",     
-//   cardBackground: "#FFFBF7", 
-//   inputBackground: "#FFF8F1", 
-//   border: "#FFCC9C",         
-//   white: "#ffffff",
-//   black: "#000000",
-//   success: "#F57C00",
-//   successLight: "#FFF3E0",
-// };
-
+// Uygulama başlangıcında temayı yükle
+updateColors();
 
 export default COLORS;

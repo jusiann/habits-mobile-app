@@ -294,7 +294,11 @@ export default {
     weightError: "Weight must be between 0-500 kg.",
     language: "Language",
     changeLanguage: "Language changed successfully",
-    languageChangeError: "Failed to change language. Please try again."
+    languageChangeError: "Failed to change language. Please try again.",
+    theme: "Theme",
+    chooseTheme: "Choose Theme",
+    themeChanged: "Theme changed successfully",
+    themeChangeError: "Failed to change theme. Please try again."
   },
 
   // Common

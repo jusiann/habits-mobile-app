@@ -1,7 +1,6 @@
 import { StyleSheet } from "react-native";
-import COLORS from "../../constants/colors";
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   container: {
     flexGrow: 1,
     backgroundColor: COLORS.background,
@@ -332,4 +331,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default styles;
+export default createStyles;

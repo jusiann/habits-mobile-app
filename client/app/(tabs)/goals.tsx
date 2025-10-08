@@ -8,13 +8,15 @@ import {useHabitStore} from '../../store/habit.store';
 import SafeScreen from '../../constants/SafeScreen';
 import CustomAlert from '../../constants/CustomAlert';
 import {getAvatarSource} from '../../constants/avatar.utils';
-import COLORS from '../../constants/colors';
-import styles from '../../assets/styles/goals.styles';
+import createStyles from '../../assets/styles/goals.styles';
 import {translate, translateHabitName} from '../../constants/language.utils';
+import {useTheme} from '../../constants/ThemeContext';
 
 export default function Goals() {
   const {user, token} = useAuthStore();
   const {goals, fetchGoals, deleteGoal, loadMonthData, monthlyCache} = useHabitStore();
+  const {colors: COLORS} = useTheme();
+  const styles = createStyles(COLORS);
   const [isLoading, setIsLoading] = React.useState(false);
   const [monthStats, setMonthStats] = React.useState(null);
   const [showAlert, setShowAlert] = React.useState({

@@ -1,12 +1,15 @@
 import React from 'react';
 import {Text, TouchableOpacity, View, Image} from 'react-native';
 import {useRouter} from 'expo-router';
-import styles from '../assets/styles/main.styles';
+import createStyles from '../assets/styles/main.styles';
 import SafeScreen from '../constants/SafeScreen';
 import {translate} from '../constants/language.utils';
+import {useTheme} from '../constants/ThemeContext';
 
 export default function Index() {
   const router = useRouter();
+  const {colors: COLORS, logo} = useTheme();
+  const styles = createStyles(COLORS);
 
   return (
     <SafeScreen>
@@ -16,7 +19,7 @@ export default function Index() {
           {/* LOGO SECTION */}
           <View style={styles.topIllustration}>
             <Image 
-              source={require("../assets/images/logos/lightning-theme-logo.png")} 
+              source={logo} 
               style={styles.illustrationImage}
             />
           </View>

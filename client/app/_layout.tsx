@@ -5,6 +5,7 @@ import {Stack, SplashScreen} from 'expo-router';
 import {useAuthStore} from '../store/auth.store';
 import SafeScreen from '../constants/SafeScreen';
 import {initializeLanguage} from '../constants/language.utils';
+import {ThemeProvider} from '../constants/ThemeContext';
  
 function SplashScreenController() {
   const {checkAuth} = useAuthStore();
@@ -28,11 +29,11 @@ function SplashScreenController() {
   }
 
   function RootNavigator() {
-    const {token} = useAuthStore();
+    const {token, forceUpdate} = useAuthStore();
     const authenticated = !!token;
 
     return (
-      <Stack screenOptions={{ headerShown: false }}>
+      <Stack key={forceUpdate} screenOptions={{ headerShown: false }}>
         {/* PROTECTED ROUTES - ONLY ACCESSIBLE WHEN AUTHENTICATED */}
         <Stack.Protected guard={authenticated}>
           <Stack.Screen name="(tabs)" />
@@ -50,10 +51,12 @@ function SplashScreenController() {
   export default function RootLayout() {
     return (
       <SafeAreaProvider>
-        <SafeScreen>
-          <SplashScreenController />
-          <RootNavigator />
-        </SafeScreen>
+        <ThemeProvider>
+          <SafeScreen>
+            <SplashScreenController />
+            <RootNavigator />
+          </SafeScreen>
+        </ThemeProvider>
         <StatusBar style="dark" />
       </SafeAreaProvider>
     );

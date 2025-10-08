@@ -4,16 +4,19 @@ import {Image} from 'expo-image';
 import {useRouter, useFocusEffect} from 'expo-router';
 import {Ionicons} from '@expo/vector-icons';
 import {useAuthStore} from '../../store/auth.store';
-import COLORS from '../../constants/colors';
-import styles from '../../assets/styles/profile.styles';
+import createStyles from '../../assets/styles/profile.styles';
 import CustomAlert from '../../constants/CustomAlert';
 import SafeScreen from '../../constants/SafeScreen';
 import {getAvatarSource} from '../../constants/avatar.utils';
 import { showConnectionError } from '../../constants/alert.utils';
 import { translate, changeLanguage, getCurrentLanguage } from '../../constants/language.utils';
+import { getAllThemes, getTheme } from '../../constants/theme.utils';
+import { useTheme } from '../../constants/ThemeContext';
 
 export default function UpdateProfile() {
   const {user, updateProfile, changePassword, isLoading} = useAuthStore();
+  const {updateTheme, colors: COLORS} = useTheme();
+  const styles = createStyles(COLORS);
   const router = useRouter();
   const [fullname, setFullname] = React.useState(user?.fullname || '');
   const [gender, setGender] = React.useState(user?.gender || '');
@@ -34,7 +37,12 @@ export default function UpdateProfile() {
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
   const [hasChanges, setHasChanges] = React.useState(false);
   const [currentLang, setCurrentLang] = React.useState('en');
-    const generateNewProfilePicture = (avatarNumber) => {
+  const [showThemeModal, setShowThemeModal] = React.useState(false);
+  const [selectedTheme, setSelectedTheme] = React.useState(user?.theme || 'lightning');
+  const [tempTheme, setTempTheme] = React.useState('lightning');
+  const [isThemeSaving, setIsThemeSaving] = React.useState(false);
+  
+  const generateNewProfilePicture = (avatarNumber) => {
     const formattedNumber = avatarNumber < 10 ? `0${avatarNumber}` : avatarNumber;
     setTempProfilePicture(formattedNumber);
     setSelectedAvatar(`avatar${formattedNumber}`);
@@ -472,6 +480,128 @@ export default function UpdateProfile() {
     </Modal>
   );
 
+  const renderThemeModal = () => (
+    <Modal
+      visible={showThemeModal}
+      transparent={true}
+      animationType="slide"
+      onRequestClose={() => setShowThemeModal(false)}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={[styles.modalContent, { margin: 20 }]}>
+
+          {/* CHOOSE THEME HEADER */}
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>{translate('update.chooseTheme')}</Text>
+            <TouchableOpacity onPress={() => {
+              setShowThemeModal(false);
+              setTempTheme('lightning');
+            }}>
+              <Ionicons name="close" size={26} color={COLORS.textPrimary} />
+            </TouchableOpacity>
+          </View>
+
+          {/* THEME LIST */}
+          <ScrollView style={{ maxHeight: 400 }}>
+            {getAllThemes().map((theme) => (
+              <TouchableOpacity
+                key={theme.key}
+                style={[
+                  styles.themeItem,
+                  tempTheme === theme.key && { backgroundColor: COLORS.successLight }
+                ]}
+                onPress={() => setTempTheme(theme.key)}
+              >
+                <View style={styles.themePreview}>
+                  <View style={[
+                    styles.themeColorBox,
+                    { backgroundColor: theme.colors.primary }
+                  ]} />
+                  <View style={[
+                    styles.themeColorBox,
+                    { backgroundColor: theme.colors.background }
+                  ]} />
+                  <View style={[
+                    styles.themeColorBox,
+                    { backgroundColor: theme.colors.cardBackground }
+                  ]} />
+                </View>
+                
+                <View style={styles.themeInfo}>
+                  <View style={styles.themeIcon}>
+                    <Ionicons name={theme.icon as any} size={24} color={theme.colors.primary} />
+                  </View>
+                  <Text style={[styles.themeText, { color: COLORS.textPrimary }]}>
+                    {theme.name}
+                  </Text>
+                </View>
+
+                {tempTheme === theme.key && (
+                  <View style={styles.themeCheckmark}>
+                    <Ionicons name="checkmark" size={20} color={COLORS.primary} />
+                  </View>
+                )}
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+
+          {/* CHOOSE THEME BUTTON */}
+          <TouchableOpacity
+            style={[styles.saveButton, !tempTheme && styles.saveButtonDisabled]}
+            onPress={async () => {
+              if (!tempTheme) return;
+              
+              setIsThemeSaving(true);
+              try {
+                const result = await updateProfile({ theme: tempTheme });
+                
+                if (result.success) {
+                  setSelectedTheme(tempTheme);
+                  // Theme context'i güncelle
+                  await updateTheme(tempTheme);
+                  setShowThemeModal(false);
+                  setShowAlert({
+                    visible: true,
+                    title: translate('common.success'),
+                    message: translate('update.themeChanged'),
+                    type: 'success',
+                    buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+                  });
+                } else {
+                  setShowAlert({
+                    visible: true,
+                    title: translate('common.error'),
+                    message: result.message || translate('update.themeChangeError'),
+                    type: 'error',
+                    buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+                  });
+                }
+              } catch (error) {
+                console.error('Theme change error:', error);
+                setShowAlert({
+                  visible: true,
+                  title: translate('common.error'),
+                  message: error.message || translate('update.themeChangeError'),
+                  type: 'error',
+                  buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+                });
+              } finally {
+                setIsThemeSaving(false);
+              }
+            }}
+            disabled={!tempTheme}
+          >
+            {isThemeSaving ? (
+              <ActivityIndicator color={COLORS.white} size="small" />
+            ) : (
+              <Text style={styles.saveButtonText}>{translate('update.chooseTheme')}</Text>
+            )}
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+  );
+
   return (
     <SafeScreen>
       <CustomAlert
@@ -770,9 +900,34 @@ export default function UpdateProfile() {
               </View>
               <Ionicons name="chevron-forward" size={18} color={COLORS.textSecondary} />
             </TouchableOpacity>
+
+            {/* THEME CHANGE BUTTON */}
+            <TouchableOpacity 
+              style={styles.actionButton} 
+              onPress={() => {
+                setTempTheme(user?.theme || 'lightning');
+                setShowThemeModal(true);
+              }}
+            >
+              <View style={styles.actionIcon}>
+                <Ionicons name="color-palette-outline" size={24} color={COLORS.primary} />
+              </View>
+              <View style={{flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between'}}>
+                <Text style={styles.actionText}>{translate('update.theme')}</Text>
+                <Text style={{
+                  fontSize: 16,
+                  color: COLORS.textSecondary,
+                  marginRight: 8
+                }}>
+                  {getTheme(user?.theme || 'lightning').name}
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color={COLORS.textSecondary} />
+            </TouchableOpacity>
           </View>
         </ScrollView>
         {renderAvatarModal()}
+        {renderThemeModal()}
         {renderPasswordModal()}
       </KeyboardAvoidingView>
     </SafeScreen>

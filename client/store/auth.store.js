@@ -3,6 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import {useHabitStore} from "./habit.store";
 import {API_ENDPOINTS, makeAuthenticatedRequest} from "../constants/api.utils";
 import {StorageUtils} from "../constants/storage.utils";
+import {updateColors} from "../constants/colors";
 
 export const useAuthStore = create((set,get) => ({
     user: null,
@@ -590,7 +591,7 @@ export const useAuthStore = create((set,get) => ({
     },
 
     // UPDATE PROFILE
-    updateProfile: async ({ fullname, gender, height, weight, age, profilePicture, timezone, language, currentPassword, newPassword }) => {
+    updateProfile: async ({ fullname, gender, height, weight, age, profilePicture, timezone, language, theme, currentPassword, newPassword }) => {
         set({ 
             isLoading: true 
         });
@@ -606,6 +607,7 @@ export const useAuthStore = create((set,get) => ({
                     profilePicture,
                     timezone,
                     language,
+                    theme,
                     currentPassword,
                     newPassword
                 }),
@@ -625,10 +627,22 @@ export const useAuthStore = create((set,get) => ({
             
 
             await AsyncStorage.setItem("user", JSON.stringify(data.user));
+            
+            // Tema değişmişse colors'ı güncelle
+            await updateColors();
+            
             set({ 
                 user: data.user,
                 isLoading: false 
             });
+
+            // Force re-render için store'u tekrar güncelle
+            setTimeout(() => {
+                set({ 
+                    user: { ...data.user },
+                    forceUpdate: Date.now() // Force render key
+                });
+            }, 100);
 
             return {
                 success: true,

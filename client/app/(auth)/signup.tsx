@@ -1,8 +1,8 @@
 import {View, Text, KeyboardAvoidingView, Platform, TextInput, TouchableOpacity, ActivityIndicator} from 'react-native'
 import React from 'react'
-import styles from '../../assets/styles/signup.styles';
-import COLORS from '../../constants/colors';
+import createStyles from '../../assets/styles/signup.styles';
 import {Ionicons} from '@expo/vector-icons';
+import {useTheme} from '../../constants/ThemeContext';
 import {Link} from 'expo-router';
 import {useAuthStore} from '../../store/auth.store';
 import CustomAlert from '../../constants/CustomAlert'
@@ -18,6 +18,8 @@ export default function Signup() {
   const [showPassword, setShowPassword] = React.useState(false);
   const [confirmPassword, setConfirmPassword] = React.useState("");
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
+  const {colors: COLORS} = useTheme();
+  const styles = createStyles(COLORS);
   const {isLoading, register} = useAuthStore();
   const [showAlert, setShowAlert] = React.useState({
     visible: false,

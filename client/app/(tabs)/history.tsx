@@ -5,9 +5,9 @@ import {Image} from 'expo-image';
 import {Ionicons} from '@expo/vector-icons';
 import {useHabitStore} from '../../store/habit.store';
 import {useAuthStore} from '../../store/auth.store';
-import COLORS from '../../constants/colors';
-import styles from '../../assets/styles/history.styles';
+import createStyles from '../../assets/styles/history.styles';
 import SafeScreen from '../../constants/SafeScreen';
+import {useTheme} from '../../constants/ThemeContext';
 import {getAvatarSource} from '../../constants/avatar.utils';
 import {
   DEFAULT_STATS,
@@ -21,6 +21,8 @@ import {translate, translateDate} from '../../constants/language.utils';
 export default function History() {
   const {loadMonthData: loadMonthDataFromStore} = useHabitStore();
   const {user} = useAuthStore();
+  const {colors: COLORS} = useTheme();
+  const styles = createStyles(COLORS);
   const navigation = useNavigation();
   const [currentDate, setCurrentDate] = React.useState<Date>(new Date());
   const [selectedDate, setSelectedDate] = React.useState<Date>(new Date());

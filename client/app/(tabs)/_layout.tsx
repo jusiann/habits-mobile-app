@@ -3,10 +3,12 @@ import {View, Text} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {Tabs} from 'expo-router';
 import {Ionicons} from '@expo/vector-icons';
-import COLORS from '../../constants/colors';
 import {translate} from '../../constants/language.utils';
+import {useTheme} from '../../constants/ThemeContext';
 
 function TabIcon({ focused, iconName, title }: any) {
+  const {colors: COLORS} = useTheme();
+  
   return (
     <View style={{
       alignItems: 'center',
@@ -40,6 +42,7 @@ function TabIcon({ focused, iconName, title }: any) {
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
+  const {colors: COLORS} = useTheme();
   
   return (
     <Tabs

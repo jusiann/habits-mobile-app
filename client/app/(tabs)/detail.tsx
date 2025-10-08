@@ -3,15 +3,17 @@ import {View, Text, TouchableOpacity, ScrollView, TextInput, Modal, KeyboardAvoi
 import {useRouter, useLocalSearchParams, useFocusEffect} from 'expo-router';
 import {Ionicons} from '@expo/vector-icons';
 import {useHabitStore} from '../../store/habit.store';
-import COLORS from '../../constants/colors';
-import styles from '../../assets/styles/create.habit.styles';
+import createStyles from '../../assets/styles/create.habit.styles';
 import {CUSTOM_ICONS} from '../../constants/custom.icons';
+import {useTheme} from '../../constants/ThemeContext';
 import CustomAlert from '../../constants/CustomAlert';
 import SafeScreen from '../../constants/SafeScreen';
 import {showConnectionError} from '../../constants/alert.utils';
 import {translate, translateHabitName, translateUnit} from '../../constants/language.utils';
 
 export default function Detail() {
+  const {colors: COLORS} = useTheme();
+  const styles = createStyles(COLORS);
   const router = useRouter()
   const {habitId} = useLocalSearchParams()
   const {habits, updateHabit, deleteHabit} = useHabitStore()

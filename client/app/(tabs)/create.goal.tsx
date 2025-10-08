@@ -5,12 +5,14 @@ import {Ionicons} from '@expo/vector-icons';
 import {useHabitStore} from '../../store/habit.store';
 import SafeScreen from '../../constants/SafeScreen';
 import CustomAlert from '../../constants/CustomAlert';
-import COLORS from '../../constants/colors';
-import styles from '../../assets/styles/create.goal.styles';
+import createStyles from '../../assets/styles/create.goal.styles';
 import {translate} from '../../constants/language.utils';
+import {useTheme} from '../../constants/ThemeContext';
 
 export default function CreateGoal() {
   const {habits, fetchPresets, fetchHabits, fetchGoals, createGoal} = useHabitStore();
+  const {colors: COLORS} = useTheme();
+  const styles = createStyles(COLORS);
   const [type, setType] = React.useState('complete');
   const [selectedHabitId, setSelectedHabitId] = React.useState(null);
   const [repeat, setRepeat] = React.useState('');

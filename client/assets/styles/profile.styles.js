@@ -1,7 +1,6 @@
 import { StyleSheet } from "react-native";
-import COLORS from "../../constants/colors";
 
-const styles = StyleSheet.create({
+const createStyles = (COLORS) => StyleSheet.create({
   // Avatar grid styles
   avatarGrid: {
     flexDirection: 'row',
@@ -487,6 +486,56 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
   },
+  // Theme modal styles
+  themeItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    marginBottom: 8,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    backgroundColor: COLORS.cardBackground,
+  },
+  themePreview: {
+    flexDirection: 'row',
+    marginRight: 12,
+    gap: 4,
+  },
+  themeColorBox: {
+    width: 20,
+    height: 20,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  themeInfo: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  themeIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.inputBackground,
+  },
+  themeText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: COLORS.textPrimary,
+  },
+  themeCheckmark: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.successLight,
+  },
 });
 
-export default styles;
+export default createStyles;

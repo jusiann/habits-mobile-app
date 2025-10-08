@@ -2,9 +2,9 @@ import React from 'react';
 import {ActivityIndicator, Image, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import {Link} from 'expo-router';
 import {Ionicons} from '@expo/vector-icons';
-import styles from '../../assets/styles/signin.styles';
-import COLORS from '../../constants/colors';
+import createStyles from '../../assets/styles/signin.styles';
 import {useAuthStore} from '../../store/auth.store';
+import {useTheme} from '../../constants/ThemeContext';
 import SafeScreen from '../../constants/SafeScreen';
 import CustomAlert from '../../constants/CustomAlert';
 import {showConnectionError} from '../../constants/alert.utils';
@@ -16,6 +16,8 @@ export default function Login() {
   const [password, setPassword] = React.useState("");
   const [showPassword, setShowPassword] = React.useState(false);
   const {isLoading, login} = useAuthStore();
+  const {colors: COLORS, logo} = useTheme();
+  const styles = createStyles(COLORS);
   const [showAlert, setShowAlert] = React.useState({
     visible: false,
     title: '',
@@ -94,7 +96,7 @@ export default function Login() {
         {/* PICTURE */}
         <View style={styles.topIllustration}>
           <Image
-            source={require("../../assets/images/logos/lightning-theme-logo.png")} 
+            source={logo} 
             style={styles.illustrationImage}
             resizeMode="contain"
           />

@@ -5,9 +5,9 @@ import {router} from 'expo-router';
 import {Ionicons} from '@expo/vector-icons';
 import {useAuthStore} from '../../store/auth.store';
 import {useHabitStore} from '../../store/habit.store';
-import styles from '../../assets/styles/home.styles';
-import COLORS from '../../constants/colors';
+import createStyles from '../../assets/styles/home.styles';
 import SafeScreen from '../../constants/SafeScreen';
+import {useTheme} from '../../constants/ThemeContext';
 import {getAvatarSource} from '../../constants/avatar.utils';
 import {getUserTimezone} from '../../constants/timezone.utils';
 import {translate, translateHabitName, translateUnit} from '../../constants/language.utils';
@@ -15,6 +15,8 @@ import {translate, translateHabitName, translateUnit} from '../../constants/lang
 export default function Home() {
   const {user, token, updateProfile} = useAuthStore();
   const {habits, fetchHabits, incrementHabit, habitLogsByDate} = useHabitStore();
+  const {colors: COLORS} = useTheme();
+  const styles = createStyles(COLORS);
   const [pressedButton, setPressedButton] = React.useState<string | null>(null);
   const [isLoading, setIsLoading] = React.useState(false);
 

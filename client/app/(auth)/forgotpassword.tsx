@@ -3,9 +3,9 @@ import {View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform,
 import {router} from 'expo-router';
 import {Ionicons} from '@expo/vector-icons';
 import {useAuthStore} from '../../store/auth.store';
-import COLORS from '../../constants/colors';
-import styles from '../../assets/styles/passwordpages.styles';
+import createStyles from '../../assets/styles/passwordpages.styles';
 import SafeScreen from '../../constants/SafeScreen';
+import {useTheme} from '../../constants/ThemeContext';
 import CustomAlert from '../../constants/CustomAlert';
 import {showConnectionError} from '../../constants/alert.utils';
 import {translate} from '../../constants/language.utils';
@@ -17,6 +17,8 @@ export default function ForgotPassword() {
   const [sendingCode, setSendingCode] = React.useState(false);
   const [verifyingCode, setVerifyingCode] = React.useState(false);
   const {sendResetCode, verifyResetCode} = useAuthStore();
+  const {colors: COLORS} = useTheme();
+  const styles = createStyles(COLORS);
   const [showAlert, setShowAlert] = React.useState({
     visible: false,
     title: '',

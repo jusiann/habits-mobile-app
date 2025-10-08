@@ -5,8 +5,8 @@ import {useRouter} from 'expo-router';
 import {Ionicons} from '@expo/vector-icons';
 import {useAuthStore} from '../../store/auth.store';
 import {useHabitStore} from '../../store/habit.store';
-import COLORS from '../../constants/colors';
-import styles from '../../assets/styles/profile.styles';
+import createStyles from '../../assets/styles/profile.styles';
+import {useTheme} from '../../constants/ThemeContext';
 import CustomAlert from '../../constants/CustomAlert';
 import SafeScreen from '../../constants/SafeScreen';
 import {getAvatarSource} from '../../constants/avatar.utils';
@@ -16,13 +16,15 @@ import {translate} from '../../constants/language.utils';
 export default function Profile() {
   const {user, logout, isLoading} = useAuthStore();
   const {clearStore} = useHabitStore();
+  const {colors: COLORS} = useTheme();
+  const styles = createStyles(COLORS);
   const router = useRouter();
   const [showAlert, setShowAlert] = React.useState({
     visible: false,
     title: '',
     message: '',
     type: 'info' as 'success' | 'error' | 'warning' | 'info',
-    buttons: [] as Array<{ text: string; onPress: () => void; style?: 'default' | 'cancel' | 'destructive' }>
+    buttons: [] as { text: string; onPress: () => void; style?: 'default' | 'cancel' | 'destructive' }[]
   });
 
   const logoutAction = async () => {
