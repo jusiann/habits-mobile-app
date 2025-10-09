@@ -15,7 +15,7 @@ import { useTheme } from '../../constants/ThemeContext';
 
 export default function UpdateProfile() {
   const {user, updateProfile, changePassword, isLoading} = useAuthStore();
-  const {updateTheme, colors: COLORS} = useTheme();
+  const {updateTheme, colors: COLORS, theme: currentTheme} = useTheme();
   const styles = createStyles(COLORS);
   const router = useRouter();
   const [fullname, setFullname] = React.useState(user?.fullname || '');
@@ -38,9 +38,9 @@ export default function UpdateProfile() {
   const [hasChanges, setHasChanges] = React.useState(false);
   const [currentLang, setCurrentLang] = React.useState('en');
   const [showThemeModal, setShowThemeModal] = React.useState(false);
-  const [selectedTheme, setSelectedTheme] = React.useState(user?.theme || 'lightning');
   const [tempTheme, setTempTheme] = React.useState('lightning');
   const [isThemeSaving, setIsThemeSaving] = React.useState(false);
+
   
   const generateNewProfilePicture = (avatarNumber) => {
     const formattedNumber = avatarNumber < 10 ? `0${avatarNumber}` : avatarNumber;
@@ -84,6 +84,9 @@ export default function UpdateProfile() {
       setProfilePicture(user.profilePicture || '01');
     }
   }, [user]);
+
+  React.useEffect(() => {
+  }, [currentTheme]);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -422,7 +425,7 @@ export default function UpdateProfile() {
 
           {/* CHOOSE AVATAR */}
           <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>{translate('update.chooseAvatar')}</Text>
+            <Text style={styles.modalTitle}>{translate('update.avatars')}</Text>
             <TouchableOpacity onPress={() => {
               setShowAvatarModal(false);
               setTempProfilePicture('');
@@ -480,74 +483,63 @@ export default function UpdateProfile() {
     </Modal>
   );
 
-  const renderThemeModal = () => (
-    <Modal
-      visible={showThemeModal}
-      transparent={true}
-      animationType="slide"
-      onRequestClose={() => setShowThemeModal(false)}
-    >
-      <View style={styles.modalOverlay}>
-        <View style={[styles.modalContent, { margin: 20 }]}>
+  const renderThemeModal = () => {
+    const modalStyles = createStyles(COLORS);
+    
+    return (
+      <Modal
+        visible={showThemeModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowThemeModal(false)}
+      >
+        <View style={modalStyles.modalOverlay}>
+          <View style={[modalStyles.modalContent, { margin: 20 }]}>
 
           {/* CHOOSE THEME HEADER */}
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>{translate('update.chooseTheme')}</Text>
+          <View style={modalStyles.modalHeader}>
+            <Text style={modalStyles.modalTitle}>{translate('update.themes')}</Text>
             <TouchableOpacity onPress={() => {
               setShowThemeModal(false);
-              setTempTheme('lightning');
+              setTempTheme(currentTheme || 'lightning');
             }}>
               <Ionicons name="close" size={26} color={COLORS.textPrimary} />
             </TouchableOpacity>
           </View>
 
-          {/* THEME LIST */}
-          <ScrollView style={{ maxHeight: 400 }}>
+          {/* THEME GRID */}
+          <View style={modalStyles.themeGrid}>
             {getAllThemes().map((theme) => (
               <TouchableOpacity
                 key={theme.key}
                 style={[
-                  styles.themeItem,
-                  tempTheme === theme.key && { backgroundColor: COLORS.successLight }
+                  modalStyles.themeGridItem,
+                  tempTheme === theme.key && { borderColor: theme.colors.primary }
                 ]}
                 onPress={() => setTempTheme(theme.key)}
               >
-                <View style={styles.themePreview}>
-                  <View style={[
-                    styles.themeColorBox,
-                    { backgroundColor: theme.colors.primary }
-                  ]} />
-                  <View style={[
-                    styles.themeColorBox,
-                    { backgroundColor: theme.colors.background }
-                  ]} />
-                  <View style={[
-                    styles.themeColorBox,
-                    { backgroundColor: theme.colors.cardBackground }
-                  ]} />
+                <View style={modalStyles.themeIconContainer}>
+                  <Ionicons 
+                    name={theme.icon as any} 
+                    size={40} 
+                    color={theme.colors.primary} 
+                  />
                 </View>
-                
-                <View style={styles.themeInfo}>
-                  <View style={styles.themeIcon}>
-                    <Ionicons name={theme.icon as any} size={24} color={theme.colors.primary} />
-                  </View>
-                  <Text style={[styles.themeText, { color: COLORS.textPrimary }]}>
-                    {theme.name}
-                  </Text>
-                </View>
-
+                <Text style={[modalStyles.themeGridText, { color: theme.colors.primary }]}>
+                  {theme.name}
+                </Text>
                 {tempTheme === theme.key && (
-                  <View style={styles.themeCheckmark}>
-                    <Ionicons name="checkmark" size={20} color={COLORS.primary} />
+                  <View style={[modalStyles.themeSelectedBadge, { backgroundColor: theme.colors.primary }]}>
+                    <Ionicons name="checkmark" size={14} color={COLORS.white} />
                   </View>
                 )}
               </TouchableOpacity>
             ))}
-          </ScrollView>
+          </View>
 
           {/* CHOOSE THEME BUTTON */}
           <TouchableOpacity
-            style={[styles.saveButton, !tempTheme && styles.saveButtonDisabled]}
+            style={[modalStyles.saveButton, !tempTheme && modalStyles.saveButtonDisabled]}
             onPress={async () => {
               if (!tempTheme) return;
               
@@ -556,9 +548,8 @@ export default function UpdateProfile() {
                 const result = await updateProfile({ theme: tempTheme });
                 
                 if (result.success) {
-                  setSelectedTheme(tempTheme);
-                  // Theme context'i güncelle
                   await updateTheme(tempTheme);
+                  setTempTheme(tempTheme);
                   setShowThemeModal(false);
                   setShowAlert({
                     visible: true,
@@ -594,13 +585,14 @@ export default function UpdateProfile() {
             {isThemeSaving ? (
               <ActivityIndicator color={COLORS.white} size="small" />
             ) : (
-              <Text style={styles.saveButtonText}>{translate('update.chooseTheme')}</Text>
+              <Text style={modalStyles.saveButtonText}>{translate('update.chooseTheme')}</Text>
             )}
           </TouchableOpacity>
         </View>
       </View>
     </Modal>
-  );
+    );
+  };
 
   return (
     <SafeScreen>
@@ -905,7 +897,7 @@ export default function UpdateProfile() {
             <TouchableOpacity 
               style={styles.actionButton} 
               onPress={() => {
-                setTempTheme(user?.theme || 'lightning');
+                setTempTheme(currentTheme || 'lightning');
                 setShowThemeModal(true);
               }}
             >
@@ -919,7 +911,7 @@ export default function UpdateProfile() {
                   color: COLORS.textSecondary,
                   marginRight: 8
                 }}>
-                  {getTheme(user?.theme || 'lightning').name}
+                  {getTheme(currentTheme || 'lightning').name}
                 </Text>
               </View>
               <Ionicons name="chevron-forward" size={18} color={COLORS.textSecondary} />

@@ -27,6 +27,52 @@ const createStyles = (COLORS) => StyleSheet.create({
     height: '100%',
     borderRadius: 999,
   },
+  
+  // Theme grid styles
+  themeGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    padding: 16,
+    gap: 16,
+  },
+  themeGridItem: {
+    width: '45%',
+    aspectRatio: 1,
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: COLORS.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.cardBackground,
+    padding: 16,
+    position: 'relative',
+    flexDirection: 'column',
+  },
+  themeIconContainer: {
+    marginBottom: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+  },
+  themeGridText: {
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'center',
+    lineHeight: 20,
+    width: '100%',
+  },
+  themeSelectedBadge: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    borderRadius: 12,
+    width: 20,
+    height: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  
   container: {
     flex: 1,
     backgroundColor: COLORS.background,

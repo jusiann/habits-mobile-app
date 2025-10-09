@@ -31,16 +31,13 @@ export const ThemeProvider = ({ children }) => {
     }
   };
 
-  // Temayı güncelle
   const updateTheme = async (themeKey) => {
     setCurrentTheme(themeKey);
-    const newColors = THEMES[themeKey].colors;
+    const newColors = { ...THEMES[themeKey].colors };
     setColors(newColors);
     
-    // Theme manager'ı güncelle - bu tüm uygulamaya yansır
     themeManager.setTheme(themeKey, newColors);
     
-    // Global colors objesini de güncelle
     try {
       const { updateColors } = await import('./colors');
       await updateColors();

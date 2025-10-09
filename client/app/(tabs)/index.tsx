@@ -141,7 +141,7 @@ export default function Home() {
                 const target = habit.targetAmount || 1;
                 const current = Math.round(progress * target);
                 const isCompleted = progress >= 1;
-                const unit = habit.unit.toUpperCase();
+                const unit = habit.unit.toLowerCase();
               
                 return (
                   <View 
