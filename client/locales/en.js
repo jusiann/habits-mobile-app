@@ -43,7 +43,7 @@ export default {
       signInLink: "Sign In"
     },
 
-    // Password Reset
+    // Reset Password 
     forgotPassword: {
       title: "Reset Password",
       subtitle: "Enter your email to reset password",
@@ -294,11 +294,7 @@ export default {
     weightError: "Weight must be between 0-500 kg.",
     language: "Language",
     changeLanguage: "Language changed successfully",
-    languageChangeError: "Failed to change language. Please try again.",
-    theme: "Theme",
-    chooseTheme: "Choose Theme",
-    themeChanged: "Theme changed successfully",
-    themeChangeError: "Failed to change theme. Please try again."
+    languageChangeError: "Failed to change language. Please try again."
   },
 
   // Common
@@ -366,16 +362,6 @@ export default {
       title: "Error",
       message: "An error occurred. Please try again."
     }
-  },
-
-  // Default Habit Names (6 system presets)
-  habitNames: {
-    Water: "Water",
-    Food: "Food", 
-    Walking: "Walking",
-    Exercise: "Exercise",
-    Reading: "Reading",
-    Sleep: "Sleep"
   },
 
   // Units

@@ -1,5 +1,5 @@
 export default {
-  // Karşılama/Giriş Sayfası
+  // Welcome/Landing Page
   welcome: {
     title: "Hoş Geldiniz",
     appName: "Alışkanlık Uygulaması",
@@ -8,9 +8,9 @@ export default {
     signUp: "Kayıt Ol"
   },
 
-  // Kimlik Doğrulama
+  // Authentication
   auth: {
-    // Giriş Yap
+    // Sign In
     signIn: {
       title: "Giriş Yap",
       emailOrUsername: "E-posta veya Kullanıcı Adı",
@@ -24,7 +24,7 @@ export default {
       signUpLink: "Kayıt Ol"
     },
 
-    // Kayıt Ol
+    // Sign Up
     signUp: {
       title: "Hesap Oluştur",
       subtitle: "Başlamak için kayıt olun",
@@ -33,7 +33,7 @@ export default {
       email: "E-posta",
       emailPlaceholder: "E-posta adresinizi girin",
       fullName: "Ad Soyad",
-      fullNamePlaceholder: "Ad soyadınızı girin",
+      fullNamePlaceholder: "Adınızı ve soyadınızı girin",
       password: "Şifre",
       passwordPlaceholder: "Şifrenizi girin",
       confirmPassword: "Şifreyi Onayla",
@@ -43,45 +43,45 @@ export default {
       signInLink: "Giriş Yap"
     },
 
-    // Şifre Sıfırlama
+    // Reset Password
     forgotPassword: {
       title: "Şifreyi Sıfırla",
       subtitle: "Şifrenizi sıfırlamak için e-posta adresinizi girin",
       email: "E-posta",
       emailPlaceholder: "E-posta adresinizi girin",
       resetButton: "Şifreyi Sıfırla",
-      backToSignIn: "Giriş Sayfasına Dön"
+      backToSignIn: "Giriş Sayfasına Geri Dön"
     },
 
-    // Şifre Değiştir
+    // Change Password
     changePassword: {
       title: "Şifre Değiştir",
       currentPassword: "Mevcut Şifre",
       newPassword: "Yeni Şifre",
       confirmNewPassword: "Yeni Şifreyi Onayla",
-      changeButton: "Şifre Değiştir",
+      changeButton: "Şifreyi Değiştir",
       successMessage: "Şifre başarıyla değiştirildi!",
       errorMessage: "Şifre değiştirilirken bir hata oluştu"
     }
   },
 
-  // Ana Sayfa/Kontrol Paneli
+  // Home/Dashboard
   home: {
     greeting: {
       morning: "Günaydın",
-      afternoon: "İyi Öğleden Sonra",
+      afternoon: "Tünaydın",
       evening: "İyi Akşamlar",
       night: "İyi Geceler"
     },
     habitsTitle: "ALIŞKANLIKLAR",
     emptyState: {
-      title: "Yeni bir alışkanlık ekle",
+      title: "Yeni bir alışkanlık ekleyin",
       subtitle: "İlk alışkanlığınızı ekleyerek daha iyi rutinler oluşturmaya başlayın"
     },
     actionButton: "+"
   },
 
-  // Alışkanlıklar
+  // Habits
   habits: {
     create: {
       title: "Yeni Alışkanlık Oluştur",
@@ -89,8 +89,8 @@ export default {
       habitType: "Alışkanlık Türü",
       defaultHabit: "Varsayılan",
       customHabit: "Özel",
-      chooseDefault: "Varsayılan Alışkanlık Seç",
-      chooseDefaultTitle: "Varsayılan Alışkanlık Seçin",
+      chooseDefault: "Varsayılan Bir Alışkanlık Seçin",
+      chooseDefaultTitle: "Varsayılan Bir Alışkanlık Seçin",
       failedToLoad: "Önayarlar yüklenemedi:",
       retry: "Tekrar Dene",
       noPresets: "Önayar bulunmuyor",
@@ -130,7 +130,7 @@ export default {
       tapToChangeIcon: "İkonu değiştirmek için dokunun"
     },
 
-    // Alışkanlık Adları
+    // Habit Names
     water: "Su",
     food: "Yemek",
     walking: "Yürüyüş",
@@ -139,7 +139,7 @@ export default {
     sleep: "Uyku"
   },
 
-  // Hedefler
+  // Goals
   goals: {
     title: "HEDEFLER",
     emptyState: {
@@ -163,7 +163,12 @@ export default {
       valuePlaceholder: "Hedef değeri girin",
       add: "Ekle",
       cancelTitle: "Hedef Oluşturmayı İptal Et",
-      cancelMessage: "Bu hedefi oluşturmayı iptal etmek istediğinizden emin misiniz?"
+      cancelMessage: "Bu hedefi oluşturmayı iptal etmek istediğinizden emin misiniz?",
+      failed: "Oluşturma Başarısız",
+      failedMessage: "Hedef oluşturulamadı. Lütfen tekrar deneyin.",
+      success: "Hedef Oluşturuldu",
+      successMessage: "Hedefiniz başarıyla oluşturuldu.",
+      unexpectedError: "Beklenmedik bir hata oluştu."
     },
 
     delete: {
@@ -176,14 +181,14 @@ export default {
     },
 
     types: {
-      complete: "Tamamla",
-      reach: "Ulaş",
-      maintain: "Hedefi sürdür",
+      complete: "Tamamlama",
+      reach: "Ulaşma",
+      maintain: "Sürdürme",
       habits: "alışkanlık"
     }
   },
 
-  // Geçmiş
+  // History
   history: {
     title: "Geçmiş",
     months: {
@@ -202,7 +207,7 @@ export default {
     },
     days: {
       sunday: "Pazar",
-      monday: "Pazartesi", 
+      monday: "Pazartesi",
       tuesday: "Salı",
       wednesday: "Çarşamba",
       thursday: "Perşembe",
@@ -210,13 +215,13 @@ export default {
       saturday: "Cumartesi"
     },
     daysShort: {
-      sunday: "Pz",
-      monday: "Pt",
-      tuesday: "Sa", 
-      wednesday: "Ça",
-      thursday: "Pe",
-      friday: "Cu",
-      saturday: "Ct"
+      sunday: "Paz",
+      monday: "Pzt",
+      tuesday: "Sal",
+      wednesday: "Çar",
+      thursday: "Per",
+      friday: "Cum",
+      saturday: "Cmt"
     },
     stats: {
       currentStreak: "Mevcut Seri",
@@ -231,7 +236,7 @@ export default {
     }
   },
 
-  // Profil
+  // Profile
   profile: {
     personalInfo: "Kişisel Bilgiler",
     generalSettings: "Genel Ayarlar",
@@ -246,21 +251,21 @@ export default {
       other: "Diğer"
     },
     age: "Yaş",
-    ageUnit: "yaş",
+    ageUnit: "yıl",
     height: "Boy",
     weight: "Kilo",
     notSpecified: "Belirtilmemiş",
-    logoutSuccess: "Çıkış başarılı",
+    logoutSuccess: "Başarıyla çıkış yapıldı",
     logoutFailed: "Çıkış başarısız"
   },
 
-  // Profil Güncelle
+  // Update Profile
   update: {
     title: "Profili Güncelle",
     back: "Geri",
     save: "Kaydet",
     fullName: "Ad Soyad *",
-    fullNameRequired: "Ad soyad gereklidir",
+    fullNameRequired: "Ad soyad alanı gereklidir",
     age: "Yaş",
     height: "Boy (cm)",
     weight: "Kilo (kg)",
@@ -289,16 +294,10 @@ export default {
     weightError: "Kilo 0-500 kg arasında olmalıdır.",
     language: "Dil",
     changeLanguage: "Dil başarıyla değiştirildi",
-    languageChangeError: "Dil değiştirilemedi. Lütfen tekrar deneyin.",
-    theme: "Tema",
-    chooseTheme: "Tema Seç",
-    themeChanged: "Tema başarıyla değiştirildi",
-    themeChangeError: "Tema değiştirilemedi. Lütfen tekrar deneyin."
+    languageChangeError: "Dil değiştirilemedi. Lütfen tekrar deneyin."
   },
 
-
-
-  // Ortak
+  // Common
   common: {
     ok: "Tamam",
     cancel: "İptal",
@@ -313,10 +312,10 @@ export default {
     info: "Bilgi",
     back: "Geri",
     stay: "Kal",
-    leave: "Çık"
+    leave: "Ayrıl"
   },
 
-  // Navigasyon
+  // Navigation
   navigation: {
     home: "Ana Sayfa",
     history: "Geçmiş",
@@ -324,17 +323,17 @@ export default {
     profile: "Profil"
   },
 
-  // Uyarılar/Mesajlar
+  // Alerts/Messages
   alerts: {
     missingInfo: "Eksik Bilgi",
     invalidEmail: "Geçersiz E-posta",
-    passwordMismatch: "Şifreler Uyuşmuyor",
+    passwordMismatch: "Şifreler Eşleşmiyor",
     signInSuccessful: "Giriş Başarılı",
     signInFailed: "Giriş Başarısız",
     signUpSuccessful: "Kayıt Başarılı",
     signUpFailed: "Kayıt Başarısız",
     unsavedChanges: "Kaydedilmemiş Değişiklikler",
-    unsavedChangesMessage: "Kaydedilmemiş değişiklikleriniz var. Çıkmak istediğinizden emin misiniz?",
+    unsavedChangesMessage: "Kaydedilmemiş değişiklikleriniz var. Ayrılmak istediğinizden emin misiniz?",
     success: "Başarılı",
     habitUpdatedSuccessfully: "Alışkanlık başarıyla güncellendi!",
     updateFailed: "Güncelleme Başarısız",
@@ -353,11 +352,11 @@ export default {
     },
     networkError: {
       title: "Ağ Hatası",
-      message: "Ağ isteği başarısız. Lütfen tekrar deneyin."
+      message: "Ağ isteği başarısız oldu. Lütfen tekrar deneyin."
     },
     validationError: {
-      title: "Doğrulama Hatası", 
-      message: "Girişinizi kontrol edip tekrar deneyin."
+      title: "Doğrulama Hatası",
+      message: "Girişlerinizi kontrol edip tekrar deneyin."
     },
     error: {
       title: "Hata",
@@ -365,22 +364,12 @@ export default {
     }
   },
 
-  // Varsayılan Alışkanlık İsimleri (6 sistem önayarı)
-  habitNames: {
-    Water: "Su",
-    Food: "Yemek",
-    Walking: "Yürüyüş",
-    Exercise: "Egzersiz", 
-    Reading: "Okuma",
-    Sleep: "Uyku"
-  },
-
-  // Birimler
+  // Units
   units: {
     glasses: "bardak",
     meals: "öğün",
     steps: "adım",
-    minutes: "dakika", 
+    minutes: "dakika",
     pages: "sayfa",
     hours: "saat",
     liters: "litre",
