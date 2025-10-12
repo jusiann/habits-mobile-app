@@ -4,6 +4,7 @@ import HabitLog from '../models/habit.log.js';
 import User from '../models/user.js';
 import Goal from '../models/goal.js';
 import moment from 'moment-timezone';
+import mongoose from 'mongoose';
 import { DEFAULT_TZ, resolveUserTimezone, tzDayRange } from '../utils/timezone.js';
 
 const HABIT_PRESETS = {
@@ -580,71 +581,140 @@ export const getHabitProgress = async (req, res) => {
 
 export const getHabitLogsByDate = async (req, res) => {
     try {
-        const {date} = req.query;
+        const { date } = req.query;
         const userId = req.user.id;
 
-        if (!date)
+        // Input validation
+        if (!date) {
             throw new ApiError("Date parameter is required.", 400);
-        
+        }
 
         const userTimezone = await resolveUserTimezone(userId);
 
-        // Defensive parsing: accept YYYY-MM-DD or ISO datetimes
+        // Optimized date parsing with better validation
         let targetMoment;
         if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-            // interpret local date as start of day in user's timezone
             targetMoment = moment.tz(date + 'T00:00:00', userTimezone);
         } else {
             targetMoment = moment.tz(date, userTimezone);
         }
 
-        if (!targetMoment || !targetMoment.isValid()) {
-            return res.status(400).json({ success: false, message: 'Invalid date parameter. Use YYYY-MM-DD or ISO datetime.' });
+        if (!targetMoment?.isValid()) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Invalid date parameter. Use YYYY-MM-DD or ISO datetime.' 
+            });
         }
 
         const targetDate = targetMoment.toDate();
         const { start: startOfDay, end: endOfDay } = tzDayRange(targetMoment, userTimezone);
 
-        const habitLogs = await HabitLog.find({
-            userId,
-            date: {
-                $gte: startOfDay,
-                $lt: endOfDay
+        // OPTIMIZED: Single aggregation pipeline instead of multiple queries
+        const habitsWithLogs = await Habit.aggregate([
+            // Match active habits for user
+            {
+                $match: { 
+                    userId: new mongoose.Types.ObjectId(userId), 
+                    isActive: true 
+                }
+            },
+            // Left join with habit logs for the specific date
+            {
+                $lookup: {
+                    from: 'habitlogs',
+                    let: { habitId: '$_id' },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ['$habitId', '$$habitId'] },
+                                        { $eq: ['$userId', new mongoose.Types.ObjectId(userId)] },
+                                        { $gte: ['$date', startOfDay] },
+                                        { $lt: ['$date', endOfDay] }
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    as: 'dailyLogs'
+                }
+            },
+            // Transform and calculate progress in a single step
+            {
+                $addFields: {
+                    logExists: { $gt: [{ $size: '$dailyLogs' }, 0] },
+                    logData: { $arrayElemAt: ['$dailyLogs', 0] }
+                }
+            },
+            {
+                $project: {
+                    habit: {
+                        id: '$_id',
+                        name: '$name',
+                        icon: '$icon',
+                        unit: '$unit',
+                        targetAmount: '$targetAmount'
+                    },
+                    log: {
+                        $cond: {
+                            if: '$logExists',
+                            then: {
+                                id: '$logData._id',
+                                value: '$logData.value',
+                                completed: '$logData.completed',
+                                date: '$logData.date',
+                                progress: {
+                                    $min: [
+                                        { $divide: ['$logData.value', '$targetAmount'] },
+                                        1
+                                    ]
+                                }
+                            },
+                            else: null
+                        }
+                    },
+                    progress: {
+                        $cond: {
+                            if: '$logExists',
+                            then: {
+                                $min: [
+                                    { $divide: ['$logData.value', '$targetAmount'] },
+                                    1
+                                ]
+                            },
+                            else: 0
+                        }
+                    },
+                    completed: {
+                        $cond: {
+                            if: '$logExists',
+                            then: '$logData.completed',
+                            else: false
+                        }
+                    }
+                }
+            },
+            // Sort by creation date for consistent ordering
+            {
+                $sort: { 'habit.id': 1 }
             }
-        }).populate('habitId');
+        ]);
 
-        const allHabits = await Habit.find({ userId, isActive: true });
-        const logMap = new Map();
-        habitLogs.forEach(log => {
-            logMap.set(log.habitId._id.toString(), log);
+        // Calculate summary statistics efficiently
+        const totalHabits = habitsWithLogs.length;
+        let completedHabits = 0;
+        let inProgressHabits = 0;
+
+        // Single pass through results for statistics
+        habitsWithLogs.forEach(item => {
+            if (item.completed) {
+                completedHabits++;
+            } else if (item.progress > 0) {
+                inProgressHabits++;
+            }
         });
 
-        const habitsWithLogs = allHabits.map(habit => {
-            const log = logMap.get(habit._id.toString());
-            
-            return {
-                habit: {
-                    id: habit._id,
-                    name: habit.name,
-                    icon: habit.icon,
-                    unit: habit.unit,
-                    targetAmount: habit.targetAmount
-                },
-                log: log ? {
-                    id: log._id,
-                    value: log.value,
-                    progress: Math.min(log.value / habit.targetAmount, 1),
-                    completed: log.completed,
-                    date: log.date
-                } : null,
-                progress: log ? Math.min(log.value / habit.targetAmount, 1) : 0,
-                completed: log ? log.completed : false
-            };
-        });
-
-        const totalHabits = allHabits.length;
-        const completedHabits = habitsWithLogs.filter(item => item.completed).length;
-        const inProgressHabits = habitsWithLogs.filter(item => item.progress > 0 && !item.completed).length;
         const notStartedHabits = totalHabits - completedHabits - inProgressHabits;
         const activeHabits = completedHabits + inProgressHabits;
         const completionRate = activeHabits > 0 ? Math.round((completedHabits / activeHabits) * 100) : 0;

@@ -28,9 +28,14 @@ const habitLogSchema = new mongoose.Schema({
     timestamps: true
 });
 
-// İndeksler
-habitLogSchema.index({ habitId: 1, date: 1 }, { unique: true });
-habitLogSchema.index({ userId: 1, date: 1 });
+// Performance optimization indexes - Critical for daily queries
+habitLogSchema.index({ habitId: 1, date: 1 }, { unique: true }); // Existing unique constraint
+habitLogSchema.index({ userId: 1, date: 1 }); // Most used query pattern
+habitLogSchema.index({ userId: 1, date: 1, completed: 1 }); // Daily stats queries
+habitLogSchema.index({ habitId: 1, userId: 1, date: 1 }); // Aggregation pipeline optimization
+habitLogSchema.index({ date: 1, completed: 1 }); // Global statistics
+habitLogSchema.index({ userId: 1, completed: 1, date: 1 }); // User completion stats
+habitLogSchema.index({ createdAt: 1 }); // Cleanup and maintenance queries
 
 const HabitLog = mongoose.model("HabitLog", habitLogSchema);
 

@@ -73,6 +73,14 @@ const userSchema = new mongoose.Schema({
     timestamps: true
 });
 
+// Performance optimization indexes
+userSchema.index({ email: 1 }, { unique: true });
+userSchema.index({ username: 1 }, { unique: true });
+userSchema.index({ timezone: 1 });
+userSchema.index({ resetCode: 1 }, { sparse: true });
+userSchema.index({ 'blacklistedTokens.token': 1 }, { sparse: true });
+userSchema.index({ 'blacklistedTokens.createdAt': 1 }, { expireAfterSeconds: 86400 });
+
 const User = mongoose.model("User", userSchema);
 
 export default User;

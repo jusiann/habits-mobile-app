@@ -3,17 +3,18 @@ import http from 'http';
 import https from 'https';
 
 const job = new cron.CronJob("*/14 * * * *", function () {
-    const url = process.env.PROXY_URL;
+    const url = process.env.PROXY_URL_LOCAL;
     const isHttps = url.startsWith('https://');
     const client = isHttps ? https : http;
+    const time = new Date().toLocaleTimeString('tr-TR', { hour12: false });
     client
         .get(url, (res) => {
             if(res.statusCode === 200)
-                console.log("GET request successful", res.statusCode);
+                console.log(`[CRON - ${time}] Health check successful ${res.statusCode}`);
             else
-                console.log("GET request failed", res.statusCode);
+                console.log(`[CRON - ${time}] Health check failed ${res.statusCode}`);
         }).on('error', (e) => {
-            console.error("Error with GET request:", e);
+            console.error(`[CRON - ${time}] Health check error:`, e.message);
         });
 });
 

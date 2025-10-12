@@ -49,7 +49,14 @@ const GoalSchema = new mongoose.Schema({
   timestamps: true
 });
 
-GoalSchema.index({ userId: 1 });
+// Performance optimization indexes
+GoalSchema.index({ userId: 1 }); // Existing basic index
+GoalSchema.index({ userId: 1, type: 1 }); // Goal type filtering
+GoalSchema.index({ userId: 1, completed: 1 }); // Active/completed goal queries
+GoalSchema.index({ userId: 1, habitId: 1 }, { sparse: true }); // Habit-specific goals
+GoalSchema.index({ habitId: 1, completed: 1 }, { sparse: true }); // Habit goal completion
+GoalSchema.index({ completed: 1, createdAt: 1 }); // Global goal stats
+GoalSchema.index({ type: 1, metric: 1 }, { sparse: true }); // Goal analytics
 
 const Goal = mongoose.model('Goal', GoalSchema);
 

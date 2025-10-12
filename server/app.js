@@ -1,5 +1,7 @@
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 import 'dotenv/config';
 import authRoutes from './src/routes/auth.routes.js';
 import habitRoutes from './src/routes/habit.routes.js';
@@ -11,6 +13,18 @@ const app = express();
 
 job.start();
 
+app.use(helmet());
+
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100, 
+    message: {
+        success: false,
+        message: 'Too many requests, please try again later.'
+    }
+});
+app.use(limiter);
+
 app.use(cors({
     origin: '*', 
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
@@ -18,6 +32,18 @@ app.use(cors({
 }));
 
 app.use(express.json());
+
+app.use((req, res, next) => {
+    const start = Date.now();
+    const originalSend = res.send;
+    res.send = function(data) {
+        const duration = Date.now() - start;
+        const time = new Date().toLocaleTimeString('tr-TR', { hour12: false });
+        console.log(`[LOG - ${time}] ${req.method} ${req.url} ${res.statusCode} ${duration}ms`);
+        return originalSend.call(this, data);
+    };
+    next();
+});
 
 app.use((err, req, res, next) => {
     console.error('Global error handler:', err);
@@ -30,6 +56,16 @@ app.use((err, req, res, next) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/habits", habitRoutes);
 
+app.get('/health', (req, res) => {
+    const time = new Date().toLocaleTimeString('tr-TR', { hour12: false });
+    res.status(200).json({
+        success: true,
+        message: `[SERVER - ${time}] System is healthy`,
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime()
+    });
+});
+
 app.use((req, res) => {
     res.status(404).json({
         success: false,
@@ -38,6 +74,7 @@ app.use((req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`Server is running on PORT ${PORT}`);
+    const time = new Date().toLocaleTimeString('tr-TR', { hour12: false });
+    console.log(`[SERVER - ${time}] Started on PORT ${PORT}`);
     connectDB();
 });
