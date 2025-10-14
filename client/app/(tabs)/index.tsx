@@ -37,16 +37,37 @@ export default function Home() {
       const today = new Date();
       const year = today.getFullYear();
       const month = today.getMonth();
-      const daysInMonth = new Date(year, month + 1, 0).getDate();
-
+      console.log('Loading current month history data...');
+      
+      // Load current month - priority load for recent days first
       const loadPromises = [];
-      for (let day = 1; day <= daysInMonth; day++) {
+      const currentDay = today.getDate();
+      
+      // Load recent days first (last 7 days)
+      for (let day = Math.max(1, currentDay - 6); day <= currentDay; day++) {
         const date = new Date(year, month, day);
         loadPromises.push(habitLogsByDate(date));
       }
-
+      
+      // Wait for recent days to load first
       await Promise.all(loadPromises);
-      console.log('History data loaded successfully for the month');
+      console.log('Recent days loaded');
+      
+      // Then load rest of month in background
+      const remainingPromises = [];
+      for (let day = 1; day < Math.max(1, currentDay - 6); day++) {
+        const date = new Date(year, month, day);
+        remainingPromises.push(habitLogsByDate(date));
+      }
+      
+      if (remainingPromises.length > 0) {
+        Promise.all(remainingPromises).then(() => {
+          console.log('Full month history loaded');
+        }).catch(error => {
+          console.error('Error loading remaining month data:', error);
+        });
+      }
+      
     } catch (error) {
       console.error('Error loading history data:', error);
     }
@@ -56,6 +77,29 @@ export default function Home() {
     if (token) {
       setIsLoading(true);
       console.log('Home: starting fetchHabits()');
+      
+      // Clean old cache entries on app start
+      try {
+        const keys = Object.keys(localStorage);
+        const now = Date.now();
+        keys.forEach(key => {
+          if (key.startsWith('habit_cache_')) {
+            try {
+              const data = JSON.parse(localStorage.getItem(key) || '{}');
+              // Remove cache older than 24 hours
+              if (now - data.timestamp > 24 * 60 * 60 * 1000) {
+                localStorage.removeItem(key);
+                console.log(`Cleaned old cache: ${key}`);
+              }
+            } catch {
+              localStorage.removeItem(key);
+            }
+          }
+        });
+      } catch (error) {
+        console.log('Cache cleanup error:', error);
+      }
+      
       fetchHabits().finally(() => {
         setIsLoading(false);
         console.log('Home: fetchHabits() finished, starting loadHistoryData() in background');
