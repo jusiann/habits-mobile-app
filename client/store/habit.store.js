@@ -138,32 +138,110 @@ export const useHabitStore = create((set, get) => ({
 
             let cachedDays = 0;
             let apiDays = 0;
+            let skippedFutureDays = 0;
 
             console.log(`[LoadMonthData] Loading ${year}-${month + 1} (Current month: ${currentMonth})`);
 
-            // LOAD ALL DAYS IN MONTH
+            // MONTHLY API OPTIMIZATION - Use single request for past months
+            const isCurrentMonth = currentMonth;
+            const isPastMonth = year < today.getFullYear() || (year === today.getFullYear() && month < today.getMonth());
+            
+            if (isPastMonth || !isCurrentMonth) {
+                console.log(`[LoadMonthData] Using Monthly API for ${year}-${month + 1}`);
+                try {
+                    const response = await get().makeRequest(API_ENDPOINTS.HABITS.MONTHLY(year, month + 1), {
+                        method: 'GET'
+                    });
+
+                    let data;
+                    try {
+                        data = await response.json();
+                    } catch (parseError) {
+                        console.error("Monthly API JSON parse error:", parseError);
+                        throw new Error("Invalid server response format");
+                    }
+
+                    if (response.ok && data.success) {
+                        console.log(`[LoadMonthData] Monthly API success: ${Object.keys(data.data).length} days loaded`);
+                        set({ isLoading: false });
+                        
+                        // Monthly API'den stats gelmediği için default stats oluştur
+                        const defaultStats = {
+                            currentStreak: 0,
+                            completionRate: 0,
+                            totalCompleted: 0,
+                            totalCompletedDays: 0
+                        };
+                        
+                        return {
+                            success: true,
+                            data: {
+                                monthData: data.data,
+                                stats: defaultStats,
+                                cachedDays: 0,
+                                apiDays: 1, // Single monthly API call
+                                skippedFutureDays: 0,
+                                apiSource: 'monthly'
+                            }
+                         };
+                    } else {
+                        console.warn(`[LoadMonthData] Monthly API failed, falling back to individual calls`);
+                    }
+                } catch (error) {
+                    console.warn(`[LoadMonthData] Monthly API error, falling back to individual calls:`, error.message);
+                }
+            }
+
+            console.log(`[LoadMonthData] Using individual API calls for ${year}-${month + 1}`);
+
+            // FALLBACK: Individual day loading for current month or when monthly API fails
+
+            // LOAD ALL DAYS IN MONTH  
             console.log(`[LoadMonthData] Loading data for ${daysInMonth} days...`);
             console.log(`[LoadMonthData] Cache check will use user ID:`, user._id);
             
+            // Get today's date for future day optimization
+            const todayDateOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+            
             for (let day = 1; day <= daysInMonth; day++) {
                 const dateObj = new Date(year, month, day);
+                const dateObjOnly = new Date(year, month, day);
                 let result;
                 
-                // Try to get from AsyncStorage cache first
-                result = await getCachedDayData(user._id, dateObj);
-                if (result) {
-                    console.log(`[LoadMonthData] Day ${day}: Using cached data (${dateObj.toDateString()})`);
-                    cachedDays++;
+                // FUTURE DAY OPTIMIZATION - Skip API calls for future days
+                if (dateObjOnly > todayDateOnly) {
+                    console.log(`[LoadMonthData] Day ${day}: Future day (${dateObj.toDateString()}), skipping API call`);
+                    skippedFutureDays++;
+                    result = {
+                        success: true,
+                        data: {
+                            summary: {
+                                totalHabits: 0,
+                                completedHabits: 0,
+                                inProgressHabits: 0, 
+                                notStartedHabits: 0,
+                                completionRate: 0
+                            },
+                            habits: []
+                        }
+                    };
                 } else {
-                    console.log(`[LoadMonthData] Day ${day}: Cache miss, loading from API (${dateObj.toDateString()})`);
-                    result = await get().habitLogsByDate(dateObj);
-                    
-                    // Cache the result if successful
-                    if (result && result.success) {
-                        await setCachedDayData(user._id, dateObj, result);
-                        console.log(`[LoadMonthData] Day ${day}: Result cached for future use`);
+                    // Try to get from AsyncStorage cache first
+                    result = await getCachedDayData(user._id, dateObj);
+                    if (result) {
+                        console.log(`[LoadMonthData] Day ${day}: Using cached data (${dateObj.toDateString()})`);
+                        cachedDays++;
+                    } else {
+                        console.log(`[LoadMonthData] Day ${day}: Cache miss, loading from API (${dateObj.toDateString()})`);
+                        result = await get().habitLogsByDate(dateObj);
+                        
+                        // Cache the result if successful
+                        if (result && result.success) {
+                            await setCachedDayData(user._id, dateObj, result);
+                            console.log(`[LoadMonthData] Day ${day}: Result cached for future use`);
+                        }
+                        apiDays++;
                     }
-                    apiDays++;
                 }
 
                 if (result && result.success && result.data) {
@@ -261,6 +339,7 @@ export const useHabitStore = create((set, get) => ({
 
             console.log(`[LoadMonthData] Final monthData:`, newMonthData);
             console.log(`[LoadMonthData] Day 14 data:`, newMonthData[14]);
+            console.log(`[LoadMonthData] Performance: ${skippedFutureDays} future days skipped, ${cachedDays} cached, ${apiDays} API calls`);
             
             return { 
                 success: true, 
@@ -268,7 +347,8 @@ export const useHabitStore = create((set, get) => ({
                     monthData: newMonthData, 
                     stats,
                     cachedDays,
-                    apiDays
+                    apiDays,
+                    skippedFutureDays
                 } 
             };
         } catch (error) {

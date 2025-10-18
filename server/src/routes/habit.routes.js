@@ -8,6 +8,7 @@ import {
     getHabitProgress,
     getDashboardHabits,
     getHabitLogsByDate,
+    getMonthlyHabitLogs,
     getHabitPresets,
     getHabitPresetsByCategory,
     getDashboardGoals,
@@ -27,6 +28,7 @@ router.get('/presets/:category', verifyToken, getHabitPresetsByCategory);
 
 router.get('/dashboard', verifyToken, getDashboardHabits);
 router.get('/logs-by-date', getHabitLogsByDate);
+router.get('/monthly/:year/:month', verifyToken, getMonthlyHabitLogs);
 
 router.post('/add', verifyToken, addHabit);
 

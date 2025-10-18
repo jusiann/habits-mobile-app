@@ -33,16 +33,6 @@ export const verifyToken = async (req, res, next) => {
                 message: 'User not found' 
             });
 
-        const isBlacklisted = user.blacklistedTokens.some(
-            tokenObj => tokenObj.token === accessToken
-        );
-        
-        if (isBlacklisted)
-            return res.status(401).json({ 
-                success: false, 
-                message: 'Token has been invalidated. Please login again.' 
-            });
-
         req.user = user;
         next();
     } catch (error) {

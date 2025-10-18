@@ -26,6 +26,7 @@ export const API_ENDPOINTS = {
     INCREMENT: (habitId) => `${API_BASE_URL}/habits/${habitId}/increment`,
     DETAIL: (habitId) => `${API_BASE_URL}/habits/${habitId}`,
     LOGS_BY_DATE: (date) => `${API_BASE_URL}/habits/logs-by-date?date=${date}`,
+    MONTHLY: (year, month) => `${API_BASE_URL}/habits/monthly/${year}/${month}`,
     PROGRESS: (habitId, queryParams = '') => `${API_BASE_URL}/habits/${habitId}/progress${queryParams ? `?${queryParams}` : ''}`,
     UPDATE: (habitId) => `${API_BASE_URL}/habits/${habitId}`,
     DELETE: (habitId) => `${API_BASE_URL}/habits/${habitId}`
