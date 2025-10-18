@@ -1,6 +1,71 @@
 import {create} from "zustand";
 import {makeAuthenticatedRequest, API_ENDPOINTS} from "../constants/api.utils";
 import {getTodayInUserTZ, isNewDayInUserTZ} from "../constants/timezone.utils";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+// AsyncStorage cache functions
+const getCacheKey = (userId, date) => {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const day = date.getDate();
+    return `habit_cache_${userId}_${year}_${month}_${day}`;
+};
+
+const getCachedDayData = async (userId, date) => {
+    try {
+        const key = getCacheKey(userId, date);
+        const cached = await AsyncStorage.getItem(key);
+        if (cached) {
+            const data = JSON.parse(cached);
+            // Check if cache is still valid (1 hour for current day, 24 hours for past days)
+            const now = new Date();
+            const isToday = date.toDateString() === now.toDateString();
+            const maxAge = isToday ? 60 * 60 * 1000 : 24 * 60 * 60 * 1000; // 1 hour vs 24 hours
+            
+            if (now.getTime() - data.timestamp < maxAge) {
+                return data.result;
+            }
+        }
+        return null;
+    } catch (error) {
+        console.warn('Cache read error:', error);
+        return null;
+    }
+};
+
+const setCachedDayData = async (userId, date, result) => {
+    try {
+        const key = getCacheKey(userId, date);
+        const data = {
+            result,
+            timestamp: new Date().getTime()
+        };
+        await AsyncStorage.setItem(key, JSON.stringify(data));
+    } catch (error) {
+        console.warn('Cache write error:', error);
+    }
+};
+
+const clearCacheForDay = async (userId, date) => {
+    try {
+        const key = getCacheKey(userId, date);
+        await AsyncStorage.removeItem(key);
+        console.log(`Cache cleared for ${date.toDateString()}`);
+    } catch (error) {
+        console.warn('Cache clear error:', error);
+    }
+};
+
+const clearAllCache = async (userId) => {
+    try {
+        const keys = await AsyncStorage.getAllKeys();
+        const cacheKeys = keys.filter(key => key.startsWith(`habit_cache_${userId}_`));
+        await AsyncStorage.multiRemove(cacheKeys);
+        console.log(`Cleared ${cacheKeys.length} cache entries for user ${userId}`);
+    } catch (error) {
+        console.warn('Cache clear all error:', error);
+    }
+};
 
 export const useHabitStore = create((set, get) => ({
     habits: [],
@@ -38,7 +103,7 @@ export const useHabitStore = create((set, get) => ({
         }
     },
   
-    // LOAD MONTH DATA
+    // LOAD MONTH DATA WITH SMART CACHING
     loadMonthData: async (date) => {
         set({ 
             isLoading: true, 
@@ -46,12 +111,25 @@ export const useHabitStore = create((set, get) => ({
         });
 
         try {
+            const {useAuthStore} = await import('./auth.store');
+            const {user, token} = useAuthStore.getState();
+            
+            console.log(`[LoadMonthData] Auth check - User:`, !!user, 'Token:', !!token, 'User ID:', user?._id);
+            
+            if (!user || !token || !user._id) {
+                console.log(`[LoadMonthData] No authentication, returning error`);
+                return {
+                    success: false,
+                    message: "User not authenticated"
+                };
+            }
+            
             const year = date.getFullYear();
             const month = date.getMonth();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
-            const cacheKey = `${year}-${month}`;
             const newMonthData = {};
             const today = new Date();
+            const currentMonth = today.getFullYear() === year && today.getMonth() === month;
 
             let totalDaysWithData = 0;
             let totalCompletionRateSum = 0;
@@ -60,45 +138,135 @@ export const useHabitStore = create((set, get) => ({
 
             let cachedDays = 0;
             let apiDays = 0;
+            let skippedFutureDays = 0;
 
-            const isSameDay = (d1, d2) => d1.toDateString() === d2.toDateString();
+            console.log(`[LoadMonthData] Loading ${year}-${month + 1} (Current month: ${currentMonth})`);
 
-            // LOAD ALL DAYS IN THIS MONTH
+            // MONTHLY API OPTIMIZATION - Use single request for past months
+            const isCurrentMonth = currentMonth;
+            const isPastMonth = year < today.getFullYear() || (year === today.getFullYear() && month < today.getMonth());
+            
+            if (isPastMonth || !isCurrentMonth) {
+                console.log(`[LoadMonthData] Using Monthly API for ${year}-${month + 1}`);
+                try {
+                    const response = await get().makeRequest(API_ENDPOINTS.HABITS.MONTHLY(year, month + 1), {
+                        method: 'GET'
+                    });
+
+                    let data;
+                    try {
+                        data = await response.json();
+                    } catch (parseError) {
+                        console.error("Monthly API JSON parse error:", parseError);
+                        throw new Error("Invalid server response format");
+                    }
+
+                    if (response.ok && data.success) {
+                        console.log(`[LoadMonthData] Monthly API success: ${Object.keys(data.data).length} days loaded`);
+                        set({ isLoading: false });
+                        
+                        // Monthly API'den stats gelmediği için default stats oluştur
+                        const defaultStats = {
+                            currentStreak: 0,
+                            completionRate: 0,
+                            totalCompleted: 0,
+                            totalCompletedDays: 0
+                        };
+                        
+                        return {
+                            success: true,
+                            data: {
+                                monthData: data.data,
+                                stats: defaultStats,
+                                cachedDays: 0,
+                                apiDays: 1, // Single monthly API call
+                                skippedFutureDays: 0,
+                                apiSource: 'monthly'
+                            }
+                         };
+                    } else {
+                        console.warn(`[LoadMonthData] Monthly API failed, falling back to individual calls`);
+                    }
+                } catch (error) {
+                    console.warn(`[LoadMonthData] Monthly API error, falling back to individual calls:`, error.message);
+                }
+            }
+
+            console.log(`[LoadMonthData] Using individual API calls for ${year}-${month + 1}`);
+
+            // FALLBACK: Individual day loading for current month or when monthly API fails
+
+            // LOAD ALL DAYS IN MONTH  
+            console.log(`[LoadMonthData] Loading data for ${daysInMonth} days...`);
+            console.log(`[LoadMonthData] Cache check will use user ID:`, user._id);
+            
+            // Get today's date for future day optimization
+            const todayDateOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+            
             for (let day = 1; day <= daysInMonth; day++) {
                 const dateObj = new Date(year, month, day);
-                const cacheEntry = get().monthlyCache[cacheKey]?.[day];
-
+                const dateObjOnly = new Date(year, month, day);
                 let result;
-                const isToday = isSameDay(dateObj, today);
-                if (cacheEntry && !isToday) {
-                    // Use cache (except for today)
-                    result = cacheEntry;
-                    cachedDays++;
-                    console.log(`[LoadMonthData] Day ${day}: Loaded from cache`);
+                
+                // FUTURE DAY OPTIMIZATION - Skip API calls for future days
+                if (dateObjOnly > todayDateOnly) {
+                    console.log(`[LoadMonthData] Day ${day}: Future day (${dateObj.toDateString()}), skipping API call`);
+                    skippedFutureDays++;
+                    result = {
+                        success: true,
+                        data: {
+                            summary: {
+                                totalHabits: 0,
+                                completedHabits: 0,
+                                inProgressHabits: 0, 
+                                notStartedHabits: 0,
+                                completionRate: 0
+                            },
+                            habits: []
+                        }
+                    };
                 } else {
-                    // Load from API (always for today, or if no cache)
-                    console.log(`[LoadMonthData] Day ${day}: Loading from API...`);
-                    result = await get().habitLogsByDate(dateObj);
-                    apiDays++;
-                    console.log(`[LoadMonthData] Day ${day}: Loaded from API`);
+                    // Try to get from AsyncStorage cache first
+                    result = await getCachedDayData(user._id, dateObj);
+                    if (result) {
+                        console.log(`[LoadMonthData] Day ${day}: Using cached data (${dateObj.toDateString()})`);
+                        cachedDays++;
+                    } else {
+                        console.log(`[LoadMonthData] Day ${day}: Cache miss, loading from API (${dateObj.toDateString()})`);
+                        result = await get().habitLogsByDate(dateObj);
+                        
+                        // Cache the result if successful
+                        if (result && result.success) {
+                            await setCachedDayData(user._id, dateObj, result);
+                            console.log(`[LoadMonthData] Day ${day}: Result cached for future use`);
+                        }
+                        apiDays++;
+                    }
                 }
 
-                if (result.success && result.data) {
+                if (result && result.success && result.data) {
                     newMonthData[day] = {
                         summary: result.data.summary
                     };
                     
                     const summary = result.data.summary;
-                    
-                    // ONLY COUNT DAYS WITH HABIT DATA
                     if (summary.completionRate > 0) {
                         totalDaysWithData++;
-                        
-                        // USE BACKEND COMPLETION RATE DIRECTLY
-                        const dailyCompletionRate = summary.completionRate;
-                        totalCompletionRateSum += dailyCompletionRate;
+                        totalCompletionRateSum += summary.completionRate;
                         totalCompletedHabits += summary.completedHabits;
                     }
+                } else {
+                    // No data for this day, create empty entry
+                    newMonthData[day] = {
+                        summary: {
+                            totalHabits: 0,
+                            completedHabits: 0,
+                            inProgressHabits: 0,
+                            notStartedHabits: 0,
+                            completionRate: 0
+                        }
+                    };
+                    console.log(`[LoadMonthData] Day ${day}: No data, created empty entry`);
                 }
             }
 
@@ -119,10 +287,15 @@ export const useHabitStore = create((set, get) => ({
                     // Same month, use our loaded data
                     dayData = newMonthData[day];
                 } else {
-                    // Different month, need to query API
-                    const result = await get().habitLogsByDate(streakDate);
-                    if (result.success && result.data) {
-                        dayData = { summary: result.data.summary };
+                    // Different month, check cache first, then API
+                    const cached = await getCachedDayData(user._id, streakDate);
+                    if (cached && cached.success && cached.data) {
+                        dayData = { summary: cached.data.summary };
+                    } else {
+                        const result = await get().habitLogsByDate(streakDate);
+                        if (result && result.success && result.data) {
+                            dayData = { summary: result.data.summary };
+                        }
                     }
                 }
                 
@@ -164,13 +337,18 @@ export const useHabitStore = create((set, get) => ({
                 totalCompletionRateSum
             });
 
+            console.log(`[LoadMonthData] Final monthData:`, newMonthData);
+            console.log(`[LoadMonthData] Day 14 data:`, newMonthData[14]);
+            console.log(`[LoadMonthData] Performance: ${skippedFutureDays} future days skipped, ${cachedDays} cached, ${apiDays} API calls`);
+            
             return { 
                 success: true, 
                 data: { 
                     monthData: newMonthData, 
                     stats,
                     cachedDays,
-                    apiDays
+                    apiDays,
+                    skippedFutureDays
                 } 
             };
         } catch (error) {
@@ -183,8 +361,8 @@ export const useHabitStore = create((set, get) => ({
                 message: error.message || 'Network error. Please try again.' 
             };
         } finally {
-            set({ 
-                isLoading: false 
+            set({
+                isLoading: false
             });
         }
     },
@@ -464,10 +642,17 @@ export const useHabitStore = create((set, get) => ({
                     }
 
                     if (response.ok) {
+                        // Clear cache for the affected date since data has changed
+                        const {useAuthStore} = await import("./auth.store");
+                        const {user} = useAuthStore.getState();
+                        if (user?._id) {
+                            await clearCacheForDay(user._id, candidate.dateObj);
+                        }
+                        
                         await get().fetchHabits();
                         return {
                             success: true,
-                            data: data.data
+                            data: data.dataa
                         };
                     } else {
                         new Error(data.message || data.error || `Failed to increment habit (date ${localDate})`);
@@ -648,8 +833,9 @@ export const useHabitStore = create((set, get) => ({
         }
     },
 
-    // HABIT LOGS BY DATE
+    // HABIT LOGS BY DATE WITH SIMPLE CACHE
     habitLogsByDate: async (date) => {
+        console.log(`[habitLogsByDate] Called with date:`, date);
         set({ 
             isLoading: true, 
             error: null 
@@ -657,10 +843,23 @@ export const useHabitStore = create((set, get) => ({
 
         try {
             const {useAuthStore} = await import('./auth.store');
-            const {user} = useAuthStore.getState();
+            const {user, token} = useAuthStore.getState();
             const timezone = user?.timezone || 'Europe/Istanbul';
+            
+            console.log(`[habitLogsByDate] Auth check - User:`, !!user, 'Token:', !!token, 'User ID:', user?._id);
+            
+            // Check authentication
+            if (!user || !token || !user._id) {
+                console.log(`[habitLogsByDate] No authentication, returning empty data`);
+                return { 
+                    success: true, 
+                    data: { 
+                        summary: { completedHabits: 0, totalHabits: 0, completionRate: 0, inProgressHabits: 0, notStartedHabits: 0 }, 
+                        habits: [] 
+                    } 
+                };
+            }
 
-            const isSameDay = (d1, d2) => d1.toDateString() === d2.toDateString();
             const dateToLocalYYYYMMDD = (d, tz) => new Intl.DateTimeFormat('en-CA', { 
                 timeZone: tz, 
                 year: 'numeric', 
@@ -680,18 +879,15 @@ export const useHabitStore = create((set, get) => ({
                 requestDate = new Date(`${localDateStr}T00:00:00`);
             }
 
-            const startOfLocalDay = new Date(requestDate);
-            const endOfLocalDay = new Date(startOfLocalDay.getTime() + 24 * 60 * 60 * 1000 - 1);
-            const today = new Date();
-            const cacheKey = `${requestDate.getFullYear()}-${requestDate.getMonth()}`;
-
-            if (!isSameDay(requestDate, today) && get().monthlyCache[cacheKey]?.[requestDate.getDate()]) {
-                set({ 
-                    isLoading: false 
-                });
-                return get().monthlyCache[cacheKey][requestDate.getDate()];
+            // Try to get from AsyncStorage cache first
+            const cached = await getCachedDayData(user._id, requestDate);
+            if (cached) {
+                console.log(`[habitLogsByDate] Using cached data for ${localDateStr}`);
+                set({ isLoading: false });
+                return cached;
             }
 
+            console.log(`[habitLogsByDate] Loading fresh data from API for ${localDateStr}`);
             const url = API_ENDPOINTS.HABITS.LOGS_BY_DATE(localDateStr);
             const response = await get().makeRequest(url, { method: 'GET' });
 
@@ -752,6 +948,7 @@ export const useHabitStore = create((set, get) => ({
                 });
 
                 // FILTER OUT HABITS CREATED AFTER THE TARGET DAY
+                const endOfLocalDay = new Date(requestDate.getTime() + 24 * 60 * 60 * 1000 - 1);
                 const activeHabits = normalized.filter(h => {
                     if (h.habit && h.habit.status === 'never_started') return false;
                     if (!h.habit || !h.habit.createdAt) return true;
@@ -768,12 +965,10 @@ export const useHabitStore = create((set, get) => ({
                     } 
                 };
 
-                if (!isSameDay(requestDate, today)) {
-                    const currentCache = { ...get().monthlyCache };
-                    if (!currentCache[cacheKey]) currentCache[cacheKey] = {};
-                    currentCache[cacheKey][requestDate.getDate()] = result;
-                    set({ monthlyCache: currentCache });
-                }
+                console.log(`[habitLogsByDate] Returning result for ${localDateStr}:`, result);
+
+                // Cache the successful result
+                await setCachedDayData(user._id, requestDate, result);
 
                 return result;
             }
@@ -788,19 +983,50 @@ export const useHabitStore = create((set, get) => ({
             if (error.message.includes("Not authenticated") || 
                 error.message.includes("Session expired") || 
                 error.message.includes("No authentication token available")) {
+                console.log(`[habitLogsByDate] Authentication error, returning empty data`);
                 return { 
                     success: true, 
                     data: { 
-                        summary: { completedHabits: 0, totalHabits: 0, completionRate: 0 }, 
+                        summary: { completedHabits: 0, totalHabits: 0, completionRate: 0, inProgressHabits: 0, notStartedHabits: 0 }, 
                         habits: [] 
                     } 
                 };
             }
             
+            console.log(`[habitLogsByDate] Network error, returning failure`);
             return { 
                 success: false, 
                 error: error.message || 'Network error. Please try again.' 
             };
+        }
+    },
+
+    // CLEAR CACHE FOR TODAY (useful after habit modifications)
+    clearTodayCache: async () => {
+        try {
+            const {useAuthStore} = await import('./auth.store');
+            const {user} = useAuthStore.getState();
+            if (user?._id) {
+                const today = new Date();
+                await clearCacheForDay(user._id, today);
+                console.log('Today\'s cache cleared successfully');
+            }
+        } catch (error) {
+            console.warn('Failed to clear today\'s cache:', error);
+        }
+    },
+
+    // CLEAR ALL CACHE (useful for troubleshooting)
+    clearAllHabitCache: async () => {
+        try {
+            const {useAuthStore} = await import('./auth.store');
+            const {user} = useAuthStore.getState();
+            if (user?._id) {
+                await clearAllCache(user._id);
+                console.log('All habit cache cleared successfully');
+            }
+        } catch (error) {
+            console.warn('Failed to clear all cache:', error);
         }
     },
 

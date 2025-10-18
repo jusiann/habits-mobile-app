@@ -169,19 +169,6 @@ export const refreshToken = async (req, res) => {
         if (!user)
             throw new ApiError("User not found.", 404);
 
-        const isBlacklisted = user.blacklistedTokens.some(
-            tokenObj => tokenObj.token === refreshToken
-        );
-        
-        if (isBlacklisted)
-            throw new ApiError("Refresh token has been invalidated. Please login again.", 401);
-
-        user.blacklistedTokens.push({
-            token: refreshToken
-        });
-
-        await user.save();
-
         const {accessToken, refreshToken: newRefreshToken} = createToken(user);
 
         res.status(200).json({
@@ -524,21 +511,11 @@ export const logout = async (req, res) => {
         if (!accessToken)
             throw new ApiError("Access token not found.", 400);
 
-        const user = await User.findById(userId);
-        if (!user)
-            throw new ApiError("User not found.", 404);
-
-        user.blacklistedTokens.push({
-            token: accessToken
-        });
-
-        await user.save();
-
         console.log(`User ${userId} logged out at ${new Date().toISOString()}`);
 
         res.status(200).json({
             success: true,
-            message: "Logged out successfully. Access token has been invalidated."
+            message: "Logged out successfully."
         });
     } catch (error) {
         res.status(error.statusCode || 500).json({

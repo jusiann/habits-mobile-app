@@ -64,7 +64,9 @@ export default function History() {
         try {
           setLoading(true);
           const result = await loadMonthDataFromStore(date); // Use store's loadMonthData
+          console.log('[History] loadMonthData result:', result);
           if (result.success) {
+            console.log('[History] Setting monthData:', result.data.monthData);
             setMonthData(result.data.monthData);
             setStats(result.data.stats);
           }
@@ -142,8 +144,12 @@ export default function History() {
             </View>
 
             {/* SELECTED DATE DETAILS */}
-            {
-              selectedDate && monthData[selectedDate.getDate()] && (
+            {(() => {
+              const dayKey = selectedDate?.getDate();
+              const dayData = monthData[dayKey];
+              console.log('[History] Selected date:', selectedDate?.toDateString(), 'Day key:', dayKey, 'Day data:', dayData);
+              return selectedDate && dayData;
+            })() && (
                 <View style={styles.selectedDateContainer}>
                   <Text style={styles.selectedDateTitle}>
                     {translateDate(selectedDate)}
@@ -165,7 +171,7 @@ export default function History() {
                     }]}>
                       <Ionicons name="checkmark-circle" size={24} color={COLORS.primary} style={{ marginBottom: 4 }} />
                       <Text style={[styles.selectedStatNumber, { color: COLORS.primary, fontSize: 20 }]}>
-                        {monthData[selectedDate.getDate()].summary.completedHabits}
+                        {monthData[selectedDate.getDate()]?.summary?.completedHabits || 0}
                       </Text>
                     </View>
                 
@@ -184,7 +190,7 @@ export default function History() {
                   }]}>
                     <Ionicons name="time" size={24} color={COLORS.primary} style={{ marginBottom: 4 }} />
                     <Text style={[styles.selectedStatNumber, { color: COLORS.primary, fontSize: 20 }]}>
-                      {monthData[selectedDate.getDate()].summary.inProgressHabits}
+                      {monthData[selectedDate.getDate()]?.summary?.inProgressHabits || 0}
                     </Text>
                   </View>
                 
@@ -203,7 +209,7 @@ export default function History() {
                   }]}>
                     <Ionicons name="pie-chart" size={24} color={COLORS.primary} style={{ marginBottom: 4 }} />
                     <Text style={[styles.selectedStatNumber, { color: COLORS.primary, fontSize: 20 }]}>
-                      {Math.round(monthData[selectedDate.getDate()].summary.completionRate)}%
+                      {Math.round(monthData[selectedDate.getDate()]?.summary?.completionRate || 0)}%
                     </Text>
                   </View>
                 </View>

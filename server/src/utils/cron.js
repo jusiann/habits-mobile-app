@@ -3,7 +3,7 @@ import http from 'http';
 import https from 'https';
 
 const job = new cron.CronJob("*/14 * * * *", function () {
-    const url = process.env.PROXY_URL_LOCAL;
+    const url = process.env.PROXY_URL;
     const isHttps = url.startsWith('https://');
     const client = isHttps ? https : http;
     const time = new Date().toLocaleTimeString('tr-TR', { hour12: false });

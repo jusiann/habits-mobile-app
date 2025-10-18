@@ -1,11 +1,11 @@
 // FOR ONLINE TEST
-// export const API_BASE_URL = 'https://habits-mobile-app.onrender.com/api';
+export const API_BASE_URL = 'https://habits-mobile-app.onrender.com/api';
 
 // export const API_LOCAL_BASE_URL = 'http://localhost:3000/api';
 
 
 // FOR LOCAL TEST ANDROID EMULATOR
-export const API_BASE_URL = 'http://192.168.1.3:3000/api';
+// export const API_BASE_URL = 'http://192.168.1.3:3000/api';
 
 export const API_ENDPOINTS = {
   AUTH: {
@@ -26,6 +26,7 @@ export const API_ENDPOINTS = {
     INCREMENT: (habitId) => `${API_BASE_URL}/habits/${habitId}/increment`,
     DETAIL: (habitId) => `${API_BASE_URL}/habits/${habitId}`,
     LOGS_BY_DATE: (date) => `${API_BASE_URL}/habits/logs-by-date?date=${date}`,
+    MONTHLY: (year, month) => `${API_BASE_URL}/habits/monthly/${year}/${month}`,
     PROGRESS: (habitId, queryParams = '') => `${API_BASE_URL}/habits/${habitId}/progress${queryParams ? `?${queryParams}` : ''}`,
     UPDATE: (habitId) => `${API_BASE_URL}/habits/${habitId}`,
     DELETE: (habitId) => `${API_BASE_URL}/habits/${habitId}`

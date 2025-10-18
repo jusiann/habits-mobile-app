@@ -924,3 +924,70 @@ export const deleteGoal = async (req, res) => {
         });
     }
 };
+
+export const getMonthlyHabitLogs = async (req, res) => {
+    try {
+        const { year, month } = req.params;
+        const userId = req.user.id;
+
+        const monthlyLogs = await HabitLog.find({
+            user: new mongoose.Types.ObjectId(userId),
+            localDate: {
+                $regex: `^${year}-${month.padStart(2, '0')}`
+            }
+        });
+
+        const daysInMonth = new Date(parseInt(year), parseInt(month), 0).getDate();
+        const monthData = {};
+        
+        for (let day = 1; day <= daysInMonth; day++) {
+            monthData[day] = {
+                summary: {
+                    totalHabits: 0,
+                    completedHabits: 0,
+                    inProgressHabits: 0,
+                    notStartedHabits: 0,
+                    completionRate: 0,
+                    date: `${year}-${month.padStart(2, '0')}-${day.toString().padStart(2, '0')}T21:00:00.000Z`
+                }
+            };
+        }
+
+        monthlyLogs.forEach(log => {
+            const logDate = log.localDate;
+            const dayMatch = logDate.match(/\d{4}-\d{2}-(\d{2})/);
+            if (dayMatch) {
+                const day = parseInt(dayMatch[1]);
+                if (monthData[day]) {
+                    monthData[day].summary.totalHabits++;
+                    
+                    if (log.completed) {
+                        monthData[day].summary.completedHabits++;
+                    } else if (log.progress > 0) {
+                        monthData[day].summary.inProgressHabits++;
+                    } else {
+                        monthData[day].summary.notStartedHabits++;
+                    }
+                }
+            }
+        });
+
+        Object.keys(monthData).forEach(day => {
+            const summary = monthData[day].summary;
+            if (summary.totalHabits > 0) {
+                summary.completionRate = Math.round((summary.completedHabits / summary.totalHabits) * 100);
+            }
+        });
+
+        res.status(200).json({
+            success: true,
+            data: monthData
+        });
+
+    } catch (error) {
+        res.status(error.statusCode || 500).json({
+            success: false,
+            message: error.message || "Failed to fetch monthly habit logs"
+        });
+    }
+};
