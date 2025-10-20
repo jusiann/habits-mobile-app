@@ -57,11 +57,11 @@ const habitSchema = new mongoose.Schema({
 
 // Performance optimization indexes
 habitSchema.index({ userId: 1, name: 1 }, { unique: true });
-habitSchema.index({ userId: 1, isActive: 1 }); // Most critical for daily queries
-habitSchema.index({ userId: 1, category: 1 }); // Category filtering
-habitSchema.index({ userId: 1, createdAt: 1 }); // For sorting by creation date
-habitSchema.index({ category: 1, type: 1 }); // Preset and category queries
-habitSchema.index({ isActive: 1, createdAt: 1 }); // Global active habits
+habitSchema.index({ userId: 1, isActive: 1 });
+habitSchema.index({ userId: 1, category: 1 });
+habitSchema.index({ userId: 1, createdAt: 1 });
+habitSchema.index({ category: 1, type: 1 });
+habitSchema.index({ isActive: 1, createdAt: 1 });
 
 const Habit = mongoose.model("Habit", habitSchema);
 

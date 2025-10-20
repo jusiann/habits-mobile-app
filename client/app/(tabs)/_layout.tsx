@@ -13,11 +13,12 @@ function TabIcon({ focused, iconName, title }: any) {
     <View style={{
       alignItems: 'center',
       justifyContent: 'center',
-      flexDirection: 'column',
+      flexDirection: 'row',
       backgroundColor: focused ? COLORS.primary : 'transparent',
       height: 50,
-      width: focused ? 110 : 50,
+      width: focused ? 120 : 50,
       borderRadius: 25,
+      gap: 6
     }}>
       <View style={{ height: 30, justifyContent: 'center', alignItems: 'center' }}>
         <Ionicons 
@@ -58,7 +59,7 @@ export default function TabLayout() {
             marginHorizontal: 20,
             marginBottom: 20,
             paddingHorizontal: 10,
-            position: "absolute",
+            position: 'absolute',
             bottom: 0,
             left: 0,
             right: 0,
@@ -75,7 +76,7 @@ export default function TabLayout() {
             alignItems: "center",
             justifyContent: "center",
             flexDirection: "row",
-            paddingBottom: 13 + insets.bottom,
+            paddingBottom: 28,
             height: 50,
           }
       }}
