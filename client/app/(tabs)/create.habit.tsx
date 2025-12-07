@@ -1,22 +1,22 @@
 import React from 'react';
-import {View, Text, TouchableOpacity, ScrollView, TextInput, Modal, KeyboardAvoidingView, Platform, ActivityIndicator} from 'react-native';
-import {useRouter, useFocusEffect} from 'expo-router';
-import {Ionicons} from '@expo/vector-icons';
-import {useAuthStore} from '../../store/auth.store';
-import {useHabitStore} from '../../store/habit.store';
+import { View, Text, TouchableOpacity, ScrollView, TextInput, Modal, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
+import { useRouter, useFocusEffect } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { useAuthStore } from '../../store/auth.store';
+import { useHabitStore } from '../../store/habit.store';
 import createStyles from '../../assets/styles/create.habit.styles';
-import {CUSTOM_ICONS} from '../../constants/custom.icons';
-import {useTheme} from '../../constants/ThemeContext';
+import { CUSTOM_ICONS } from '../../constants/custom.icons';
+import { useTheme } from '../../constants/ThemeContext';
 import CustomAlert from '../../constants/CustomAlert';
 import SafeScreen from '../../constants/SafeScreen';
-import {showConnectionError} from '../../constants/alert.utils';
-import {translate, translateHabitName, translateUnit} from '../../constants/language.utils';
+import { showConnectionError } from '../../constants/alert.utils';
+import { translate, translateHabitName, translateUnit } from '../../constants/language.utils';
 
 export default function CreateHabit() {
   const router = useRouter();
-  const {token} = useAuthStore();
-  const {presets, fetchPresets, createHabit, error: storeError} = useHabitStore();
-  const {colors: COLORS} = useTheme();
+  const { token } = useAuthStore();
+  const { presets, fetchPresets, createHabit, error: storeError } = useHabitStore();
+  const { colors: COLORS } = useTheme();
   const styles = createStyles(COLORS);
   const [habitType, setHabitType] = React.useState('default');
   const [selectedHabit, setSelectedHabit] = React.useState<any>(null);
@@ -89,7 +89,7 @@ export default function CreateHabit() {
           })
           return;
         }
-        
+
         if (!targetAmount || !incrementAmount || !selectedUnit) {
           setShowAlert({
             visible: true,
@@ -100,7 +100,7 @@ export default function CreateHabit() {
           })
           return;
         }
-        
+
         habitData = {
           name: selectedHabit.name,
           type: 'default',
@@ -120,7 +120,7 @@ export default function CreateHabit() {
           })
           return;
         }
-        
+
         habitData = {
           name: customName,
           type: 'other',
@@ -201,7 +201,7 @@ export default function CreateHabit() {
 
               {/* ERROR MESSAGE AND RETRY BUTTON */}
               <Text style={[styles.label, { color: 'red' }]}>{translate('habits.create.failedToLoad')} {storeError}</Text>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.button}
                 onPress={() => {
                   if (token) {
@@ -216,7 +216,7 @@ export default function CreateHabit() {
           ) : presets.length === 0 ? (
             <Text style={styles.label}>{translate('habits.create.noPresets')}</Text>
           ) : (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{marginVertical: 10}}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginVertical: 10 }}>
               {
                 presets.map((habit: any, index: number) => (
                   <TouchableOpacity
@@ -227,14 +227,14 @@ export default function CreateHabit() {
                     ]}
                     onPress={() => setSelectedHabit(habit)}
                   >
-    
+
                     {/* HABIT ICON */}
-                    <Ionicons 
-                      name={(habit.icon || "heart-outline") as any} 
-                      size={32} 
-                      color={selectedHabit?.name === habit.name ? COLORS.white : COLORS.primary} 
+                    <Ionicons
+                      name={(habit.icon || "heart-outline") as any}
+                      size={32}
+                      color={selectedHabit?.name === habit.name ? COLORS.white : COLORS.primary}
                     />
-    
+
                     {/* HABIT NAME */}
                     <Text style={[
                       styles.habitCardText,
@@ -243,7 +243,7 @@ export default function CreateHabit() {
                       {translateHabitName(habit)}
                     </Text>
                   </TouchableOpacity>
-              ))}
+                ))}
             </ScrollView>
           )
         }
@@ -274,7 +274,7 @@ export default function CreateHabit() {
                   ))}
                 </View>
               </View>
-                
+
               {/* TARGET AMOUNT INPUT */}
               <View style={styles.formGroup}>
                 <Text style={styles.label}>{translate('habits.create.targetAmount')}</Text>
@@ -289,7 +289,7 @@ export default function CreateHabit() {
                   />
                 </View>
               </View>
-              
+
               {/* INCREMENT AMOUNT INPUT */}
               <View style={styles.formGroup}>
                 <Text style={styles.label}>{translate('habits.create.incrementAmount')}</Text>
@@ -305,7 +305,7 @@ export default function CreateHabit() {
                 </View>
               </View>
             </>
-        )}
+          )}
       </View>
     </View>
   );
@@ -325,11 +325,11 @@ export default function CreateHabit() {
           />
         </View>
       </View>
-      
+
       {/* ICON SELECTOR */}
       <View style={styles.formGroup}>
         <Text style={styles.label}>{translate('habits.create.icon')}</Text>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.iconSelector}
           onPress={() => setShowIconModal(true)}
         >
@@ -337,7 +337,7 @@ export default function CreateHabit() {
           <Text style={styles.iconSelectorText}>{translate('habits.create.iconSelector')}</Text>
         </TouchableOpacity>
       </View>
-      
+
       {/* UNIT INPUT */}
       <View style={styles.formGroup}>
         <Text style={styles.label}>{translate('habits.create.unit')}</Text>
@@ -351,7 +351,7 @@ export default function CreateHabit() {
           />
         </View>
       </View>
-      
+
       {/* TARGET AMOUNT INPUT */}
       <View style={styles.formGroup}>
         <Text style={styles.label}>{translate('habits.create.targetAmount')}</Text>
@@ -366,7 +366,7 @@ export default function CreateHabit() {
           />
         </View>
       </View>
-      
+
       {/* INCREMENT AMOUNT INPUT */}
       <View style={styles.formGroup}>
         <Text style={styles.label}>{translate('habits.create.incrementAmount')}</Text>
@@ -394,44 +394,44 @@ export default function CreateHabit() {
         buttons={showAlert.buttons}
         onDismiss={() => setShowAlert(previous => ({ ...previous, visible: false }))}
       />
-      <KeyboardAvoidingView 
-        style={{flex:1}}
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
         behavior={Platform.OS === "android" ? "padding" : "height"}
-        >
-          
+      >
+
         {/* HEADER WITH BACK AND SAVE BUTTONS */}
-        <View style={{ 
-          flexDirection: 'row', 
-          alignItems: 'center', 
+        <View style={{
+          flexDirection: 'row',
+          alignItems: 'center',
           justifyContent: 'space-between',
           paddingHorizontal: 16,
           paddingVertical: 4,
           backgroundColor: COLORS.background
         }}>
           {/* BACK BUTTON */}
-          <TouchableOpacity 
+          <TouchableOpacity
             style={{
               flexDirection: 'row',
               alignItems: 'center',
               gap: 4
             }}
-            onPress={() => 
+            onPress={() =>
               setShowAlert({
                 visible: true,
-                title: 'Cancel Habit Creation',
-                message: 'Are you sure you want to cancel creating this habit?',
+                title: translate('habits.create.cancelTitle'),
+                message: translate('habits.create.cancelMessage'),
                 type: 'warning',
                 buttons: [
-                  { text: 'Stay', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'cancel' },
-                  { text: 'Cancel', onPress: () => { setShowAlert(previous => ({ ...previous, visible: false })); router.back(); }, style: 'destructive' }
+                  { text: translate('common.stay'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'cancel' },
+                  { text: translate('common.cancel'), onPress: () => { setShowAlert(previous => ({ ...previous, visible: false })); router.back(); }, style: 'destructive' }
                 ]
               })
             }
           >
-            <Ionicons 
-              name="chevron-back" 
-              size={24} 
-              color={COLORS.primary} 
+            <Ionicons
+              name="chevron-back"
+              size={24}
+              color={COLORS.primary}
             />
             <Text style={{
               fontSize: 16,
@@ -441,7 +441,7 @@ export default function CreateHabit() {
               {translate('common.cancel')}
             </Text>
           </TouchableOpacity>
-          
+
           {/* CREATE BUTTON */}
           <TouchableOpacity
             style={{
@@ -463,10 +463,10 @@ export default function CreateHabit() {
             )}
           </TouchableOpacity>
         </View>
-        
+
         {/* MAIN CONTENT SCROLL VIEW */}
-        <ScrollView 
-          style={styles.scrollViewStyle} 
+        <ScrollView
+          style={styles.scrollViewStyle}
           contentContainerStyle={[styles.container, { paddingBottom: 60 }]}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
@@ -478,7 +478,7 @@ export default function CreateHabit() {
               <Text style={styles.title}>{translate('habits.create.title')}</Text>
               <Text style={styles.subtitle}>{translate('habits.create.subtitle')}</Text>
             </View>
-            
+
             {/* FORM SECTION */}
             <View style={styles.form}>
 
@@ -516,12 +516,12 @@ export default function CreateHabit() {
                   </TouchableOpacity>
                 </View>
               </View>
-              
+
               {/* RENDER HABIT FORM BASED ON TYPE */}
               {habitType === 'default' ? renderDefaultHabits() : renderCustomHabit()}
             </View>
           </View>
-      
+
           {/* ICON SELECTION MODAL */}
           <Modal
             visible={showIconModal}
@@ -534,12 +534,12 @@ export default function CreateHabit() {
 
                 {/* MODAL HEADER */}
                 <View style={styles.modalHeader}>
-                  <Text style={styles.modalTitle}>Choose Icon</Text>
+                  <Text style={styles.modalTitle}>{translate('habits.create.chooseIcon')}</Text>
                   <TouchableOpacity onPress={() => setShowIconModal(false)}>
                     <Ionicons name="close-outline" size={24} color={COLORS.textPrimary} />
                   </TouchableOpacity>
                 </View>
-                
+
                 {/* ICON GRID */}
                 <ScrollView contentContainerStyle={styles.iconGrid}>
                   {CUSTOM_ICONS.map((icon) => (
@@ -554,10 +554,10 @@ export default function CreateHabit() {
                         setShowIconModal(false)
                       }}
                     >
-                      <Ionicons 
-                        name={icon as any} 
-                        size={32} 
-                        color={customIcon === icon ? COLORS.white : COLORS.primary} 
+                      <Ionicons
+                        name={icon as any}
+                        size={32}
+                        color={customIcon === icon ? COLORS.white : COLORS.primary}
                       />
                     </TouchableOpacity>
                   ))}

@@ -1,22 +1,22 @@
 import React from 'react';
-import {View, Text, TouchableOpacity, ScrollView, TextInput, Modal, KeyboardAvoidingView, Platform, ActivityIndicator} from 'react-native';
-import {useRouter, useLocalSearchParams, useFocusEffect} from 'expo-router';
-import {Ionicons} from '@expo/vector-icons';
-import {useHabitStore} from '../../store/habit.store';
+import { View, Text, TouchableOpacity, ScrollView, TextInput, Modal, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
+import { useRouter, useLocalSearchParams, useFocusEffect } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { useHabitStore } from '../../store/habit.store';
 import createStyles from '../../assets/styles/create.habit.styles';
-import {CUSTOM_ICONS} from '../../constants/custom.icons';
-import {useTheme} from '../../constants/ThemeContext';
+import { CUSTOM_ICONS } from '../../constants/custom.icons';
+import { useTheme } from '../../constants/ThemeContext';
 import CustomAlert from '../../constants/CustomAlert';
 import SafeScreen from '../../constants/SafeScreen';
-import {showConnectionError} from '../../constants/alert.utils';
-import {translate, translateHabitName, translateUnit} from '../../constants/language.utils';
+import { showConnectionError } from '../../constants/alert.utils';
+import { translate, translateHabitName, translateUnit } from '../../constants/language.utils';
 
 export default function Detail() {
-  const {colors: COLORS} = useTheme();
+  const { colors: COLORS } = useTheme();
   const styles = createStyles(COLORS);
   const router = useRouter()
-  const {habitId} = useLocalSearchParams()
-  const {habits, updateHabit, deleteHabit} = useHabitStore()
+  const { habitId } = useLocalSearchParams()
+  const { habits, updateHabit, deleteHabit } = useHabitStore()
   const [habit, setHabit] = React.useState<any>(null)
   const [originalUnit, setOriginalUnit] = React.useState('')
   const [customName, setCustomName] = React.useState('')
@@ -38,21 +38,21 @@ export default function Detail() {
   });
 
   React.useEffect(() => {
-    if (!habit) 
+    if (!habit)
       return;
-    
+
     let changes = false
-    
+
     if (habit.type === 'default')
       changes = selectedUnit !== habit.unit ||
-                targetAmount !== habit.targetAmount.toString() ||
-                incrementAmount !== habit.incrementAmount.toString()
+        targetAmount !== habit.targetAmount.toString() ||
+        incrementAmount !== habit.incrementAmount.toString()
     else
       changes = customName !== habit.name ||
-                customIcon !== habit.icon ||
-                customUnit !== habit.unit ||
-                targetAmount !== habit.targetAmount.toString() ||
-                incrementAmount !== habit.incrementAmount.toString()
+        customIcon !== habit.icon ||
+        customUnit !== habit.unit ||
+        targetAmount !== habit.targetAmount.toString() ||
+        incrementAmount !== habit.incrementAmount.toString()
     setHasChanges(changes)
   }, [habit, customName, customIcon, customUnit, targetAmount, incrementAmount, selectedUnit]);
 
@@ -67,7 +67,7 @@ export default function Detail() {
           setIncrementAmount(foundHabit.incrementAmount.toString());
           setSelectedUnit(foundHabit.unit);
           setHasChanges(false);
-          
+
           if (foundHabit.type === 'other') {
             setCustomName(foundHabit.name);
             setCustomIcon(foundHabit.icon);
@@ -86,10 +86,10 @@ export default function Detail() {
   );
 
   const detailHabitAction = async () => {
-    if (!habit || !hasChanges) 
+    if (!habit || !hasChanges)
       return;
 
-    setIsSaveLoading(true)  
+    setIsSaveLoading(true)
     try {
       let updateData = {}
       if (habit.type === 'default') {
@@ -107,14 +107,14 @@ export default function Detail() {
           incrementAmount: parseInt(incrementAmount)
         }
       }
-      
+
       if (isNaN(parseInt(targetAmount)) || parseInt(targetAmount) <= 0) {
         setShowAlert({
           visible: true,
-          title: 'Invalid Input',
-          message: 'Target amount must be a positive number.',
+          title: translate('alerts.invalidInput'),
+          message: translate('alerts.targetAmountError'),
           type: 'error',
-          buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+          buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
         })
         return;
       }
@@ -122,10 +122,10 @@ export default function Detail() {
       if (isNaN(parseInt(incrementAmount)) || parseInt(incrementAmount) <= 0) {
         setShowAlert({
           visible: true,
-          title: 'Invalid Input',
-          message: 'Increment amount must be a positive number.',
+          title: translate('alerts.invalidInput'),
+          message: translate('alerts.incrementAmountError'),
           type: 'error',
-          buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+          buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
         })
         return;
       }
@@ -134,20 +134,20 @@ export default function Detail() {
         if (!customName.trim()) {
           setShowAlert({
             visible: true,
-            title: 'Invalid Input',
-            message: 'Habit name is required.',
+            title: translate('alerts.invalidInput'),
+            message: translate('habits.validation.nameRequired'),
             type: 'error',
-            buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+            buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
           })
           return;
         }
         if (!customUnit.trim()) {
           setShowAlert({
             visible: true,
-            title: 'Invalid Input',
-            message: 'Unit is required.',
+            title: translate('alerts.invalidInput'),
+            message: translate('habits.validation.unitRequired'),
             type: 'error',
-            buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+            buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
           })
           return;
         }
@@ -186,10 +186,10 @@ export default function Detail() {
       {/* DEFAULT HABITS INFORMATION */}
       <View style={styles.formGroup}>
         <View style={[styles.habitCard, styles.selectedHabitCard, { marginVertical: 10, alignSelf: 'stretch' }]}>
-          <Ionicons 
-            name={habit.icon as any} 
-            size={32} 
-            color={COLORS.white} 
+          <Ionicons
+            name={habit.icon as any}
+            size={32}
+            color={COLORS.white}
           />
           <Text style={[styles.habitCardText, styles.selectedHabitCardText]}>
             {translateHabitName(habit)}
@@ -198,16 +198,16 @@ export default function Detail() {
 
         {/* DEFAULT HABIT WARNING FOR CHANGES */}
         {
-          (selectedUnit !== originalUnit || 
-            targetAmount !== habit.targetAmount.toString() || 
+          (selectedUnit !== originalUnit ||
+            targetAmount !== habit.targetAmount.toString() ||
             incrementAmount !== habit.incrementAmount.toString()) && (
-              <View style={{ marginTop: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-                <Ionicons name="warning" size={16} color="orange" style={{ marginTop: -8 }}/> 
-                <Text style={[styles.label, { marginLeft: 5, color: 'orange', fontSize: 12 }]}>
-                  {translate('habits.detail.resetWarning')}
-                </Text>
-              </View>
-            )
+            <View style={{ marginTop: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+              <Ionicons name="warning" size={16} color="orange" style={{ marginTop: -8 }} />
+              <Text style={[styles.label, { marginLeft: 5, color: 'orange', fontSize: 12 }]}>
+                {translate('habits.detail.resetWarning')}
+              </Text>
+            </View>
+          )
         }
       </View>
 
@@ -238,7 +238,7 @@ export default function Detail() {
           </View>
         )
       }
-      
+
       {/* DEFAULT HABIT TARGET AMOUNT */}
       <View style={styles.formGroup}>
         <Text style={styles.label}>{translate('habits.create.targetAmount')}</Text>
@@ -253,7 +253,7 @@ export default function Detail() {
           />
         </View>
       </View>
-      
+
       {/* DEFAULT HABIT INCREMENT AMOUNT */}
       <View style={styles.formGroup}>
         <Text style={styles.label}>{translate('habits.create.incrementAmount')}</Text>
@@ -287,11 +287,11 @@ export default function Detail() {
           />
         </View>
       </View>
-      
+
       {/* CUSTOM HABIT ICONS */}
       <View style={styles.formGroup}>
         <Text style={styles.label}>{translate('habits.detail.icon')}</Text>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.iconSelector}
           onPress={() => setShowIconModal(true)}
         >
@@ -313,7 +313,7 @@ export default function Detail() {
           />
         </View>
       </View>
-      
+
       {/* CUSTOM HABIT TARGET AMOUNT */}
       <View style={styles.formGroup}>
         <Text style={styles.label}>{translate('habits.create.targetAmount')}</Text>
@@ -328,7 +328,7 @@ export default function Detail() {
           />
         </View>
       </View>
-      
+
       {/* CUSTOM HABIT INCREMENT AMOUNT */}
       <View style={styles.formGroup}>
         <Text style={styles.label}>{translate('habits.create.incrementAmount')}</Text>
@@ -346,16 +346,16 @@ export default function Detail() {
 
       {/* CUSTOM HABIT WARNING FOR CHANGES */}
       {
-        (customUnit !== habit.unit || 
-          targetAmount !== habit.targetAmount.toString() || 
+        (customUnit !== habit.unit ||
+          targetAmount !== habit.targetAmount.toString() ||
           incrementAmount !== habit.incrementAmount.toString()) && (
           <View style={{ marginTop: 10, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-            <Ionicons name="warning" size={16} color="orange" style={{ marginTop: -8 }}/> 
+            <Ionicons name="warning" size={16} color="orange" style={{ marginTop: -8 }} />
             <Text style={[styles.label, { marginLeft: 5, color: 'orange', fontSize: 12 }]}>
               {translate('habits.detail.progressResetWarning')}
             </Text>
           </View>
-      )}
+        )}
     </View>
   );
 
@@ -369,16 +369,16 @@ export default function Detail() {
         buttons={showAlert.buttons}
         onDismiss={() => setShowAlert(previous => ({ ...previous, visible: false }))}
       />
-      <KeyboardAvoidingView 
+      <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
 
         {/* HEADER WITH BACK AND SAVE BUTTONS */}
-        <View style={{ 
-          flexDirection: 'row', 
-          alignItems: 'center', 
+        <View style={{
+          flexDirection: 'row',
+          alignItems: 'center',
           justifyContent: 'space-between',
           paddingHorizontal: 16,
           paddingVertical: 4,
@@ -386,7 +386,7 @@ export default function Detail() {
         }}>
 
           {/* BACK BUTTON */}
-          <TouchableOpacity 
+          <TouchableOpacity
             style={{
               flexDirection: 'row',
               alignItems: 'center',
@@ -409,10 +409,10 @@ export default function Detail() {
               }
             }}
           >
-            <Ionicons 
-              name="chevron-back" 
-              size={24} 
-              color={COLORS.primary} 
+            <Ionicons
+              name="chevron-back"
+              size={24}
+              color={COLORS.primary}
             />
             <Text style={{
               fontSize: 16,
@@ -422,7 +422,7 @@ export default function Detail() {
               {translate('common.back')}
             </Text>
           </TouchableOpacity>
-          
+
           {/* SAVE BUTTON */}
           <TouchableOpacity
             style={{
@@ -439,15 +439,15 @@ export default function Detail() {
                 fontWeight: '600',
                 color: COLORS.primary
               }}>
-{translate('habits.detail.save')}
+                {translate('habits.detail.save')}
               </Text>
             )}
           </TouchableOpacity>
         </View>
-        
+
         {/* MAIN CONTENT SCROLL VIEW */}
-        <ScrollView 
-          style={styles.scrollViewStyle} 
+        <ScrollView
+          style={styles.scrollViewStyle}
           contentContainerStyle={[styles.container, { paddingBottom: 60 }]}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
@@ -462,22 +462,22 @@ export default function Detail() {
               </View>
             ) : (
               <View style={styles.card}>
-                
+
                 {/* HEADER SECTION */}
                 <View style={styles.header}>
                   <Text style={styles.title}>{translate('habits.detail.title')}</Text>
                   <Text style={styles.subtitle}>
-                    {habit.type === 'default' 
+                    {habit.type === 'default'
                       ? translate('habits.detail.title')
                       : translate('habits.detail.title')
                     }
                   </Text>
                 </View>
-              
+
                 <View style={styles.form}>
                   {habit.type === 'default' ? renderDefaultHabitEdit() : renderCustomHabitEdit()}
                 </View>
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={[{
                     marginTop: 20,
                     backgroundColor: '#FF3B30',
@@ -504,9 +504,9 @@ export default function Detail() {
                       type: 'warning',
                       buttons: [
                         { text: translate('common.cancel'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'cancel' },
-                        { 
-                            text: translate('common.delete'), 
-                            onPress: async () => {
+                        {
+                          text: translate('common.delete'),
+                          onPress: async () => {
                             setShowAlert(previous => ({ ...previous, visible: false }));
                             setIsDeleteLoading(true);
                             try {
@@ -535,8 +535,8 @@ export default function Detail() {
                             } finally {
                               setIsDeleteLoading(false);
                             }
-                          }, 
-                          style: 'destructive' 
+                          },
+                          style: 'destructive'
                         }
                       ]
                     });
@@ -554,8 +554,8 @@ export default function Detail() {
                   </View>
                 </TouchableOpacity>
               </View>
-          )}
-          
+            )}
+
           {/* ICON SELECTION MODAL */}
           {
             habit && (
@@ -575,7 +575,7 @@ export default function Detail() {
                         <Ionicons name="close-outline" size={24} color={COLORS.textPrimary} />
                       </TouchableOpacity>
                     </View>
-                  
+
                     {/* ICON GRID */}
                     <ScrollView contentContainerStyle={styles.iconGrid}>
                       {
@@ -591,18 +591,18 @@ export default function Detail() {
                               setShowIconModal(false)
                             }}
                           >
-                            <Ionicons 
-                              name={icon as any} 
-                              size={32} 
-                              color={customIcon === icon ? COLORS.white : COLORS.primary} 
+                            <Ionicons
+                              name={icon as any}
+                              size={32}
+                              color={customIcon === icon ? COLORS.white : COLORS.primary}
                             />
                           </TouchableOpacity>
-                      ))}
+                        ))}
                     </ScrollView>
                   </View>
                 </View>
               </Modal>
-          )}
+            )}
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeScreen>

@@ -1,24 +1,25 @@
 import React from 'react';
-import {View, Text, ScrollView, TouchableOpacity, ActivityIndicator} from 'react-native';
-import {Image} from 'expo-image';
-import {router} from 'expo-router';
-import {Ionicons} from '@expo/vector-icons';
-import {useAuthStore} from '../../store/auth.store';
-import {useHabitStore} from '../../store/habit.store';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { Image } from 'expo-image';
+import { router, useFocusEffect } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { useAuthStore } from '../../store/auth.store';
+import { useHabitStore } from '../../store/habit.store';
 import SafeScreen from '../../constants/SafeScreen';
 import CustomAlert from '../../constants/CustomAlert';
-import {getAvatarSource} from '../../constants/avatar.utils';
+import { getAvatarSource } from '../../constants/avatar.utils';
 import createStyles from '../../assets/styles/goals.styles';
-import {translate, translateHabitName} from '../../constants/language.utils';
-import {useTheme} from '../../constants/ThemeContext';
+import { translate, translateHabitName } from '../../constants/language.utils';
+import { useTheme } from '../../constants/ThemeContext';
 
 export default function Goals() {
-  const {user, token} = useAuthStore();
-  const {goals, fetchGoals, deleteGoal, loadMonthData, monthlyCache} = useHabitStore();
-  const {colors: COLORS} = useTheme();
+  const { user, token } = useAuthStore();
+  const { goals, fetchGoals, deleteGoal, loadMonthData } = useHabitStore();
+  const { colors: COLORS } = useTheme();
   const styles = createStyles(COLORS);
   const [isLoading, setIsLoading] = React.useState(false);
   const [monthStats, setMonthStats] = React.useState(null);
+  const [monthData, setMonthData] = React.useState<any>({});
   const [showAlert, setShowAlert] = React.useState({
     visible: false,
     title: '',
@@ -87,9 +88,10 @@ export default function Goals() {
     try {
       const today = new Date();
       const result = await loadMonthData(today);
-      
+
       if (result.success) {
         setMonthStats(result.data.stats);
+        setMonthData(result.data.monthData);
       } else {
         console.error('Goals: Failed to load month data:', result.message);
       }
@@ -98,19 +100,23 @@ export default function Goals() {
     }
   }, [loadMonthData]);
 
-  React.useEffect(() => {
-    if (token) {
-      setIsLoading(true);
-      fetchGoals().finally(() => {
-        setIsLoading(false);
-        loadHistoryData().catch(err => console.error('Failed to preload month data for goals', err));
-      });
-    }
-  }, [token, fetchGoals, loadHistoryData]);
+  useFocusEffect(
+    React.useCallback(() => {
+      if (token) {
+        const shouldShowLoading = goals.length === 0;
+        if (shouldShowLoading)
+          setIsLoading(true);
+
+        fetchGoals().finally(() => {
+          if (shouldShowLoading) setIsLoading(false);
+          loadHistoryData().catch(err => console.error('Failed to preload month data for goals', err));
+        });
+      }
+    }, [token, fetchGoals, loadHistoryData])
+  );
 
   React.useEffect(() => {
-    // Goals and cache data loaded
-  }, [goals, monthlyCache, monthStats]);
+  }, [goals, monthData, monthStats]);
 
   return (
     <SafeScreen>
@@ -139,7 +145,7 @@ export default function Goals() {
                   style={styles.avatar}
                 />
                 <View style={{ marginTop: 10 }}>
-                  <Text style={[styles.headerSubtitle, { marginLeft: -8 }]}>{translate('navigation.goals')}</Text>
+                  <Text style={styles.headerSubtitle}>{translate('navigation.goals')}</Text>
                   <Text style={styles.headerTitle}>{user?.username || 'Guest'}</Text>
                 </View>
               </View>
@@ -178,11 +184,6 @@ export default function Goals() {
                 ) : (
                   /* GOALS MAPPING */
                   goals.map((g: any) => {
-                    // Calculate progress from monthly history data
-                    const today = new Date();
-                    const cacheKey = `${today.getFullYear()}-${today.getMonth()}`;
-                    const monthData = monthlyCache[cacheKey] || {};
-                    
                     let progress = 0;
 
                     if (g.type === 'complete') {
@@ -190,37 +191,35 @@ export default function Goals() {
                       let completedDays = 0;
                       const target = Number(g.repeat) || 1;
                       const goalHabitId = g.habitId || g.habit?.id;
-                      
-                      Object.entries(monthData).forEach(([day, dayData]: [string, any]) => {
-                        if (dayData?.data?.habits) {
-                          const habitFound = dayData.data.habits.find((h: any) => {
-                            return h.habit?.id === goalHabitId && h.completed;
-                          });
-                          if (habitFound) {
-                            completedDays++;
+
+                      if (monthData) {
+                        Object.entries(monthData).forEach(([day, dayData]: [string, any]) => {
+                          if (dayData?.data?.habits) {
+                            const habitFound = dayData.data.habits.find((h: any) => {
+                              return h.habit?.id === goalHabitId && h.completed;
+                            });
+                            if (habitFound) {
+                              completedDays++;
+                            }
                           }
-                        }
-                      });
-                      
+                        });
+                      }
+
                       progress = target > 0 ? Math.min(completedDays / target, 1) : 0;
                     } else if (g.type === 'reach') {
-                      // For reach goals, use history stats based on metric type
                       const target = Number(g.value) || 1;
-                      
+
                       if (g.metric === 'rate') {
-                        // For rate: use overall completion rate from monthStats
                         const currentRate = monthStats?.completionRate || 0;
                         progress = target > 0 ? Math.min(currentRate / target, 1) : 0;
-                        
+
                       } else if (g.metric === 'streak') {
-                        // For streak: use current streak from monthStats
                         const currentStreak = monthStats?.currentStreak || 0;
                         progress = target > 0 ? Math.min(currentStreak / target, 1) : 0;
                       }
                     } else if (g.type === 'maintain') {
-                      // For maintain goals, use overall completion rate from monthStats
                       const currentRate = monthStats?.completionRate || 0;
-                      progress = currentRate / 100; // Convert percentage to decimal
+                      progress = currentRate / 100;
                     }
 
                     const isCompleted = progress >= 1;
@@ -252,11 +251,20 @@ export default function Goals() {
                             {/* GOAL TITLE */}
                             <View style={styles.habitTextContainer}>
                               <Text style={styles.habitName}>
-                                {g.type === 'complete' 
-                                  ? `${translate('goals.types.complete')} ${g.repeat} ${g.habit ? translateHabitName(g.habit) : translate('goals.types.habits')}` 
-                                  : g.type === 'reach' 
-                                  ? `${translate('goals.types.reach')} ${g.value} ${g.metric || ''}` 
-                                  : g.title || (g.habit ? translateHabitName(g.habit) : translate('goals.types.maintain'))
+                                {
+                                  g.type === 'complete'
+                                    ? translate('goals.format.complete', {
+                                      action: translate('goals.types.complete'),
+                                      count: g.repeat,
+                                      habit: g.habit ? translateHabitName(g.habit) : translate('goals.types.habits')
+                                    })
+                                    : g.type === 'reach'
+                                      ? translate('goals.format.reach', {
+                                        action: translate('goals.types.reach'),
+                                        value: g.value,
+                                        metric: g.metric || ''
+                                      })
+                                      : g.title || (g.habit ? translateHabitName(g.habit) : translate('goals.types.maintain'))
                                 }
                               </Text>
                             </View>
@@ -275,12 +283,12 @@ export default function Goals() {
                         <View style={styles.progressContainer}>
                           <View style={styles.progressBar}>
                             <View style={[
-                              isCompleted ? styles.progressFillCompleted : styles.progressFill, 
+                              isCompleted ? styles.progressFillCompleted : styles.progressFill,
                               { width: `${percent}%` }
                             ]} />
                           </View>
                         </View>
-                        
+
                       </View>
                     );
                   })

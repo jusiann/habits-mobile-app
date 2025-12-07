@@ -50,7 +50,11 @@ export default {
       email: "E-posta",
       emailPlaceholder: "E-posta adresinizi girin",
       resetButton: "Şifreyi Sıfırla",
-      backToSignIn: "Giriş Sayfasına Geri Dön"
+      resetButton: "Şifreyi Sıfırla",
+      backToSignIn: "Giriş Sayfasına Geri Dön",
+      codeSentTitle: "Sıfırlama Kodu Gönderildi",
+      verificationFailed: "Doğrulama Başarısız",
+      invalidCode: "Geçersiz sıfırlama kodu"
     },
 
     // Change Password
@@ -61,7 +65,11 @@ export default {
       confirmNewPassword: "Yeni Şifreyi Onayla",
       changeButton: "Şifreyi Değiştir",
       successMessage: "Şifre başarıyla değiştirildi!",
-      errorMessage: "Şifre değiştirilirken bir hata oluştu"
+      errorMessage: "Şifre değiştirilirken bir hata oluştu",
+      errorMessage: "Şifre değiştirilirken bir hata oluştu",
+      subtitle: "Yeni şifrenizi aşağıya girin",
+      newPasswordPlaceholder: "Yeni şifreyi girin",
+      confirmNewPasswordPlaceholder: "Yeni şifreyi onaylayın"
     }
   },
 
@@ -107,7 +115,15 @@ export default {
       createButton: "Oluştur",
       successMessage: "Alışkanlık başarıyla oluşturuldu!",
       failed: "Alışkanlık Oluşturma Başarısız",
-      failedMessage: "Alışkanlık oluşturulamadı"
+      failedMessage: "Alışkanlık oluşturulamadı",
+      cancelTitle: "Alışkanlık Oluşturmayı İptal Et",
+      cancelMessage: "Bu alışkanlığı oluşturmayı iptal etmek istediğinizden emin misiniz?",
+      chooseIcon: "İkon Seç"
+    },
+
+    validation: {
+      nameRequired: "Alışkanlık adı gereklidir.",
+      unitRequired: "Birim gereklidir."
     },
 
     detail: {
@@ -181,10 +197,15 @@ export default {
     },
 
     types: {
-      complete: "Tamamlama",
-      reach: "Ulaşma",
-      maintain: "Sürdürme",
+      complete: "Tamamla",
+      reach: "Ulaş",
+      maintain: "Sürdür",
       habits: "alışkanlık"
+    },
+    format: {
+      complete: "{count} {habit} {action}",
+      reach: "{value} {metric} {action}",
+      maintain: "{habit} {action}"
     }
   },
 

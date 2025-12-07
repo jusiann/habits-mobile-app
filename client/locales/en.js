@@ -50,7 +50,11 @@ export default {
       email: "Email",
       emailPlaceholder: "Enter your email",
       resetButton: "Reset Password",
-      backToSignIn: "Back to Sign In"
+      resetButton: "Reset Password",
+      backToSignIn: "Back to Sign In",
+      codeSentTitle: "Reset Code Sent",
+      verificationFailed: "Verification Failed",
+      invalidCode: "Invalid reset code"
     },
 
     // Change Password
@@ -61,7 +65,11 @@ export default {
       confirmNewPassword: "Confirm New Password",
       changeButton: "Change Password",
       successMessage: "Password changed successfully!",
-      errorMessage: "An error occurred while changing password"
+      errorMessage: "An error occurred while changing password",
+      errorMessage: "An error occurred while changing password",
+      subtitle: "Enter your new password below",
+      newPasswordPlaceholder: "Enter new password",
+      confirmNewPasswordPlaceholder: "Confirm new password"
     }
   },
 
@@ -107,7 +115,15 @@ export default {
       createButton: "Create",
       successMessage: "Habit created successfully!",
       failed: "Habit Creation Failed",
-      failedMessage: "Failed to create habit"
+      failedMessage: "Failed to create habit",
+      cancelTitle: "Cancel Habit Creation",
+      cancelMessage: "Are you sure you want to cancel creating this habit?",
+      chooseIcon: "Choose Icon"
+    },
+
+    validation: {
+      nameRequired: "Habit name is required.",
+      unitRequired: "Unit is required."
     },
 
     detail: {
@@ -185,6 +201,11 @@ export default {
       reach: "Reach",
       maintain: "Maintain goal",
       habits: "habit(s)"
+    },
+    format: {
+      complete: "{action} {count} {habit}",
+      reach: "{action} {value} {metric}",
+      maintain: "{action} {habit}"
     }
   },
 
@@ -208,7 +229,7 @@ export default {
     days: {
       sunday: "Sunday",
       monday: "Monday",
-      tuesday: "Tuesday", 
+      tuesday: "Tuesday",
       wednesday: "Wednesday",
       thursday: "Thursday",
       friday: "Friday",
@@ -218,7 +239,7 @@ export default {
       sunday: "Sun",
       monday: "Mon",
       tuesday: "Tue",
-      wednesday: "Wed", 
+      wednesday: "Wed",
       thursday: "Thu",
       friday: "Fri",
       saturday: "Sat"
@@ -357,7 +378,7 @@ export default {
       message: "Failed to connect to server. Please check your internet connection and try again."
     },
     networkError: {
-      title: "Network Error", 
+      title: "Network Error",
       message: "Network request failed. Please try again."
     },
     validationError: {
@@ -374,7 +395,7 @@ export default {
   units: {
     glasses: "glasses",
     meals: "meals",
-    steps: "steps", 
+    steps: "steps",
     minutes: "minutes",
     pages: "pages",
     hours: "hours",

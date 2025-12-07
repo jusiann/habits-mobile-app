@@ -58,7 +58,6 @@ const createStyles = (COLORS) => StyleSheet.create({
 	userInfo: {
 		flexDirection: 'row',
 		alignItems: 'center',
-		paddingLeft: 4,
 	},
 	avatar: {
 		width: 64,

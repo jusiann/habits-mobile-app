@@ -1,22 +1,22 @@
 import React from 'react';
-import {View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ActivityIndicator} from 'react-native';
-import {router, useLocalSearchParams} from 'expo-router';
-import {Ionicons} from '@expo/vector-icons';
-import {useAuthStore} from '../../store/auth.store';
+import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
+import { router, useLocalSearchParams } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { useAuthStore } from '../../store/auth.store';
 import createStyles from '../../assets/styles/passwordpages.styles';
 import CustomAlert from '../../constants/CustomAlert';
-import {useTheme} from '../../constants/ThemeContext';
+import { useTheme } from '../../constants/ThemeContext';
 import SafeScreen from '../../constants/SafeScreen';
-import {translate} from '../../constants/language.utils';
+import { translate } from '../../constants/language.utils';
 
 export default function ChangePassword() {
-  const {email, resetCode} = useLocalSearchParams();
+  const { email, resetCode } = useLocalSearchParams();
   const [newPassword, setNewPassword] = React.useState("");
   const [confirmPassword, setConfirmPassword] = React.useState("");
   const [showPassword, setShowPassword] = React.useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
-  const {resetPassword, isLoading} = useAuthStore();
-  const {colors: COLORS} = useTheme();
+  const { resetPassword, isLoading } = useAuthStore();
+  const { colors: COLORS } = useTheme();
   const styles = createStyles(COLORS);
   const [showAlert, setShowAlert] = React.useState({
     visible: false,
@@ -30,10 +30,10 @@ export default function ChangePassword() {
     if (!newPassword.trim()) {
       setShowAlert({
         visible: true,
-        title: 'Error',
-        message: 'Please enter a new password',
+        title: translate('common.error'),
+        message: translate('auth.changePassword.newPasswordPlaceholder'),
         type: 'error',
-        buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+        buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
       });
       return;
     }
@@ -41,10 +41,10 @@ export default function ChangePassword() {
     if (newPassword !== confirmPassword) {
       setShowAlert({
         visible: true,
-        title: 'Error',
-        message: 'Passwords do not match',
+        title: translate('common.error'),
+        message: translate('alerts.passwordMismatch'),
         type: 'error',
-        buttons: [{ text: 'OK', onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
+        buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
       });
       return;
     }
@@ -85,14 +85,14 @@ export default function ChangePassword() {
       >
 
         {/* BACK TO SIGN IN HEADER */}
-        <View style={{ 
-          flexDirection: 'row', 
+        <View style={{
+          flexDirection: 'row',
           alignItems: 'center',
           paddingHorizontal: 16,
           paddingVertical: 4,
           backgroundColor: COLORS.background
         }}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={{
               flexDirection: 'row',
               alignItems: 'center',
@@ -103,29 +103,29 @@ export default function ChangePassword() {
               router.push('/');
             }}
           >
-            <Ionicons 
-              name="chevron-back" 
-              size={24} 
-              color={COLORS.primary} 
+            <Ionicons
+              name="chevron-back"
+              size={24}
+              color={COLORS.primary}
             />
             <Text style={{
               fontSize: 16,
               fontWeight: '600',
               color: COLORS.primary
             }}>
-              Sign In
+              {translate('auth.signIn.signIn')}
             </Text>
           </TouchableOpacity>
         </View>
-        
+
         <View style={[styles.container, { paddingTop: 60 }]}>
           <View style={styles.card}>
 
             {/* HEADER */}
             <View style={[styles.header, { marginBottom: 25 }]}>
-              <Text style={styles.title}>Change Password</Text>
+              <Text style={styles.title}>{translate('auth.changePassword.title')}</Text>
               <Text style={styles.subtitle}>
-                Enter your new password below
+                {translate('auth.changePassword.subtitle')}
               </Text>
             </View>
 
@@ -133,7 +133,7 @@ export default function ChangePassword() {
 
               {/* NEW PASSWORD INPUT */}
               <View style={styles.inputGroup}>
-                <Text style={styles.label}>New Password</Text>
+                <Text style={styles.label}>{translate('auth.changePassword.newPassword')}</Text>
                 <View style={styles.inputContainer}>
                   <Ionicons
                     name="lock-closed-outline"
@@ -143,7 +143,7 @@ export default function ChangePassword() {
                   />
                   <TextInput
                     style={styles.input}
-                    placeholder="Enter new password"
+                    placeholder={translate('auth.changePassword.newPasswordPlaceholder')}
                     placeholderTextColor={COLORS.placeholderText}
                     value={newPassword}
                     onChangeText={setNewPassword}
@@ -165,7 +165,7 @@ export default function ChangePassword() {
 
               {/* CONFIRM PASSWORD INPUT */}
               <View style={styles.inputGroup}>
-                <Text style={styles.label}>Confirm Password</Text>
+                <Text style={styles.label}>{translate('auth.changePassword.confirmNewPassword')}</Text>
                 <View style={styles.inputContainer}>
                   <Ionicons
                     name="lock-closed-outline"
@@ -175,7 +175,7 @@ export default function ChangePassword() {
                   />
                   <TextInput
                     style={styles.input}
-                    placeholder="Confirm new password"
+                    placeholder={translate('auth.changePassword.confirmNewPasswordPlaceholder')}
                     placeholderTextColor={COLORS.placeholderText}
                     value={confirmPassword}
                     onChangeText={setConfirmPassword}
@@ -210,13 +210,13 @@ export default function ChangePassword() {
                   isLoading ? (
                     <ActivityIndicator color="white" />
                   ) : (
-                    <Text style={styles.buttonText}>Change Password</Text>
+                    <Text style={styles.buttonText}>{translate('auth.changePassword.changeButton')}</Text>
                   )}
               </TouchableOpacity>
             </View>
           </View>
         </View>
       </KeyboardAvoidingView>
-    </SafeScreen>
+    </SafeScreen >
   );
 };

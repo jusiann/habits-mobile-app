@@ -1,14 +1,14 @@
 import React from 'react';
-import {View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ActivityIndicator} from 'react-native';
-import {router} from 'expo-router';
-import {Ionicons} from '@expo/vector-icons';
-import {useAuthStore} from '../../store/auth.store';
+import { View, Text, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
+import { router } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { useAuthStore } from '../../store/auth.store';
 import createStyles from '../../assets/styles/passwordpages.styles';
 import SafeScreen from '../../constants/SafeScreen';
-import {useTheme} from '../../constants/ThemeContext';
+import { useTheme } from '../../constants/ThemeContext';
 import CustomAlert from '../../constants/CustomAlert';
-import {showConnectionError} from '../../constants/alert.utils';
-import {translate} from '../../constants/language.utils';
+import { showConnectionError } from '../../constants/alert.utils';
+import { translate } from '../../constants/language.utils';
 
 export default function ForgotPassword() {
   const [email, setEmail] = React.useState("");
@@ -16,8 +16,8 @@ export default function ForgotPassword() {
   const [codeSent, setCodeSent] = React.useState(false);
   const [sendingCode, setSendingCode] = React.useState(false);
   const [verifyingCode, setVerifyingCode] = React.useState(false);
-  const {sendResetCode, verifyResetCode} = useAuthStore();
-  const {colors: COLORS} = useTheme();
+  const { sendResetCode, verifyResetCode } = useAuthStore();
+  const { colors: COLORS } = useTheme();
   const styles = createStyles(COLORS);
   const [showAlert, setShowAlert] = React.useState({
     visible: false,
@@ -57,19 +57,19 @@ export default function ForgotPassword() {
       if (result.success) {
         setShowAlert({
           visible: true,
-          title: "Reset Code Sent",
+          title: translate('auth.forgotPassword.codeSentTitle'),
           message: result.message,
           type: "success",
-          buttons: [{ text: "OK", onPress: () => setShowAlert(previous => ({ ...previous, visible: false })) }]
+          buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })) }]
         });
         setCodeSent(true);
       } else {
         setShowAlert({
           visible: true,
-          title: "Error",
+          title: translate('common.error'),
           message: result.message,
           type: "error",
-          buttons: [{ text: "OK", onPress: () => setShowAlert(previous => ({ ...previous, visible: false })) }]
+          buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })) }]
         });
       }
     } catch (error) {
@@ -106,10 +106,10 @@ export default function ForgotPassword() {
       } else {
         setShowAlert({
           visible: true,
-          title: "Verification Failed",
-          message: result.message || 'Invalid reset code',
+          title: translate('auth.forgotPassword.verificationFailed'),
+          message: result.message || translate('auth.forgotPassword.invalidCode'),
           type: "error",
-          buttons: [{ text: "OK", onPress: () => setShowAlert(previous => ({ ...previous, visible: false })) }]
+          buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })) }]
         });
       }
     } catch (error) {
@@ -138,14 +138,14 @@ export default function ForgotPassword() {
       >
 
         {/* BACK TO SIGN IN HEADER */}
-        <View style={{ 
-          flexDirection: 'row', 
+        <View style={{
+          flexDirection: 'row',
           alignItems: 'center',
           paddingHorizontal: 16,
           paddingVertical: 4,
           backgroundColor: COLORS.background
         }}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={{
               flexDirection: 'row',
               alignItems: 'center',
@@ -156,10 +156,10 @@ export default function ForgotPassword() {
               router.push('/');
             }}
           >
-            <Ionicons 
-              name="chevron-back" 
-              size={24} 
-              color={COLORS.primary} 
+            <Ionicons
+              name="chevron-back"
+              size={24}
+              color={COLORS.primary}
             />
             <Text style={{
               fontSize: 16,
@@ -170,7 +170,7 @@ export default function ForgotPassword() {
             </Text>
           </TouchableOpacity>
         </View>
-        
+
         <View style={[styles.container, { paddingTop: 60 }]}>
           <View style={styles.card}>
 
@@ -214,7 +214,7 @@ export default function ForgotPassword() {
                       backgroundColor: COLORS.primary,
                       height: 48,
                       width: 48,
-                      borderRadius: 8,                      alignItems: 'center',
+                      borderRadius: 8, alignItems: 'center',
                       justifyContent: 'center'
                     }}
                   >
@@ -224,12 +224,12 @@ export default function ForgotPassword() {
                       ) : (
                         <Text style={{ color: '#fff', fontSize: 16, fontWeight: 'bold' }}>
                           {
-                            codeSent ? 
-                              <Ionicons name="checkmark" size={24} color="#fff" /> 
+                            codeSent ?
+                              <Ionicons name="checkmark" size={24} color="#fff" />
                               : <Ionicons name="arrow-forward" size={24} color="#fff" />
                           }
-                          </Text>
-                    )}
+                        </Text>
+                      )}
                   </TouchableOpacity>
                 </View>
               </View>
@@ -258,7 +258,7 @@ export default function ForgotPassword() {
 
             {/* VERIFY CODE BUTTON */}
             <View style={{ marginTop: 30 }}>
-              
+
               <TouchableOpacity
                 style={[styles.button, verifyingCode && styles.buttonDisabled]}
                 onPress={verifyCodeAction}
@@ -272,7 +272,7 @@ export default function ForgotPassword() {
                   )}
               </TouchableOpacity>
             </View>
-            
+
           </View>
         </View>
       </KeyboardAvoidingView>

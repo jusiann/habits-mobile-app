@@ -1,17 +1,17 @@
 import React from 'react';
-import {View, Text, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, KeyboardAvoidingView, Platform} from 'react-native';
-import {router} from 'expo-router';
-import {Ionicons} from '@expo/vector-icons';
-import {useHabitStore} from '../../store/habit.store';
+import { View, Text, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
+import { router } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { useHabitStore } from '../../store/habit.store';
 import SafeScreen from '../../constants/SafeScreen';
 import CustomAlert from '../../constants/CustomAlert';
 import createStyles from '../../assets/styles/create.goal.styles';
-import {translate} from '../../constants/language.utils';
-import {useTheme} from '../../constants/ThemeContext';
+import { translate } from '../../constants/language.utils';
+import { useTheme } from '../../constants/ThemeContext';
 
 export default function CreateGoal() {
-  const {habits, fetchPresets, fetchHabits, fetchGoals, createGoal} = useHabitStore();
-  const {colors: COLORS} = useTheme();
+  const { habits, fetchPresets, fetchHabits, fetchGoals, createGoal } = useHabitStore();
+  const { colors: COLORS } = useTheme();
   const styles = createStyles(COLORS);
   const [type, setType] = React.useState('complete');
   const [selectedHabitId, setSelectedHabitId] = React.useState(null);
@@ -47,8 +47,8 @@ export default function CreateGoal() {
         if (!Number.isInteger(r) || r <= 0) {
           setShowAlert({
             visible: true,
-            title: translate('alerts.error'),
-            message: translate('alerts.error'),
+            title: translate('alerts.validationError.title'),
+            message: translate('alerts.validationError.message'),
             type: 'error',
             buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
           });
@@ -61,8 +61,8 @@ export default function CreateGoal() {
         if (!Number.isInteger(v) || v <= 0) {
           setShowAlert({
             visible: true,
-            title: translate('alerts.error'),
-            message: translate('alerts.error'),
+            title: translate('alerts.validationError.title'),
+            message: translate('alerts.validationError.message'),
             type: 'error',
             buttons: [{ text: translate('common.ok'), onPress: () => setShowAlert(previous => ({ ...previous, visible: false })), style: 'default' }]
           });
@@ -120,8 +120,8 @@ export default function CreateGoal() {
   };
 
   React.useEffect(() => {
-    fetchPresets().catch(() => {});
-    fetchHabits().catch(() => {});
+    fetchPresets().catch(() => { });
+    fetchHabits().catch(() => { });
   }, [fetchPresets, fetchHabits]);
 
   return (
@@ -134,14 +134,14 @@ export default function CreateGoal() {
         buttons={showAlert.buttons}
         onDismiss={() => setShowAlert(previous => ({ ...previous, visible: false }))}
       />
-      <KeyboardAvoidingView 
-        style={{flex:1}}
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
         behavior={Platform.OS === "android" ? "padding" : "height"}
       >
         {/* HEADER SECTION */}
-        <View style={{ 
-          flexDirection: 'row', 
-          alignItems: 'center', 
+        <View style={{
+          flexDirection: 'row',
+          alignItems: 'center',
           justifyContent: 'space-between',
           paddingHorizontal: 16,
           paddingVertical: 4,
@@ -149,7 +149,7 @@ export default function CreateGoal() {
         }}>
 
           {/* CANCEL BUTTON */}
-          <TouchableOpacity 
+          <TouchableOpacity
             style={{
               flexDirection: 'row',
               alignItems: 'center',
@@ -157,10 +157,10 @@ export default function CreateGoal() {
             }}
             onPress={cancelAction}
           >
-            <Ionicons 
-              name="chevron-back" 
-              size={24} 
-              color={COLORS.primary} 
+            <Ionicons
+              name="chevron-back"
+              size={24}
+              color={COLORS.primary}
             />
             <Text style={{
               fontSize: 16,
@@ -185,8 +185,8 @@ export default function CreateGoal() {
           </TouchableOpacity>
         </View>
 
-        <ScrollView 
-          style={styles.scrollViewStyle} 
+        <ScrollView
+          style={styles.scrollViewStyle}
           contentContainerStyle={[styles.container, { paddingBottom: 60 }]}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
@@ -207,24 +207,24 @@ export default function CreateGoal() {
               <View style={styles.formGroup}>
                 <Text style={styles.label}>{translate('goals.create.type')}</Text>
                 <View style={styles.typeSelector}>
-                  <TouchableOpacity 
-                    style={[styles.typeButton, type === 'complete' && styles.selectedTypeButton]} 
+                  <TouchableOpacity
+                    style={[styles.typeButton, type === 'complete' && styles.selectedTypeButton]}
                     onPress={() => setType('complete')}
                   >
                     <Text style={[styles.typeButtonText, type === 'complete' && styles.selectedTypeButtonText]}>
                       {translate('goals.create.complete')}
                     </Text>
                   </TouchableOpacity>
-                  <TouchableOpacity 
-                    style={[styles.typeButton, type === 'reach' && styles.selectedTypeButton]} 
+                  <TouchableOpacity
+                    style={[styles.typeButton, type === 'reach' && styles.selectedTypeButton]}
                     onPress={() => setType('reach')}
                   >
                     <Text style={[styles.typeButtonText, type === 'reach' && styles.selectedTypeButtonText]}>
                       {translate('goals.create.reach')}
                     </Text>
                   </TouchableOpacity>
-                  <TouchableOpacity 
-                    style={[styles.typeButton, type === 'maintain' && styles.selectedTypeButton]} 
+                  <TouchableOpacity
+                    style={[styles.typeButton, type === 'maintain' && styles.selectedTypeButton]}
                     onPress={() => setType('maintain')}
                   >
                     <Text style={[styles.typeButtonText, type === 'maintain' && styles.selectedTypeButtonText]}>
@@ -242,15 +242,15 @@ export default function CreateGoal() {
                     <Text style={styles.label}>{translate('goals.create.presetHabits')}</Text>
                     <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginVertical: 8 }}>
                       {habits && habits.map(h => (
-                        <TouchableOpacity 
-                          key={h.id} 
-                          style={[styles.habitCard, selectedHabitId === h.id && styles.selectedHabitCard]} 
+                        <TouchableOpacity
+                          key={h.id}
+                          style={[styles.habitCard, selectedHabitId === h.id && styles.selectedHabitCard]}
                           onPress={() => setSelectedHabitId(h.id)}
                         >
-                          <Ionicons 
-                            name={h.icon || 'checkmark-circle'} 
-                            size={20} 
-                            color={selectedHabitId === h.id ? COLORS.white : COLORS.textPrimary} 
+                          <Ionicons
+                            name={h.icon || 'checkmark-circle'}
+                            size={20}
+                            color={selectedHabitId === h.id ? COLORS.white : COLORS.textPrimary}
                           />
                           <Text style={[styles.habitCardText, selectedHabitId === h.id && styles.selectedHabitCardText]}>
                             {h.name}
@@ -264,12 +264,12 @@ export default function CreateGoal() {
                   <View style={styles.formGroup}>
                     <Text style={styles.label}>{translate('goals.create.repeat')}</Text>
                     <View style={styles.inputContainer}>
-                      <TextInput 
-                        value={repeat} 
-                        onChangeText={setRepeat} 
-                        keyboardType="numeric" 
-                        style={styles.input} 
-                        placeholder={translate('goals.create.repeatPlaceholder')} 
+                      <TextInput
+                        value={repeat}
+                        onChangeText={setRepeat}
+                        keyboardType="numeric"
+                        style={styles.input}
+                        placeholder={translate('goals.create.repeatPlaceholder')}
                         placeholderTextColor={COLORS.textSecondary}
                       />
                     </View>
@@ -284,16 +284,16 @@ export default function CreateGoal() {
                   <View style={styles.formGroup}>
                     <Text style={styles.label}>{translate('goals.create.metric')}</Text>
                     <View style={styles.unitContainer}>
-                      <TouchableOpacity 
-                        style={[styles.unitButton, metric === 'streak' && styles.selectedUnitButton]} 
+                      <TouchableOpacity
+                        style={[styles.unitButton, metric === 'streak' && styles.selectedUnitButton]}
                         onPress={() => setMetric('streak')}
                       >
                         <Text style={[styles.unitButtonText, metric === 'streak' && styles.selectedUnitButtonText]}>
                           {translate('goals.create.streak')}
                         </Text>
                       </TouchableOpacity>
-                      <TouchableOpacity 
-                        style={[styles.unitButton, metric === 'rate' && styles.selectedUnitButton]} 
+                      <TouchableOpacity
+                        style={[styles.unitButton, metric === 'rate' && styles.selectedUnitButton]}
                         onPress={() => setMetric('rate')}
                       >
                         <Text style={[styles.unitButtonText, metric === 'rate' && styles.selectedUnitButtonText]}>
@@ -307,12 +307,12 @@ export default function CreateGoal() {
                   <View style={styles.formGroup}>
                     <Text style={styles.label}>{translate('goals.create.value')}</Text>
                     <View style={styles.inputContainer}>
-                      <TextInput 
-                        value={value} 
-                        onChangeText={setValue} 
-                        keyboardType="numeric" 
-                        style={styles.input} 
-                        placeholder={translate('goals.create.valuePlaceholder')} 
+                      <TextInput
+                        value={value}
+                        onChangeText={setValue}
+                        keyboardType="numeric"
+                        style={styles.input}
+                        placeholder={translate('goals.create.valuePlaceholder')}
                         placeholderTextColor={COLORS.textSecondary}
                       />
                     </View>
