@@ -1,11 +1,11 @@
-// FOR ONLINE TEST
-// export const API_BASE_URL = 'https://habits-mobile-app.onrender.com/api';
+// iOS Simulator veya Web için
+export const API_BASE_URL = 'http://localhost:3000/api';
 
-// export const API_LOCAL_BASE_URL = 'http://localhost:3000/api';
+// Android Emulator için uncomment et
+// export const API_BASE_URL = 'http://10.0.2.2:3000/api';
 
-
-// FOR LOCAL TEST ANDROID EMULATOR
-export const API_BASE_URL = 'http://192.168.1.6:3000/api';
+// Physical device için kendi IP'ni yaz
+// export const API_BASE_URL = 'http://192.168.1.X:3000/api';
 
 export const API_ENDPOINTS = {
   AUTH: {
