@@ -168,6 +168,6 @@ GET    /health                → Sistem durumu
 
 ## İletişim
 
-**Adil Aslan** — insta:adlefee — aslanadil8@gmail.com
+**Adil Efe** — insta:adlefee — adilefe257@gmail.com
 
 Proje: [https://github.com/jusiann/habits-mobile-app](https://github.com/jusiann/habits-mobile-app)
