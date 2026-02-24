@@ -1,6 +1,6 @@
 import ApiError from '../utils/error.js';
 import User from '../models/user.js';
-import { createToken } from '../middlewares/auth.js';
+import {createToken} from '../middlewares/auth.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
